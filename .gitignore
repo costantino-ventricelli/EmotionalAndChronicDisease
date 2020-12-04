@@ -133,4 +133,4 @@ dmypy.json
 
 # Unapdable folder
 /resource/*
-/experiment_result/*
+/experiment_result/
