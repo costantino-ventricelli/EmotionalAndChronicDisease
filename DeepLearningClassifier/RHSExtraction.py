@@ -16,7 +16,6 @@ class RHSDistanceExtract:
         self.__samples_length = samples_length
         self.__intervals_number = intervals_number
         self.__minimum_samples = 2500
-        # TODO: Capire perchè avviene la suddivisione e come parametrizzarla.
         self.__end_point = [self.__minimum_samples, 2450, 175]
         self.__start_point = [0, 50, 75]
         self.__features = features

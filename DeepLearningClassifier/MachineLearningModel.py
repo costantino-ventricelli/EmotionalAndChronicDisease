@@ -45,7 +45,8 @@ class MLModel:
             units=16,
             use_bias=True,
             kernel_initializer=initializers.RandomNormal(mean=0.0, stddev=0.01, seed=None),
-            recurrent_initializer=initializers.RandomNormal(mean=0.0, stddev=0.01, seed=None))))
+            recurrent_initializer=initializers.RandomNormal(mean=0.0, stddev=0.01, seed=None),
+            bias_initializer='zeros'), merge_mode='concat'))
         # Aggiungo il layer denso che permetterà di modificare lo stato in ingresso ai layer successivi, utilizzano il
         # regolatore L2 con lambda=0.001
         self.__model.add(Dense(units=1, activation='sigmoid', kernel_regularizer=regularizers.l2(0.001)))
@@ -163,8 +164,8 @@ class MLModel:
         wrong_paths = []
         # Calcolo il numero di file classificati erroneamente e genero la lista dei file classificati in modo errato.
         for i in range(len(test_samples)):
-            if (avg_test_samples[i] == 1 and avg_predicting_samples[i] <= CLASS_CHANGE) \
-                    or (avg_test_samples[i] == 0 and avg_predicting_samples[i] >= CLASS_CHANGE):
+            if (avg_test_samples[i] == 1 and avg_predicting_samples[i] <= 0.60) \
+                    or (avg_test_samples[i] == 0 and avg_predicting_samples[i] >= 0.60):
                 wrong_paths.append(test_list[i])
                 if FileManager.get_id_from_path(test_list[i]) in health_ids:
                     healthy_wrong += 1

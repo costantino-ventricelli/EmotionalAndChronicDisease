@@ -19,7 +19,7 @@ class TaskManager:
         # Separo il dataset tra training test e validazione a seconda della condizione dei pazienti.
         h_ids_training = healthy_id[0:25]
         h_ids_validation = healthy_id[25:33]
-        h_ids_test = healthy_id[33:80]
+        h_ids_test = healthy_id[33:56]
         d_ids_training = diseased_id[0:25]
         d_ids_validation = diseased_id[25:33]
         d_ids_test = diseased_id[33:80]
@@ -55,17 +55,18 @@ class TaskManager:
         # correttamente smistato nella lista di appartenenza corretta.
         for path in paths:
             id = FileManager.get_id_from_path(path)
+            task = "_" + FileManager.get_task_from_path(path) + "."
             # Verifico se il task nel path è uno di quelli selezionati per i pazienti con malattia.
-            if any(map(path.__contains__, diseased_task)):
+            if task in diseased_task:
                 # Verifico se l'id del paziente è presente nella lista dei pazienti con malattia.
                 training_list_diseased, validation_list_diseased = TaskManager.__id_in_list(
                     id, path, listd_training, listd_validation, training_list_diseased, validation_list_diseased)
             # In questo if si verificano i task per i pazienti considerati sani
-            elif any(map(path.__contains__, healthy_task)):
+            elif task in healthy_task:
                 training_list_healthy, validation_list_healthy = TaskManager.__id_in_list(
                     id, path, listh_training, listh_validation, training_list_healthy, validation_list_healthy)
             # In questo if si verificano i task selezionati per i tes
-            elif any(map(path.__contains__, test_task)):
+            elif task in test_task:
                 test_list_diseased, test_list_healthy = TaskManager.__id_in_list(
                     id, path, listh_test, listd_test, test_list_healthy, test_list_diseased)
         return training_list_diseased, training_list_healthy, test_list_healthy, test_list_diseased, \
@@ -80,23 +81,28 @@ class TaskManager:
         @:param ml_model: è una lista di liste, dove ogni lista è una delle sei liste individuate da "split()":
             ml_model[training_list_diseased[path,path,...], 
                     training_list_healthy[path,path,...],
-                    test_list_healthy[path,path,...],
                     test_list_disease[path,path,...],
+                    test_list_healthy[path,path,...],
                     validation_list_diseased[path,path,...],
                     validation_list_healthy[path,path,...]].
         @:return: restituisce semple ml_model dopo aver elimiato tutto ciò che non va bene per la creazione del modello.
     """
     @staticmethod
     def check_file_dimension(training_item, validation_item, test_item, minimum_row, ml_model):
+        working_model = list.copy(ml_model)
+        ml_model = []
         # Viene valutato il numero di righe di ogni file selezionato per il modello ml, se la lunghezza non è almeno
         # quella indicata come minima il sistema scarta quel file dal modello.
-        for paths in ml_model:
+        for paths in working_model:
+            new_paths = []
             for path in paths:
                 with open(path, newline='') as csv_file:
-                    if len(list(csv.reader(csv_file, delimiter=' '))) < minimum_row:
-                        paths.remove(path)
+                    if len(list(csv.reader(csv_file, delimiter=' '))) > minimum_row:
+                        new_paths.append(path)
+                    csv_file.close()
+            ml_model.append(new_paths)
         # Creo un vettore per poter selezionare più agevolmente il mumero di file effettivamente necessari al modello.
-        items_number = [training_item, validation_item, test_item]
+        items_number = [training_item, test_item, validation_item]
         # Restringo il numero dei file per ogni fase della creazione del modello, sui valori parametrizzati passati per
         # effettuare l'esperimento.
         for i in range(len(items_number)):
@@ -109,7 +115,7 @@ class TaskManager:
             with open(file_path, 'w') as file:
                 for path in ml_model[i]:
                     file.write(path + "\n")
-                file.close()
+            file.close()
         return ml_model
 
     """

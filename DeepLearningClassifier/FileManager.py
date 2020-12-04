@@ -13,6 +13,10 @@ class FileManager:
         self.__dataset_directory = FileManager.__get_path_directories(self.__dataset)
         self.__patient_paths = FileManager.__get_patient_paths(self.__dataset_directory)
         self.__files_path = FileManager.__get_files_path(self.__patient_paths)
+        file = open("all_samples.txt", "w")
+        for path in self.__files_path:
+            file.write(path+"\n")
+        file.close()
 
     def get_dataset_directory(self): return self.__dataset_directory
 
@@ -101,7 +105,7 @@ class FileManager:
     @staticmethod
     def get_task_from_path(path):
         # Ricerca l'espressione regolare che identifica il task
-        return re.search(r'_u(.*?)_(.*?)_', path).group(2)
+        return re.search(r'_u(.*?)_(.*?).txt', path).group(2)
 
     """
         @:param tasks: contiene una lista di task

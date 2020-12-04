@@ -22,8 +22,7 @@ MINIMUM_ROW_FILE = 2501
 class Experiment:
 
     @staticmethod
-    def execute_experiment(dataset, healthy_tasks, disease_tasks, test_tasks):
-        # TODO: aggiustare il repo
+    def execute_experiment(dataset, healthy_tasks, disease_tasks, test_tasks, log_file):
         file_manager = FileManager(dataset)
         file_paths = file_manager.get_files_path()
         print("Healthy task: ", healthy_tasks)
@@ -31,10 +30,10 @@ class Experiment:
         print("Test task: ", test_tasks)
         training_list_disease, training_list_healthy, test_list_healthy, test_list_diseases, \
             validation_list_diseased, validation_list_healthy = TaskManager.split(file_paths, healthy_tasks, disease_tasks, test_tasks)
-        model = [training_list_disease, training_list_healthy, test_list_healthy, test_list_diseases, validation_list_diseased, validation_list_healthy]
+        model = [training_list_disease, training_list_healthy, test_list_diseases, test_list_healthy, validation_list_diseased, validation_list_healthy]
         model = TaskManager.check_file_dimension(TRAINING_FILE, VALIDATION_FILE, TEST_FILE, MINIMUM_ROW_FILE, model)
         print("Training file number: ", len(model[0]) + len(model[1]))
-        print("Validation file number: ", len(model[4]) + len(model[5]))
+        print("Validation file number: ", len(model[3]) + len(model[5]))
         print("Test file number: ", len(model[2]) + len(model[3]))
         feature_extraction = RHSDistanceExtract(NUM_FILE_SAMPLES, SAMPLES_LENGTH, INTERVALS_NUM, FEATURES_NUM)
         print("Training tensor extraction...")
@@ -54,9 +53,9 @@ class Experiment:
         evaluation_result, test_accuracy, test_precision, test_recall, test_f_score, wrong_classified, accuracy_file, \
             precision_file, recall_file, f1_score_file, wrong_paths = ml_model.classify_results(tensor_test, states_test,
                                                                                                 predicted_results, states_predicted,
-                                                                                                test_list_diseases + test_list_diseases, samples_file_test)
+                                                                                                test_list_healthy + test_list_diseases, samples_file_test)
         print("Saving result...")
-        save_file_path = path.join("experiment_result", "experiment_1.txt")
+        save_file_path = path.join("experiment_result", log_file)
         FileManager.log_results(accuracy_file, evaluation_result, f1_score_file, precision_file, recall_file, save_file_path,
                                 test_accuracy, test_f_score, test_precision, test_recall, wrong_classified, wrong_paths)
 
