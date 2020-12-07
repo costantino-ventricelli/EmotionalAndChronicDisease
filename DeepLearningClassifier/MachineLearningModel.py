@@ -44,9 +44,10 @@ class MLModel:
         self.__model.add(Bidirectional(LSTM(
             units=16,
             use_bias=True,
-            kernel_initializer=initializers.RandomNormal(mean=0.0, stddev=0.01, seed=None),
-            recurrent_initializer=initializers.RandomNormal(mean=0.0, stddev=0.01, seed=None),
+            kernel_initializer=initializers.RandomNormal(mean=0.0, stddev=0.05, seed=None),
+            recurrent_initializer=initializers.RandomNormal(mean=0.0, stddev=0.05, seed=None),
             bias_initializer='zeros'), merge_mode='concat'))
+        self.__model.add()
         # Aggiungo il layer denso che permetterà di modificare lo stato in ingresso ai layer successivi, utilizzano il
         # regolatore L2 con lambda=0.001
         self.__model.add(Dense(units=1, activation='sigmoid', kernel_regularizer=regularizers.l2(0.001)))
@@ -180,6 +181,6 @@ class MLModel:
         ))
         return evaluation_result, accuracy, precision, recall, f_score,\
             healthy_wrong + disease_wrong, \
-            accuracy_score(ground_truth, samples_prevision_list), precision_score(ground_truth, samples_prevision_list), \
-            recall_score(ground_truth, samples_prevision_list), f1_score(ground_truth, samples_prevision_list), \
+            accuracy_score(ground_truth, samples_prevision_list), precision_score(ground_truth, samples_prevision_list, average='macro'), \
+            recall_score(ground_truth, samples_prevision_list, average='macro'), f1_score(ground_truth, samples_prevision_list, average='macro'), \
             wrong_paths
