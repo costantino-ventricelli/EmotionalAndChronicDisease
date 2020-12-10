@@ -1,6 +1,6 @@
 from Expreriment.ExperimentModel import Experiment
 from DeepLearningClassifier.Costants import *
-from DatasetConverter.Converter import ConverterEmothawToPathological
+from DatasetConverter.EmothawToPathological import ConverterEmothawToPathological
 
 
 def main():
