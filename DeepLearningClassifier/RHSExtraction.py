@@ -1,7 +1,7 @@
 import csv
 import numpy as np
 
-from DeepLearningClassifier.FileManager import FileManager
+from FileManager import FileManager
 
 X_COORDINATE = 0
 Y_COORDINATE = 1

@@ -27,3 +27,7 @@ LE = "_le."
 MOM = "_mom."
 WINDOW = "_w."
 LISTENING = "_ds."
+HOUSE = '_sc.'
+FOUR_WORDS = '_fw.'
+LEFT_RING = '_lr.'
+RIGHT_RING = '_rr.'

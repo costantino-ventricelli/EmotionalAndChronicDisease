@@ -10,13 +10,9 @@ class FileManager:
 
     def __init__(self, dataset_name):
         self.__dataset = os.path.join(RESOURCE_DIRECTORY, dataset_name)
-        self.__dataset_directory = FileManager.__get_path_directories(self.__dataset)
+        self.__dataset_directory = FileManager.get_path_directories(self.__dataset)
         self.__patient_paths = FileManager.__get_patient_paths(self.__dataset_directory)
         self.__files_path = FileManager.__get_files_path(self.__patient_paths)
-        file = open("all_samples.txt", "w")
-        for path in self.__files_path:
-            file.write(path+"\n")
-        file.close()
 
     def get_dataset_directory(self): return self.__dataset_directory
 
@@ -42,7 +38,7 @@ class FileManager:
         @:return: restituisce tutte le directory presenti nel dataset
     """
     @staticmethod
-    def __get_path_directories(main_directory_path):
+    def get_path_directories(main_directory_path):
         directories = []
         try:
             # Itero su tutte le cartelle contenute nella directory principale del dataset.

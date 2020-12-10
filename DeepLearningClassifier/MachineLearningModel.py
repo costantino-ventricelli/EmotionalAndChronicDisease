@@ -7,6 +7,7 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import Bidirectional
 from keras.layers import LSTM
+from keras.layers import Dropout
 from keras import initializers
 from keras import regularizers
 from sklearn.metrics import precision_recall_fscore_support as get_four_metrics
@@ -15,7 +16,7 @@ from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import f1_score
 
-from DeepLearningClassifier.FileManager import FileManager
+from FileManager import FileManager
 
 CLASS_CHANGE = 0.55
 
@@ -42,12 +43,12 @@ class MLModel:
         # Aggiungo il layers bidirezionali alla rete di tipo LSTM, con i valori di kernel_inizialization, e recurrent_activation
         # impostati in modo da ottenere una distribuzione normale dei valori iniziali.
         self.__model.add(Bidirectional(LSTM(
-            units=16,
+            units=32,
             use_bias=True,
-            kernel_initializer=initializers.RandomNormal(mean=0.0, stddev=0.05, seed=None),
-            recurrent_initializer=initializers.RandomNormal(mean=0.0, stddev=0.05, seed=None),
+            kernel_initializer=initializers.RandomNormal(mean=0.0, stddev=0.01, seed=None),
+            recurrent_initializer=initializers.RandomNormal(mean=0.0, stddev=0.01, seed=None),
             bias_initializer='zeros'), merge_mode='concat'))
-        self.__model.add()
+        self.__model.add(Dropout(0.5))
         # Aggiungo il layer denso che permetterà di modificare lo stato in ingresso ai layer successivi, utilizzano il
         # regolatore L2 con lambda=0.001
         self.__model.add(Dense(units=1, activation='sigmoid', kernel_regularizer=regularizers.l2(0.001)))
@@ -57,10 +58,10 @@ class MLModel:
         # A questo punto vengono avviati il test e la validazione del modello, impostando le epoche e la demensione del
         # batch.
         self.__history = self.__model.fit(tensor_training, states_training,
-                                          epochs=40,
-                                          batch_size=128,
+                                          epochs=80,
+                                          batch_size=256,
                                           validation_data=(tensor_validation, states_validation),
-                                          verbose=2)
+                                          verbose=1)
         # Vengono presentate le informazioni relative allo svolgimento di training e validazione.
         print(self.__model.summary())
 

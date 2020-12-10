@@ -4,7 +4,7 @@ import csv
 from DeepLearningClassifier import Costants
 
 from os import path as pt
-from DeepLearningClassifier.FileManager import FileManager
+from FileManager import FileManager
 
 RESOURCE_DIRECTORY = "resource"
 

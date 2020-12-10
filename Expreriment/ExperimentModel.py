@@ -2,7 +2,7 @@
 
 from os import path
 
-from DeepLearningClassifier.FileManager import FileManager
+from FileManager import FileManager
 from DeepLearningClassifier.MachineLearningModel import MLModel
 from DeepLearningClassifier.RHSExtraction import RHSDistanceExtract
 from DeepLearningClassifier.TaskManager import TaskManager
@@ -13,7 +13,7 @@ FEATURES_NUM = 3
 INTERVALS_NUM = 3
 MINIMUM_SAMPLES = 2500
 
-TRAINING_FILE = 40
+TRAINING_FILE = 50
 VALIDATION_FILE = 12
 TEST_FILE = 10
 MINIMUM_ROW_FILE = 2501
@@ -47,7 +47,7 @@ class Experiment:
             feature_extraction.extract_rhs_known_state(model[4] + model[5])
         print("Create learning model...")
         ml_model = MLModel(tensor_training, states_training, tensor_validation, states_validation)
-        ml_model.show_summary_graph()
+        # ml_model.show_summary_graph()
         print("Testing model...")
         states_predicted, predicted_results = ml_model.test_model(tensor_test)
         evaluation_result, test_accuracy, test_precision, test_recall, test_f_score, wrong_classified, accuracy_file, \
