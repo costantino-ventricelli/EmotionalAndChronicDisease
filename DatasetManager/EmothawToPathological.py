@@ -8,13 +8,12 @@
    mento dello stato di salute attraverso biometria. Ovvero un modello di Machine Learning adattato nell'anno accademico
    2020 per poter eseguire test su altri dataset.
 """
-import os
-import re
-import pathlib
 import csv
+import os
+import pathlib
+import re
 
 from DeepLearningClassifier.Costants import *
-
 
 RESOURCE_DIRECTORY = "resource"
 NOT_DIRECTORY = ['.xls', '.txt']

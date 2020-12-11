@@ -1,10 +1,10 @@
 # coding=utf-8
 
 import csv
-from DeepLearningClassifier import Costants
-
 from os import path as pt
-from FileManager import FileManager
+
+from DeepLearningClassifier import Costants
+from DatasetManager.FileManager import FileManager
 
 RESOURCE_DIRECTORY = "resource"
 

@@ -1,6 +1,7 @@
 import csv
 import os
 import re
+
 import pandas
 
 RESOURCE_DIRECTORY = "resource"

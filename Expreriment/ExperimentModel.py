@@ -2,10 +2,10 @@
 
 from os import path
 
-from FileManager import FileManager
 from DeepLearningClassifier.MachineLearningModel import MLModel
 from DeepLearningClassifier.RHSExtraction import RHSDistanceExtract
 from DeepLearningClassifier.TaskManager import TaskManager
+from DatasetManager.FileManager import FileManager
 
 NUM_FILE_SAMPLES = 50
 SAMPLES_LENGTH = 100
@@ -16,7 +16,7 @@ MINIMUM_SAMPLES = 2500
 TRAINING_FILE = 50
 VALIDATION_FILE = 12
 TEST_FILE = 10
-MINIMUM_ROW_FILE = 2501
+MINIMUM_ROW_FILE = 2500
 
 
 class Experiment:

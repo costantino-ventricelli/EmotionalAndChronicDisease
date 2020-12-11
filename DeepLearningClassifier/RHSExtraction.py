@@ -1,7 +1,8 @@
 import csv
+
 import numpy as np
 
-from FileManager import FileManager
+from DatasetManager.FileManager import FileManager
 
 X_COORDINATE = 0
 Y_COORDINATE = 1
@@ -33,7 +34,6 @@ class RHSDistanceExtract:
             - samples_file: contiene il numero di campioni estratti per ogni file.
     """
     def extract_rhs_known_state(self, path_list):
-        print("Path list len: ", len(path_list))
         x_axis = []
         y_axis = []
         bottom_status = []

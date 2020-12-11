@@ -1,9 +1,6 @@
 FILE_NAME = ["disease_training.txt", "healthy_training.txt", "healthy_test.txt",
              "disease_test.txt", "disease_validation.txt", "healthy_validation.txt"]
 
-TASKS = ['cdt', 'chk', 'cs', 'ds', 'h', 'hp', 'ipc', 'le', 'm1', 'm2', 'm3', 'mom', 's1',
-         's2', 'sc', 'sw', 'tmt1', 'tmt2', 'tmtt1', 'tmtt2', 'ts', 'vp', 'w']
-
 CLOCK = "_cdt."
 NATURAL_SENTENCE = "_sw."
 PENTAGON = "_ipc."

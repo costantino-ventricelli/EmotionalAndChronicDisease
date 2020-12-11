@@ -1,22 +1,21 @@
 # coding=utf-8
 
-import numpy as np
 import matplotlib.pyplot as plt
-
-from keras.models import Sequential
-from keras.layers import Dense
-from keras.layers import Bidirectional
-from keras.layers import LSTM
-from keras.layers import Dropout
+import numpy as np
 from keras import initializers
 from keras import regularizers
-from sklearn.metrics import precision_recall_fscore_support as get_four_metrics
+from keras.layers import Bidirectional
+from keras.layers import Dense
+from keras.layers import Dropout
+from keras.layers import LSTM
+from keras.models import Sequential
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import f1_score
+from sklearn.metrics import precision_recall_fscore_support as get_four_metrics
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
-from sklearn.metrics import f1_score
 
-from FileManager import FileManager
+from DatasetManager.FileManager import FileManager
 
 CLASS_CHANGE = 0.55
 
@@ -38,6 +37,15 @@ class MLModel:
             parametro per la validazione.
     """
     def __init__(self, tensor_training, states_training, tensor_validation, states_validation):
+        # Calcolo il mean e la devizione standard sui dati di training in modo da normalizzare i tensori si di training,
+        # di validazione e di test
+        self.__mean_value = np.mean(tensor_training)
+        self.__std_deviation_value = np.std(tensor_training)
+        # Normalizzo i tensori
+        """tensor_training -= self.__mean_value
+        tensor_training /= self.__std_deviation_value
+        tensor_validation -= self.__mean_value
+        tensor_validation /= self.__std_deviation_value"""
         # Imposto il modello come sequenziale.
         self.__model = Sequential()
         # Aggiungo il layers bidirezionali alla rete di tipo LSTM, con i valori di kernel_inizialization, e recurrent_activation
@@ -101,6 +109,9 @@ class MLModel:
             Inoltre restituisce una lista di valori che rappresentano i risultati della predizione effettuata dalla rete. 
     """
     def test_model(self, tensor_test):
+        # Normalizzo i tensori di test per la predizione
+        """tensor_test -= self.__mean_value
+        tensor_test /= self.__std_deviation_value"""
         # Avvio la predizione dei risultati passando alla rete il tensore di test come input.
         predicted_results = np.array(self.__model.predict(tensor_test))
         states_predicted = []
@@ -136,6 +147,9 @@ class MLModel:
             - wrong_paths: contiene la lista dei file classificati erroneamente.
     """
     def classify_results(self, tensor_test, states_test, predicted_results, states_predicted, test_list, test_samples):
+        # Normalizzo i tensori di test per la valutazione.
+        """tensor_test -= self.__mean_value
+        tensor_test /= self.__std_deviation_value"""
         # Valuto il modello sui dati di test
         evaluation_result = self.__model.evaluate(tensor_test, states_test)
         # Calcolo l'accuratezza del test.
@@ -166,8 +180,8 @@ class MLModel:
         wrong_paths = []
         # Calcolo il numero di file classificati erroneamente e genero la lista dei file classificati in modo errato.
         for i in range(len(test_samples)):
-            if (avg_test_samples[i] == 1 and avg_predicting_samples[i] <= 0.60) \
-                    or (avg_test_samples[i] == 0 and avg_predicting_samples[i] >= 0.60):
+            if (avg_test_samples[i] == 1 and avg_predicting_samples[i] <= CLASS_CHANGE) \
+                    or (avg_test_samples[i] == 0 and avg_predicting_samples[i] >= CLASS_CHANGE):
                 wrong_paths.append(test_list[i])
                 if FileManager.get_id_from_path(test_list[i]) in health_ids:
                     healthy_wrong += 1
