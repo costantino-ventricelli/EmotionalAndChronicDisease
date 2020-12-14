@@ -17,7 +17,7 @@ def experiment_test():
     healthy_tasks = [MOM, BANK_CHECK, SIGNATURE_2, NATURAL_SENTENCE]
     disease_tasks = [HELLO, SIGNATURE_1, LE, WINDOW]
     test_tasks = [LISTENING, V_POINT]
-    Experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, "experiment_test_norm.txt")
+    Experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, "experiment_test_no_ch.txt")
 
 
 def experiment_one():
@@ -25,7 +25,7 @@ def experiment_one():
     healthy_tasks = [MOM, BANK_CHECK, SIGNATURE_2, PENTAGON]
     disease_tasks = [HELLO, SIGNATURE_1, LE, WINDOW]
     test_tasks = [NATURAL_SENTENCE, CLOCK]
-    Experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, "experiment_1_norm.txt")
+    Experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, "experiment_1_no_ch.txt")
 
 
 def experiment_tow():
@@ -33,7 +33,7 @@ def experiment_tow():
     healthy_tasks = [MOM, BANK_CHECK, SIGNATURE_2, V_POINT]
     disease_tasks = [HELLO, SIGNATURE_1, LE, PENTAGON]
     test_tasks = [NATURAL_SENTENCE, CLOCK]
-    Experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, "experiment_2_norm.txt")
+    Experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, "experiment_2_no_ch.txt")
 
 
 def experiment_three():
@@ -41,7 +41,7 @@ def experiment_three():
     healthy_tasks = [MOM, BANK_CHECK, SIGNATURE_2, CLOCK]
     disease_tasks = [HELLO, SIGNATURE_1, LE, H_POINT]
     test_tasks = [NATURAL_SENTENCE, PENTAGON]
-    Experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, "experiment_3_norm.txt")
+    Experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, "experiment_3_no_ch.txt")
 
 
 def experiment_four():
@@ -49,7 +49,7 @@ def experiment_four():
     healthy_tasks = [MOM, LE, SIGNATURE_1, CLOCK]
     disease_tasks = [HELLO, SIGNATURE_2, BANK_CHECK, V_POINT]
     test_tasks = [NATURAL_SENTENCE, PENTAGON]
-    Experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, "experiment_4_norm.txt")
+    Experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, "experiment_4_no_ch.txt")
 
 
 def experiment_five():
@@ -57,7 +57,7 @@ def experiment_five():
     healthy_tasks = [MOM, BANK_CHECK, SIGNATURE_2, NATURAL_SENTENCE]
     disease_tasks = [HELLO, SIGNATURE_1, LE, WINDOW]
     test_tasks = [LISTENING, CLOCK]
-    Experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, "experiment_5_norm.txt")
+    Experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, "experiment_5_no_ch.txt")
 
 
 def experiment_six():
@@ -65,7 +65,7 @@ def experiment_six():
     healthy_tasks = [MOM, BANK_CHECK, SIGNATURE_2, NATURAL_SENTENCE]
     disease_tasks = [HELLO, SIGNATURE_1, LE, WINDOW]
     test_tasks = [LISTENING]
-    Experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, "experiment_6_norm.txt")
+    Experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, "experiment_6_no_ch.txt")
 
 
 if __name__ == "__main__":
