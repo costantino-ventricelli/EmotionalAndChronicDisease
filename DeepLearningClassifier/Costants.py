@@ -1,5 +1,5 @@
-FILE_NAME = ["disease_training.txt", "healthy_training.txt", "healthy_test.txt",
-             "disease_test.txt", "disease_validation.txt", "healthy_validation.txt"]
+FILE_NAME = ["disease_training.txt", "healthy_training.txt", "disease_test.txt",
+             "healthy_test.txt", "disease_validation.txt", "healthy_validation.txt"]
 
 CLOCK = "_cdt."
 NATURAL_SENTENCE = "_sw."

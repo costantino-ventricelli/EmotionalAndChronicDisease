@@ -39,7 +39,7 @@ class MLModel:
     def __init__(self, tensor_training, states_training, tensor_validation, states_validation):
         # Calcolo il mean e la devizione standard sui dati di training in modo da normalizzare i tensori si di training,
         # di validazione e di test
-        self.__mean_value_training = np.mean(tensor_training)
+        """self.__mean_value_training = np.mean(tensor_training)
         self.__std_deviation_value_training = np.std(tensor_training)
         self.__mean_value_validation = np.mean(tensor_validation)
         self.__std_deviation_value_validation = np.std(tensor_validation)
@@ -47,18 +47,18 @@ class MLModel:
         tensor_training -= self.__mean_value_training
         tensor_training /= self.__std_deviation_value_training
         tensor_validation -= self.__mean_value_validation
-        tensor_validation /= self.__std_deviation_value_validation
+        tensor_validation /= self.__std_deviation_value_validation"""
         # Imposto il modello come sequenziale.
         self.__model = Sequential()
         # Aggiungo il layers bidirezionali alla rete di tipo LSTM, con i valori di kernel_inizialization, e recurrent_activation
         # impostati in modo da ottenere una distribuzione normale dei valori iniziali.
         self.__model.add(Bidirectional(LSTM(
-            units=32,
+            units=16,
             use_bias=True,
             kernel_initializer=initializers.RandomNormal(mean=0.0, stddev=0.01, seed=None),
             recurrent_initializer=initializers.RandomNormal(mean=0.0, stddev=0.01, seed=None),
             bias_initializer='zeros'), merge_mode='concat'))
-        self.__model.add(Dropout(0.5))
+        # self.__model.add(Dropout(0.5))
         # Aggiungo il layer denso che permetterà di modificare lo stato in ingresso ai layer successivi, utilizzano il
         # regolatore L2 con lambda=0.001
         self.__model.add(Dense(units=1, activation='sigmoid', kernel_regularizer=regularizers.l2(0.001)))
@@ -68,7 +68,7 @@ class MLModel:
         # A questo punto vengono avviati il test e la validazione del modello, impostando le epoche e la demensione del
         # batch.
         self.__history = self.__model.fit(tensor_training, states_training,
-                                          epochs=80,
+                                          epochs=40,
                                           batch_size=256,
                                           validation_data=(tensor_validation, states_validation),
                                           verbose=1)
@@ -122,7 +122,7 @@ class MLModel:
         for result in predicted_results:
             states_predicted.append(0 if result <= CLASS_CHANGE else 1)
         # Trasformo la lista dei risultati in un'array numpay.
-        states_predicted = np.array(states_predicted).astype(np.float)
+        states_predicted = np.array(states_predicted).astype(np.int)
         return states_predicted, predicted_results
 
     """
@@ -148,7 +148,8 @@ class MLModel:
             - f1_score: contiene i dati di f1_score calcolati sui singoli file classificati.
             - wrong_paths: contiene la lista dei file classificati erroneamente.
     """
-    def classify_results(self, tensor_test, states_test, predicted_results, states_predicted, test_list, test_samples):
+    def classify_results(self, tensor_test, states_test, predicted_results, states_predicted, test_list, test_samples,
+                         diseased_number, healthy_number):
         # Normalizzo i tensori di test per la valutazione.
         """tensor_test -= self.__mean_value_training
         tensor_test /= self.__std_deviation_value_training"""
@@ -158,8 +159,7 @@ class MLModel:
         accuracy = accuracy_score(states_test, states_predicted)
         # Calcolo precisione, recall e f_score della classificazione, utilizzando una media binaria in quanto ho due
         # classi di classificazione.
-        precision, recall, f_score, _ = get_four_metrics(states_test, states_predicted, labels=['healthy', 'diseased'],
-                                                         average='binary')
+        precision, recall, f_score, _ = get_four_metrics(states_test, states_predicted, labels=[0, 1], average='macro')
         avg_predicting_samples = []
         avg_test_samples = []
         # Questo ciclo permette di calcolre la media su ogni sequenza di campioni utilizzati per il test del modello.
@@ -172,10 +172,9 @@ class MLModel:
                 avg_predicting += predicted_results[j]
             avg_test_samples.append(avg_test / test_samples[i])
             avg_predicting_samples.append(avg_predicting / test_samples[i])
-        half_set = len(test_samples) // 2
         # Genero il vettore di ground truth che mi permetterà di verificare i risultati ottenuti dalla calssificazione
         # di ogni file di test.
-        ground_truth = np.concatenate((np.zeros(half_set), np.ones(len(test_samples) - half_set)), axis=None)
+        ground_truth = np.concatenate((np.ones(diseased_number), np.zeros(healthy_number)), axis=None)
         health_ids, _ = FileManager.get_healthy_disease_list()
         healthy_wrong = 0
         disease_wrong = 0
@@ -191,10 +190,10 @@ class MLModel:
                     disease_wrong += 1
         # Genero la lista dei dati che verrà confrontata con il ground truth per verificare la classificazione.
         samples_prevision_list = np.concatenate((
-            np.zeros(half_set - healthy_wrong),
-            np.ones(healthy_wrong),
-            np.ones(half_set - disease_wrong),
-            np.zeros(disease_wrong)
+            np.ones(diseased_number - disease_wrong),
+            np.zeros(disease_wrong),
+            np.zeros(healthy_number - healthy_wrong),
+            np.ones(healthy_wrong)
         ))
         return evaluation_result, accuracy, precision, recall, f_score,\
             healthy_wrong + disease_wrong, \
