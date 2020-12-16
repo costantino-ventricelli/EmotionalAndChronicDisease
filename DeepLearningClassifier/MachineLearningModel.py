@@ -68,7 +68,7 @@ class MLModel:
         # A questo punto vengono avviati il test e la validazione del modello, impostando le epoche e la demensione del
         # batch.
         self.__history = self.__model.fit(tensor_training, states_training,
-                                          epochs=40,
+                                          epochs=80,
                                           batch_size=256,
                                           validation_data=(tensor_validation, states_validation),
                                           verbose=1)

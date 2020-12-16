@@ -62,11 +62,11 @@ class TaskManager:
                 training_list_diseased, validation_list_diseased = TaskManager.__id_in_list(
                     id, path, listd_training, listd_validation, training_list_diseased, validation_list_diseased)
             # In questo if si verificano i task per i pazienti considerati sani
-            elif task in healthy_task:
+            if task in healthy_task:
                 training_list_healthy, validation_list_healthy = TaskManager.__id_in_list(
                     id, path, listh_training, listh_validation, training_list_healthy, validation_list_healthy)
             # In questo if si verificano i task selezionati per i tes
-            elif task in test_task:
+            if task in test_task:
                 if id in listh_test:
                     test_list_healthy.append(path)
                 elif id in listd_test:

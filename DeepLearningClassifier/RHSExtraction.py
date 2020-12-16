@@ -9,17 +9,21 @@ Y_COORDINATE = 1
 TIMESTAMP = 3
 BOTTOM_STATUS = 6
 
+FEATURES = 3
+INTERVALS_NUMBER = 3
+
 
 class RHSDistanceExtract:
 
-    def __init__(self, num_samples, samples_length, intervals_number, features):
+    """
+        @:param minimum_samples: contiene il numero di campioni che ogni file deve contentere.
+        @:param num_samples: contiene il numero di campioni che verranno prelevati da ogni sequenza RHS.
+    """
+    def __init__(self, minimum_samples, num_samples):
         self.__num_samples = num_samples
-        self.__samples_length = samples_length
-        self.__intervals_number = intervals_number
-        self.__minimum_samples = 2500
-        self.__end_point = [self.__minimum_samples, 2450, 175]
+        self.__minimum_samples = minimum_samples
+        self.__end_point = [self.__minimum_samples, self.__minimum_samples - 50, 175]
         self.__start_point = [0, 50, 75]
-        self.__features = features
 
     """
         Questo metodo permette di ottenre il tesore tridimensionale che servirà per il modello di learning, inotre fornisce
@@ -61,7 +65,8 @@ class RHSDistanceExtract:
         # Creo il tensore tridimensionale manipolando degli array numpy, unisco prima i tre array che contengono
         # i campioni rhs, poi li linearizzo ed infine genero un tensore 3d (numero_campioni, lunghezza_camioni, numero_feature).
         three_dimensional_tensor = np.array(np.column_stack((x_axis, y_axis, bottom_status)))
-        three_dimensional_tensor = np.reshape(three_dimensional_tensor, (total_samples, self.__samples_length, self.__features))
+        samples_length = int(len(three_dimensional_tensor) / total_samples)
+        three_dimensional_tensor = np.reshape(three_dimensional_tensor, (total_samples, samples_length, FEATURES))
         return three_dimensional_tensor, np.array(states), total_samples, samples_file
 
     """
@@ -128,7 +133,7 @@ class RHSDistanceExtract:
         @:param partial_bs: contiene la lista dei campioni rhs estratta per quel file.
     """
     def __extract_subs_from_samples(self, bottom_status, x_axis, y_axis, partial_bs, partial_x, partial_y):
-        for i in range(0, self.__intervals_number):
+        for i in range(0, INTERVALS_NUMBER):
             x_axis += partial_x[self.__start_point[i]: self.__end_point[i]]
             y_axis += partial_y[self.__start_point[i]: self.__end_point[i]]
             bottom_status += partial_bs[self.__start_point[i]: self.__end_point[i]]

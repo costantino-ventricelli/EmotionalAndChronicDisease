@@ -3,6 +3,7 @@ from Expreriment.ExperimentModel import Experiment
 
 
 def main():
+    print("Start experiment suite")
     experiment_test()
     experiment_one()
     experiment_tow()
@@ -10,6 +11,8 @@ def main():
     experiment_four()
     experiment_five()
     experiment_six()
+    experiment_seven()
+    experiment_eight()
 
 
 def experiment_test():
@@ -17,7 +20,7 @@ def experiment_test():
     healthy_tasks = [MOM, BANK_CHECK, SIGNATURE_2, NATURAL_SENTENCE]
     disease_tasks = [HELLO, SIGNATURE_1, LE, WINDOW]
     test_tasks = [LISTENING, V_POINT]
-    Experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, "experiment_0.txt")
+    Experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, 2500, "experiment_0.txt")
 
 
 def experiment_one():
@@ -25,7 +28,7 @@ def experiment_one():
     healthy_tasks = [MOM, BANK_CHECK, SIGNATURE_2, PENTAGON]
     disease_tasks = [HELLO, SIGNATURE_1, LE, WINDOW]
     test_tasks = [NATURAL_SENTENCE, CLOCK]
-    Experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, "experiment_1.txt")
+    Experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, 2500, "experiment_1.txt")
 
 
 def experiment_tow():
@@ -33,7 +36,7 @@ def experiment_tow():
     healthy_tasks = [MOM, BANK_CHECK, SIGNATURE_2, V_POINT]
     disease_tasks = [HELLO, SIGNATURE_1, LE, PENTAGON]
     test_tasks = [NATURAL_SENTENCE, CLOCK]
-    Experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, "experiment_2.txt")
+    Experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, 2500, "experiment_2.txt")
 
 
 def experiment_three():
@@ -41,7 +44,7 @@ def experiment_three():
     healthy_tasks = [MOM, BANK_CHECK, SIGNATURE_2, CLOCK]
     disease_tasks = [HELLO, SIGNATURE_1, LE, H_POINT]
     test_tasks = [NATURAL_SENTENCE, PENTAGON]
-    Experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, "experiment_3.txt")
+    Experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, 2500, "experiment_3.txt")
 
 
 def experiment_four():
@@ -49,7 +52,7 @@ def experiment_four():
     healthy_tasks = [MOM, LE, SIGNATURE_1, CLOCK]
     disease_tasks = [HELLO, SIGNATURE_2, BANK_CHECK, V_POINT]
     test_tasks = [NATURAL_SENTENCE, PENTAGON]
-    Experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, "experiment_4.txt")
+    Experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, 2500, "experiment_4.txt")
 
 
 def experiment_five():
@@ -57,7 +60,7 @@ def experiment_five():
     healthy_tasks = [MOM, BANK_CHECK, SIGNATURE_2, NATURAL_SENTENCE]
     disease_tasks = [HELLO, SIGNATURE_1, LE, WINDOW]
     test_tasks = [LISTENING, CLOCK]
-    Experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, "experiment_5.txt")
+    Experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, 2500, "experiment_5.txt")
 
 
 def experiment_six():
@@ -65,7 +68,23 @@ def experiment_six():
     healthy_tasks = [MOM, BANK_CHECK, SIGNATURE_2, NATURAL_SENTENCE]
     disease_tasks = [HELLO, SIGNATURE_1, LE, WINDOW]
     test_tasks = [LISTENING]
-    Experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, "experiment_6.txt")
+    Experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, 2500, "experiment_6.txt")
+
+
+def experiment_seven():
+    print("Experiment seven")
+    healthy_tasks = [MOM, BANK_CHECK, SIGNATURE_2, CLOCK]
+    disease_tasks = [HELLO, SIGNATURE_1, LE, PENTAGON]
+    test_tasks = [CLOCK, PENTAGON]
+    Experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, 2500, "experiment_7.txt")
+
+
+def experiment_eight():
+    print("Experiment eight")
+    healthy_tasks = [MOM, LE, NATURAL_SENTENCE, CLOCK]
+    disease_tasks = [HELLO, LISTENING, BANK_CHECK, V_POINT]
+    test_tasks = [NATURAL_SENTENCE, LISTENING]
+    Experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, 2500, "experiment_8.txt")
 
 
 if __name__ == "__main__":
