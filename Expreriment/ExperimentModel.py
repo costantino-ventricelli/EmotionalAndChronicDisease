@@ -9,9 +9,9 @@ from DatasetManager.FileManager import FileManager
 
 NUM_FILE_SAMPLES = 50
 
-TRAINING_FILE = 50
-VALIDATION_FILE = 16
-TEST_FILE = 15
+TRAINING_FILE = 40
+VALIDATION_FILE = 12
+TEST_FILE = 10
 
 
 class Experiment:
