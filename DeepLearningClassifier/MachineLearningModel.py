@@ -6,7 +6,6 @@ from keras import initializers
 from keras import regularizers
 from keras.layers import Bidirectional
 from keras.layers import Dense
-from keras.layers import Dropout
 from keras.layers import LSTM
 from keras.models import Sequential
 from sklearn.metrics import accuracy_score
@@ -37,17 +36,6 @@ class MLModel:
             parametro per la validazione.
     """
     def __init__(self, tensor_training, states_training, tensor_validation, states_validation):
-        # Calcolo il mean e la devizione standard sui dati di training in modo da normalizzare i tensori si di training,
-        # di validazione e di test
-        """self.__mean_value_training = np.mean(tensor_training)
-        self.__std_deviation_value_training = np.std(tensor_training)
-        self.__mean_value_validation = np.mean(tensor_validation)
-        self.__std_deviation_value_validation = np.std(tensor_validation)
-        # Normalizzo i tensori
-        tensor_training -= self.__mean_value_training
-        tensor_training /= self.__std_deviation_value_training
-        tensor_validation -= self.__mean_value_validation
-        tensor_validation /= self.__std_deviation_value_validation"""
         # Imposto il modello come sequenziale.
         self.__model = Sequential()
         # Aggiungo il layers bidirezionali alla rete di tipo LSTM, con i valori di kernel_inizialization, e recurrent_activation
@@ -58,7 +46,6 @@ class MLModel:
             kernel_initializer=initializers.RandomNormal(mean=0.0, stddev=0.01, seed=None),
             recurrent_initializer=initializers.RandomNormal(mean=0.0, stddev=0.01, seed=None),
             bias_initializer='zeros'), merge_mode='concat'))
-        # self.__model.add(Dropout(0.5))
         # Aggiungo il layer denso che permetterà di modificare lo stato in ingresso ai layer successivi, utilizzano il
         # regolatore L2 con lambda=0.001
         self.__model.add(Dense(units=1, activation='sigmoid', kernel_regularizer=regularizers.l2(0.001)))
@@ -111,9 +98,6 @@ class MLModel:
             Inoltre restituisce una lista di valori che rappresentano i risultati della predizione effettuata dalla rete. 
     """
     def test_model(self, tensor_test):
-        # Normalizzo i tensori di test per la predizione
-        """tensor_test -= self.__mean_value_training
-        tensor_test /= self.__std_deviation_value_training"""
         # Avvio la predizione dei risultati passando alla rete il tensore di test come input.
         predicted_results = np.array(self.__model.predict(tensor_test))
         states_predicted = []
@@ -150,9 +134,6 @@ class MLModel:
     """
     def classify_results(self, tensor_test, states_test, predicted_results, states_predicted, test_list, test_samples,
                          diseased_number, healthy_number):
-        # Normalizzo i tensori di test per la valutazione.
-        """tensor_test -= self.__mean_value_training
-        tensor_test /= self.__std_deviation_value_training"""
         # Valuto il modello sui dati di test
         evaluation_result = self.__model.evaluate(tensor_test, states_test)
         # Calcolo l'accuratezza del test.
