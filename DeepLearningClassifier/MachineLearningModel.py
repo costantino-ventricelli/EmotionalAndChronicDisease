@@ -181,3 +181,15 @@ class MLModel:
             accuracy_score(ground_truth, samples_prevision_list), precision_score(ground_truth, samples_prevision_list, average='macro'), \
             recall_score(ground_truth, samples_prevision_list, average='macro'), f1_score(ground_truth, samples_prevision_list, average='macro'), \
             wrong_paths
+
+    """
+        @:param tensor: Contiene il tensore su cui avviare la previsione dei risultati utilizzando il modello precedentemente
+                        addestrato.
+        @:return result: Restituisce un array contentente i valori binari di classificazione 1: malato, 0: sano.
+    """
+    def predict_result(self, tensor):
+        predict_states = self.__model.predict(tensor)
+        result = []
+        for state in predict_states:
+            result.append(0 if state <= CLASS_CHANGE else 1)
+        return result

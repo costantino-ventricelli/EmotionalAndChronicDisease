@@ -1,5 +1,6 @@
-import csv
+# coding=utf-8
 
+import csv
 import numpy as np
 
 from DatasetManager.FileManager import FileManager
@@ -68,6 +69,26 @@ class RHSDistanceExtract:
         samples_length = int(len(three_dimensional_tensor) / total_samples)
         three_dimensional_tensor = np.reshape(three_dimensional_tensor, (total_samples, samples_length, FEATURES))
         return three_dimensional_tensor, np.array(states), total_samples, samples_file
+
+    """
+        @:param path: contiene il file da cui estrarre i campioni RHS.
+        @:return: restituisce un tensore tridimensionale conentente i campioni RHS estratti dal file.
+    """
+    def extract_rhs_from_unknown(self, path):
+        # Il processo di estrazione è praticamente identico a quello del precedente metodo solo che in questo caso i file
+        # analizzati sono singoli e non si genera il vettore contenente i valori di confronto che saranno necessari nelle
+        # fasi di addestramento, validazione e test.
+        x_axis = []
+        y_axis = []
+        bottom_status = []
+        partial_bs, partial_x, partial_y = self.__read_samples_from_file(path)
+        partial_bs, partial_x, partial_y = self.__transform_point_in_rhs(partial_bs, partial_x, partial_y)
+        bottom_status, x_axis, y_axis = self.__extract_subs_from_samples(bottom_status, x_axis, y_axis, partial_bs, partial_x,
+                                                                         partial_y)
+        three_dimensional_tensor = np.array(np.column_stack((x_axis, y_axis, bottom_status)))
+        samples_length = int(len(three_dimensional_tensor) / self.__num_samples)
+        three_dimensional_tensor = np.reshape(three_dimensional_tensor, (self.__num_samples, samples_length, FEATURES))
+        return three_dimensional_tensor
 
     """
         Il metdodo permette di leggere in 4 array tutti i campioni presenti in uno dei file generati dall'esecuzione di 

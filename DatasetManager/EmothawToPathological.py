@@ -13,7 +13,7 @@ import os
 import pathlib
 import re
 
-from DeepLearningClassifier.Costants import *
+from DatasetManager.Costants import *
 
 RESOURCE_DIRECTORY = "resource"
 NOT_DIRECTORY = ['.xls', '.txt']
@@ -90,6 +90,8 @@ class ConverterEmothawToPathological:
     """
     @staticmethod
     def __extract_session_from_users(new_directories, old_directories, user_paths):
+        # Individo la collezione a cui appartine l'utente tramite il percorso di salvataggio.
+        collection = new_directories[-1]
         for j in range(len(user_paths)):
             # Ottengo i percorsi di sessione dal dataset originale.
             session, _ = ConverterEmothawToPathological.__scan_directory(old_directories[j])
@@ -102,14 +104,14 @@ class ConverterEmothawToPathological:
                     # Ricavo l'id dell'utente del percorso
                     user_id = int(user_paths[j].replace('user', ''))
                     # Genero un nuovo percorso eliminando gli zeri iniziali dell'utente.
-                    user_paths[j] = os.path.join(new_directories, str(user_id))
+                    user_paths[j] = os.path.join(new_directories, str(collection) + str(user_id))
                     # Creo la cartella per l'utente.
                     if not os.path.exists(user_paths[j]):
                         os.mkdir(user_paths[j])
                     # Genero i percorsi per ogni file di task.
                     tasks = [os.path.join(session[0], task) for task in tasks]
                     # Avvio la conversione dei file di task
-                    ConverterEmothawToPathological.__convert_file_emothaw_to_pathological(tasks, user_paths[j], user_id)
+                    ConverterEmothawToPathological.__convert_file_emothaw_to_pathological(tasks, user_paths[j], user_id, collection)
                 else:
                     # Rimuovo la directory dell'utente se non ci sono task per quell'utente.
                     print("Removing user: ", j)
@@ -121,20 +123,18 @@ class ConverterEmothawToPathological:
         @:user_id: l'id dell'utente a cui appartiene il task.
     """
     @staticmethod
-    def __convert_file_emothaw_to_pathological(paths_to_task, save_directory, user_id):
+    def __convert_file_emothaw_to_pathological(paths_to_task, save_directory, user_id, collection):
         # Scansiono uno ad uno i task e avvio la conversione degli stessi per scriverli nella struttura dei file presenti
         # nel dataset Pathological.
         for task in paths_to_task:
             # Individuo il numero del task dal suo percorso.
             task_search = re.search(r'hw(.*?).svc', task)
-            # Individo la collezione a cui appartine l'utente tramite il percorso di salvataggio.
-            collection = re.search(r'Collection(.*?)' + os.sep, save_directory).group(1)
             # Verifico che sia stato individuato il numero del task.
             if task_search:
                 # Ottengo il nuovo suffisso per il task individuato.
                 task_suffix = ConverterEmothawToPathological.__switch_task(int(task_search.group(1)))
                 # Genero il nuovo nome del file di task.
-                new_file_name = "c" + str(collection) + "_u" + str(user_id) + task_suffix + "txt"
+                new_file_name = "c" + str(collection) + "_u" + str(collection) + str(user_id) + task_suffix + "txt"
                 # Creo uno scrittore di file csv per scrivere i dati nel nuovo file di task.
                 new_file = csv.writer(open(os.path.join(save_directory, new_file_name), 'w'), delimiter=' ', quotechar='"')
                 # Apro in lettura il vecchio file di task.
@@ -228,6 +228,6 @@ class ConverterEmothawToPathological:
             4: LEFT_RING,
             5: RIGHT_RING,
             6: CLOCK,
-            7: LISTENING
+            7: NATURAL_SENTENCE
         }
         return switcher.get(item, "Invalid task")

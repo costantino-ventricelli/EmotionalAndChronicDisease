@@ -1,3 +1,5 @@
+# coding=utf-8
+
 FILE_NAME = ["disease_training.txt", "healthy_training.txt", "disease_test.txt",
              "healthy_test.txt", "disease_validation.txt", "healthy_validation.txt"]
 

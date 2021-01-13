@@ -1,4 +1,5 @@
-import csv
+# coding=utf-8
+
 import os
 import re
 
@@ -105,29 +106,6 @@ class FileManager:
         return re.search(r'_u(.*?)_(.*?).txt', path).group(2)
 
     """
-        @:param tasks: contiene una lista di task
-        @:return: restituisce la lista degli id dei pazienti che hanno svolto tutti i task in input.
-    """
-    @staticmethod
-    def get_ids_from_tasks(tasks):
-        ids = []
-        # Ottengo il percorso verso il file che contiene le informazioni sui task svolti da ogni paziente.
-        task_table_path = os.path.join(RESOURCE_DIRECTORY, "task_table.csv")
-        with open(task_table_path, "r") as csv_file:
-            reader = csv.DictReader(csv_file, delimiter=',')
-            # Per ogni riga di file verifico che i task passati come input siano stai svolti dall'utente, se ciò non
-            # avviene per tutti i task di input il metodo esclude l'id dalla lista che verrà restituita dal metodo.
-            for row in reader:
-                is_subset = True
-                for task in tasks:
-                    if row[task] == 0:
-                        is_subset = False
-                if is_subset:
-                    ids.append(row['user'])
-            csv_file.close()
-        return ids
-
-    """
         @:return: il metodo restituisce due liste di id, una per gli utenti identificati dallo screening iniziale come 
             sane e una per gli utenti identificati come malati.
     """
@@ -175,53 +153,6 @@ class FileManager:
         return x_axis_new, y_axis_new, time_stamp_new, bottom_status_new
 
     """
-        @:param paths: contiene la lista dei percorsi da verificare
-        @:param min_length: contiene il numero minimo di righe che ogni file deve contentere.
-        @:return: restituisce la lista dei percorsi da cui sono stati eliminati tutti i file che non rispettano la 
-            lunghezza minima richiesta.
-    """
-    @staticmethod
-    def length_filter(paths, min_length):
-        filtered_length = []
-        # Itero su ogni percorso aprendo i rispettivi file e calcolando il numero di righe che compongono ogni file, se
-        # il file contiene un numero di righe sufficienti allora il file viene aggiunto alla lista dei file che verranno
-        # restituiti.
-        for path in paths:
-            with open(path, 'r') as file:
-                if len(list(file)) >= min_length:
-                    filtered_length.append(path)
-                file.close()
-        return filtered_length
-
-    """
-        @:param task: contiene il task da ricercare.
-        @:paths: contiene la lista dei percorsi da analizzare.
-        @:return: il metodo restituisce gli id dei pazienti che hanno effettuato il task.
-    """
-    @staticmethod
-    def get_ids_from_task(task, paths):
-        ids = []
-        for path in paths:
-            if FileManager.get_task_from_path(path) == task:
-                ids.append(FileManager.get_id_from_path(path))
-        return ids
-
-    """
-        @:param patients: contiene la lista dei pazienti da dividere.
-        @:return: restituisce due liste di ids separate in quelle degli utenti sani e quelli malati.
-    """
-    @staticmethod
-    def split_healthy_disease(patients):
-        healthy_ids, _ = FileManager.get_healthy_disease_list()
-        healthy = []
-        disease = []
-        # Itero su tutti i pazienti della lista in input.
-        for patient in patients:
-            # Smisto gli ids dei pazienti in base alla loro appartenenza.
-            healthy.append(patient) if patient in healthy_ids else disease.append(patient)
-        return healthy, disease
-
-    """
         @:param path: percorso del file che il metodo analizza.
         @:return: restituisco il numero di righe che compongono il file.
     """
@@ -231,36 +162,6 @@ class FileManager:
             length = len(list(file))
             file.close()
         return length
-
-    """
-        @:param paths: contiene la lista di percorsi che il metodo analizza.
-        @:return: il metodo restituisce il numero di righe individuato e il file a cui queste righe appartengono.
-    """
-    @staticmethod
-    def min_file_length(paths):
-        min_row = FileManager.get_file_rows(paths[0])
-        min_path = paths[0]
-        # Il metodo verifica il numero di righe di ogni file nella lista di input e identifica quello con il numero di
-        # righe minore, salandolo per poi restituirlo.
-        for path in paths:
-            row = FileManager.get_file_rows(path)
-            if row < min_row:
-                min_row = row
-                min_path = path
-        return min_row, min_path
-
-    """
-        @:param ids: lista di ids da convertire in percorsi
-        @:param tasks: lista dei task corrispondenti ad ogni id da trasformare in percorsi.
-        @:return: restituisce la lista dei percorsi generati partendo da id e task passati in input.
-    """
-    @staticmethod
-    def transform_id_task_in_path(ids, tasks):
-        paths = []
-        for id in ids:
-            for task in tasks:
-                paths.append("Dataset/Session_1/" + id + "/s1_u" + id + "_" + task + ".txt")
-        return paths
 
     @staticmethod
     def log_results(accuracy_file, evaluation_result, f1_score_file, precision_file, recall_file, save_file_path,

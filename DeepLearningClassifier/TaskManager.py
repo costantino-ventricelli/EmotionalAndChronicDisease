@@ -1,9 +1,9 @@
 # coding=utf-8
 
 import csv
-from os import path as pt
 
-from DeepLearningClassifier import Costants
+from os import path as pt
+from DatasetManager import Costants
 from DatasetManager.FileManager import FileManager
 
 RESOURCE_DIRECTORY = "resource"
@@ -73,6 +73,21 @@ class TaskManager:
                     test_list_diseased.append(path)
         return training_list_diseased, training_list_healthy, test_list_healthy, test_list_diseased, \
             validation_list_diseased, validation_list_healthy
+
+    @staticmethod
+    def get_task_from_paths(paths, tasks):
+        ids_task = {}
+        for path in paths:
+            id = FileManager.get_id_from_path(path)
+            task = "_" + FileManager.get_task_from_path(path) + "."
+            if task in tasks:
+                if id in ids_task:
+                    temp_path = ids_task[id]
+                    temp_path.append(path)
+                    ids_task.update({id: temp_path})
+                else:
+                    ids_task[id] = [path]
+        return ids_task
 
     """
         @:param training_item: indica il numero di file che verranno effettivamente utilizzati per l'addestramento del modello.

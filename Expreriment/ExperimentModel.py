@@ -16,8 +16,10 @@ TEST_FILE = 10
 
 class Experiment:
 
-    @staticmethod
-    def execute_experiment(dataset, healthy_tasks, disease_tasks, test_tasks, minimum_samples, log_file):
+    def __init__(self):
+        self.__ml_model = None
+
+    def execute_experiment(self, dataset, healthy_tasks, disease_tasks, test_tasks, minimum_samples, log_file):
         file_manager = FileManager(dataset)
         file_paths = file_manager.get_files_path()
         minimum_row_file = minimum_samples + 1
@@ -47,17 +49,19 @@ class Experiment:
         tensor_validation, states_validation, samples_validation, samples_file_validation = \
             feature_extraction.extract_rhs_known_state(model[4] + model[5])
         print("Create learning model...")
-        ml_model = MLModel(tensor_training, states_training, tensor_validation, states_validation)
+        self.__ml_model = MLModel(tensor_training, states_training, tensor_validation, states_validation)
         # ml_model.show_summary_graph()
         print("Testing model...")
-        states_predicted, predicted_results = ml_model.test_model(tensor_test)
+        states_predicted, predicted_results = self.__ml_model.test_model(tensor_test)
         evaluation_result, test_accuracy, test_precision, test_recall, test_f_score, wrong_classified, accuracy_file, \
-            precision_file, recall_file, f1_score_file, wrong_paths = ml_model.classify_results(tensor_test, states_test,
-                                                                                                predicted_results, states_predicted,
-                                                                                                model[2] + model[3], samples_file_test,
-                                                                                                len(test_list_diseases), len(test_list_healthy))
+            precision_file, recall_file, f1_score_file, wrong_paths = self.__ml_model.classify_results(tensor_test, states_test,
+                                                                                                       predicted_results, states_predicted,
+                                                                                                       model[2] + model[3], samples_file_test,
+                                                                                                       len(test_list_diseases), len(test_list_healthy))
         print("Saving result...")
         save_file_path = path.join("experiment_result", log_file)
         FileManager.log_results(accuracy_file, evaluation_result, f1_score_file, precision_file, recall_file, save_file_path,
                                 test_accuracy, test_f_score, test_precision, test_recall, wrong_classified, wrong_paths)
 
+    def get_ml_model(self):
+        return self.__ml_model
