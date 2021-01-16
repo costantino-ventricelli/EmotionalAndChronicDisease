@@ -131,7 +131,7 @@ class FileManager:
         @:param x_axis: è la lista dei punti campionati per l'asse x
         @:param y_axis: è la lista dei punti campionati per l'asse y
         @:param time_stamp: è la lista dei punti campionati per il timestamp
-        @:param bottom_status: è la lista dei punti campionati come bottom status nella scrittura dei task.
+        @:param pen_status: è la lista dei punti campionati come bottom status nella scrittura dei task.
         @:return: il metodo restituice una tupla di liste contentente tutte le liste di input private di tutti i punti 
             considerati come doppione.
     """

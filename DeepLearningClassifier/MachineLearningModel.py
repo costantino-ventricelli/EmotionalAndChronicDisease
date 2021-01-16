@@ -7,6 +7,7 @@ from keras import regularizers
 from keras.layers import Bidirectional
 from keras.layers import Dense
 from keras.layers import LSTM
+from keras.layers import Dropout
 from keras.models import Sequential
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
@@ -34,14 +35,40 @@ class MLModel:
             validation.
         @:param states_validation: Contiene la lista degli stati dei pazienti passata alla rete neurale come secondo
             parametro per la validazione.
+        @:param detrend: Indica al modello se effettuare il detrend dei tensori utilizzando la deviazione standard e il
+            mean value.
     """
-    def __init__(self, tensor_training, states_training, tensor_validation, states_validation):
+    def __init__(self, tensor_training, states_training, tensor_validation, states_validation, detrend):
+        self.__detrend = detrend
+        if detrend:
+            self.__mean = tensor_training.mean(axis=0)
+            self.__std_dev = tensor_training.std(axis=0)
+            tensor_training -= self.__mean
+            tensor_training /= self.__std_dev
+            tensor_validation -= tensor_validation.mean(axis=0)
+            tensor_validation /= tensor_validation.std(axis=0)
         # Imposto il modello come sequenziale.
         self.__model = Sequential()
         # Aggiungo il layers bidirezionali alla rete di tipo LSTM, con i valori di kernel_inizialization, e recurrent_activation
         # impostati in modo da ottenere una distribuzione normale dei valori iniziali.
         self.__model.add(Bidirectional(LSTM(
-            units=16,
+            units=128,
+            use_bias=True,
+            return_sequences=True,
+            kernel_initializer=initializers.RandomNormal(mean=0.0, stddev=0.01, seed=None),
+            recurrent_initializer=initializers.RandomNormal(mean=0.0, stddev=0.01, seed=None),
+            bias_initializer='zeros'), merge_mode='concat'))
+        self.__model.add(Dropout(0.3))
+        self.__model.add(Bidirectional(LSTM(
+            units=128,
+            use_bias=True,
+            return_sequences=True,
+            kernel_initializer=initializers.RandomNormal(mean=0.0, stddev=0.01, seed=None),
+            recurrent_initializer=initializers.RandomNormal(mean=0.0, stddev=0.01, seed=None),
+            bias_initializer='zeros'), merge_mode='concat'))
+        self.__model.add(Dropout(0.3))
+        self.__model.add(Bidirectional(LSTM(
+            units=128,
             use_bias=True,
             kernel_initializer=initializers.RandomNormal(mean=0.0, stddev=0.01, seed=None),
             recurrent_initializer=initializers.RandomNormal(mean=0.0, stddev=0.01, seed=None),
@@ -55,7 +82,7 @@ class MLModel:
         # A questo punto vengono avviati il test e la validazione del modello, impostando le epoche e la demensione del
         # batch.
         self.__history = self.__model.fit(tensor_training, states_training,
-                                          epochs=80,
+                                          epochs=20,
                                           batch_size=256,
                                           validation_data=(tensor_validation, states_validation),
                                           verbose=1)
@@ -76,6 +103,7 @@ class MLModel:
         plt.title("Loss value")
         plt.xlabel("Epochs")
         plt.ylabel("Loss")
+        plt.legend()
 
         # Il secondo grafico mostrerà i valori di accuracy.
         plt.figure(1)
@@ -98,6 +126,9 @@ class MLModel:
             Inoltre restituisce una lista di valori che rappresentano i risultati della predizione effettuata dalla rete. 
     """
     def test_model(self, tensor_test):
+        if self.__detrend:
+            tensor_test -= self.__mean
+            tensor_test /= self.__std_dev
         # Avvio la predizione dei risultati passando alla rete il tensore di test come input.
         predicted_results = np.array(self.__model.predict(tensor_test))
         states_predicted = []
@@ -134,6 +165,9 @@ class MLModel:
     """
     def classify_results(self, tensor_test, states_test, predicted_results, states_predicted, test_list, test_samples,
                          diseased_number, healthy_number):
+        if self.__detrend:
+            tensor_test -= self.__mean
+            tensor_test /= self.__std_dev
         # Valuto il modello sui dati di test
         evaluation_result = self.__model.evaluate(tensor_test, states_test)
         # Calcolo l'accuratezza del test.
@@ -146,40 +180,32 @@ class MLModel:
         # Questo ciclo permette di calcolre la media su ogni sequenza di campioni utilizzati per il test del modello.
         for i in range(len(test_samples)):
             avg_predicting = 0
-            avg_test = 0
+            avg_test = states_test[i * test_samples[i]]
             # Questo ciclo scansiona tutti i campioni del file calcolado la media di ogni file.
             for j in range(i * test_samples[i], (i * test_samples[i]) + test_samples[i]):
-                avg_test += states_test[j]
                 avg_predicting += predicted_results[j]
-            avg_test_samples.append(avg_test / test_samples[i])
-            avg_predicting_samples.append(avg_predicting / test_samples[i])
+            avg_test_samples.append(avg_test)
+            avg_predicting_samples.append(1 if (avg_predicting / test_samples[i]) > CLASS_CHANGE else 0)
         # Genero il vettore di ground truth che mi permetterà di verificare i risultati ottenuti dalla calssificazione
         # di ogni file di test.
-        ground_truth = np.concatenate((np.ones(diseased_number), np.zeros(healthy_number)), axis=None)
+        print("Diagnosis: ", avg_test_samples)
+        print("Predicted: ", avg_predicting_samples)
         health_ids, _ = FileManager.get_healthy_disease_list()
         healthy_wrong = 0
         disease_wrong = 0
         wrong_paths = []
         # Calcolo il numero di file classificati erroneamente e genero la lista dei file classificati in modo errato.
         for i in range(len(test_samples)):
-            if (avg_test_samples[i] == 1 and avg_predicting_samples[i] <= CLASS_CHANGE) \
-                    or (avg_test_samples[i] == 0 and avg_predicting_samples[i] >= CLASS_CHANGE):
+            if avg_predicting_samples[i] != avg_test_samples[i]:
                 wrong_paths.append(test_list[i])
                 if FileManager.get_id_from_path(test_list[i]) in health_ids:
                     healthy_wrong += 1
                 else:
                     disease_wrong += 1
-        # Genero la lista dei dati che verrà confrontata con il ground truth per verificare la classificazione.
-        samples_prevision_list = np.concatenate((
-            np.ones(diseased_number - disease_wrong),
-            np.zeros(disease_wrong),
-            np.zeros(healthy_number - healthy_wrong),
-            np.ones(healthy_wrong)
-        ))
         return evaluation_result, accuracy, precision, recall, f_score,\
             healthy_wrong + disease_wrong, \
-            accuracy_score(ground_truth, samples_prevision_list), precision_score(ground_truth, samples_prevision_list, average='macro'), \
-            recall_score(ground_truth, samples_prevision_list, average='macro'), f1_score(ground_truth, samples_prevision_list, average='macro'), \
+            accuracy_score(avg_test_samples, avg_predicting_samples), precision_score(avg_test_samples, avg_predicting_samples, average='macro'), \
+            recall_score(avg_test_samples, avg_predicting_samples, average='macro'), f1_score(avg_test_samples, avg_predicting_samples, average='macro'), \
             wrong_paths
 
     """

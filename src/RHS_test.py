@@ -1,7 +1,7 @@
 # coding=utf-8
 
 from DatasetManager.Costants import *
-from Expreriment.ExperimentModel import Experiment
+from Expreriment.RHSExperimentModel import Experiment
 
 
 def main():
@@ -23,7 +23,7 @@ def experiment_test():
     disease_tasks = [HELLO, SIGNATURE_1, LE, WINDOW]
     test_tasks = [LISTENING, V_POINT]
     experiment = Experiment()
-    experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, 2500, "experiment_0.txt")
+    experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, 2500, "experiment_multilayer.txt")
 
 
 def experiment_one():
@@ -32,7 +32,7 @@ def experiment_one():
     disease_tasks = [HELLO, SIGNATURE_1, LE, WINDOW]
     test_tasks = [NATURAL_SENTENCE, CLOCK]
     experiment = Experiment()
-    experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, 2500, "experiment_1.txt")
+    experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, 2500, "experiment_1_multilayer.txt")
 
 
 def experiment_tow():
@@ -41,7 +41,7 @@ def experiment_tow():
     disease_tasks = [HELLO, SIGNATURE_1, LE, PENTAGON]
     test_tasks = [NATURAL_SENTENCE, CLOCK]
     experiment = Experiment()
-    experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, 2500, "experiment_2.txt")
+    experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, 2500, "experiment_2_multilayer.txt")
 
 
 def experiment_three():
@@ -50,7 +50,7 @@ def experiment_three():
     disease_tasks = [HELLO, SIGNATURE_1, LE, H_POINT]
     test_tasks = [NATURAL_SENTENCE, PENTAGON]
     experiment = Experiment()
-    experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, 2500, "experiment_3.txt")
+    experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, 2500, "experiment_3_multilayer.txt")
 
 
 def experiment_four():
@@ -59,7 +59,7 @@ def experiment_four():
     disease_tasks = [HELLO, SIGNATURE_2, BANK_CHECK, V_POINT]
     test_tasks = [NATURAL_SENTENCE, PENTAGON]
     experiment = Experiment()
-    experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, 2500, "experiment_4.txt")
+    experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, 2500, "experiment_4_multilayer.txt")
 
 
 def experiment_five():
@@ -68,7 +68,7 @@ def experiment_five():
     disease_tasks = [HELLO, SIGNATURE_1, LE, WINDOW]
     test_tasks = [LISTENING, CLOCK]
     experiment = Experiment()
-    experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, 2500, "experiment_5.txt")
+    experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, 2500, "experiment_5_multilayer.txt")
 
 
 def experiment_six():
@@ -77,7 +77,7 @@ def experiment_six():
     disease_tasks = [HELLO, SIGNATURE_1, LE, WINDOW]
     test_tasks = [LISTENING]
     experiment = Experiment()
-    experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, 2500, "experiment_6.txt")
+    experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, 2500, "experiment_6_multilayer.txt")
 
 
 def experiment_seven():
@@ -86,7 +86,7 @@ def experiment_seven():
     disease_tasks = [HELLO, SIGNATURE_1, LE, PENTAGON]
     test_tasks = [CLOCK, PENTAGON]
     experiment = Experiment()
-    experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, 2500, "experiment_7.txt")
+    experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, 2500, "experiment_7_multilayer.txt")
 
 
 def experiment_eight():
@@ -95,7 +95,7 @@ def experiment_eight():
     disease_tasks = [HELLO, LISTENING, BANK_CHECK, V_POINT]
     test_tasks = [NATURAL_SENTENCE, LISTENING]
     experiment = Experiment()
-    experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, 2500, "experiment_8.txt")
+    experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, 2500, "experiment_8_multilayer.txt")
 
 
 if __name__ == "__main__":

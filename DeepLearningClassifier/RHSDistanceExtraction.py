@@ -62,7 +62,6 @@ class RHSDistanceExtract:
             # Genero tre sotto insiemi dai campioni originali, il numero di campioni è stablilito a priori
             bottom_status, x_axis, y_axis = self.__extract_subs_from_samples(bottom_status, x_axis, y_axis, partial_bs, partial_x,
                                                                              partial_y)
-
         # Creo il tensore tridimensionale manipolando degli array numpy, unisco prima i tre array che contengono
         # i campioni rhs, poi li linearizzo ed infine genero un tensore 3d (numero_campioni, lunghezza_camioni, numero_feature).
         three_dimensional_tensor = np.array(np.column_stack((x_axis, y_axis, bottom_status)))
@@ -119,10 +118,10 @@ class RHSDistanceExtract:
 
     """
         Questo metodo si occupa della trasformazione di punti campionati in sequenze rhs.
-        @:param partial_bs
+        @:param partial_ps
                 partial_x
                 partial_y: tutte e tre le liste di input contengono i punti campionati del file, i quali permetteranno 
-                            di calcolare le sequenze rhs per asse delle x, delle y e il bottom_status delle sequeze stesse.
+                            di calcolare le sequenze rhs per asse delle x, delle y e il pen_status delle sequeze stesse.
         @:return: il metodo quindi restituisce tre nuove liste, ma sta volta ogni elemento conterrà una sequenza rhs 
                     anziché un punto campionato.
     """
@@ -146,12 +145,12 @@ class RHSDistanceExtract:
 
     """
         Questo metodo permette di estrarre tre sottosequeze dai campioni rhs, che verranno combinate poi in un unico vettore.
-        @:param bottom_status: contiene la lista di campioni rhs totale dell'estrazione di tutti i campioni dai file.
+        @:param pen_status: contiene la lista di campioni rhs totale dell'estrazione di tutti i campioni dai file.
         @:param x_axis: contiene la lista dei campioni rhs totale dell'estrazione dei campioni di tutti i file.
         @:param y_axis: contiene la lista dei campioni rhs totale dell'estrazione dei campioni ti tutti i file.
         @:param partial_x: contiene la lista dei campioni rhs estratta per quel file.
         @:param partial_y: contiene la lista dei campioni rhs estratta per quel file.
-        @:param partial_bs: contiene la lista dei campioni rhs estratta per quel file.
+        @:param partial_ps: contiene la lista dei campioni rhs estratta per quel file.
     """
     def __extract_subs_from_samples(self, bottom_status, x_axis, y_axis, partial_bs, partial_x, partial_y):
         for i in range(0, INTERVALS_NUMBER):

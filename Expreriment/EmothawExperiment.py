@@ -1,7 +1,7 @@
 # coding=utf-8
 
-from Expreriment.ExperimentModel import Experiment
-from DeepLearningClassifier.RHSExtraction import RHSDistanceExtract
+from Expreriment.RHSExperimentModel import Experiment
+from DeepLearningClassifier.RHSDistanceExtraction import RHSDistanceExtract
 from DeepLearningClassifier.TaskManager import TaskManager
 from DatasetManager.FileManager import FileManager
 from collections import Counter

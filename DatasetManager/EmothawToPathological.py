@@ -23,7 +23,7 @@ EMOTHAW_FILE_STRUCTURE = {
     0: 'x_axis',
     1: 'y_axis',
     2: 'timestamp',
-    3: 'bottom_status',
+    3: 'pen_status',
     4: 'pressure',
     5: 'azimuth',
     6: 'altitude'
@@ -35,7 +35,7 @@ PATHOLOGICAL_FILE_STRUCTURE = {
     'timestamp': 3,
     'azimuth': 4,
     'altitude': 5,
-    'bottom_status': 6
+    'pen_status': 6
 }
 
 

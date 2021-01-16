@@ -3,6 +3,10 @@
 FILE_NAME = ["disease_training.txt", "healthy_training.txt", "disease_test.txt",
              "healthy_test.txt", "disease_validation.txt", "healthy_validation.txt"]
 
+MILLISECONDS = 1000
+MICROSECONDS = 10000000
+NANOSECONDS = 1000000000
+
 CLOCK = "_cdt."
 NATURAL_SENTENCE = "_sw."
 PENTAGON = "_ipc."
