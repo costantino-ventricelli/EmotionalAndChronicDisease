@@ -27,6 +27,10 @@ class LeaveOneOutExperiment:
         self.__patients = FileManager.get_ids_from_paths(self.__patients_paths)
         self.__patients.sort()
         self.__ml_model = None
+        self.__accuracy_avg = 0
+        self.__precision_avg = 0
+        self.__recall_avg = 0
+        self.__f1_score_avg = 0
         if not path.exists(SAVING_PATHS):
             mkdir(SAVING_PATHS)
 
@@ -47,11 +51,15 @@ class LeaveOneOutExperiment:
             states_predicted, predicted_results = self.__ml_model.test_model(tensor_test)
             evaluation_result, test_accuracy, test_precision, test_recall, test_f_score, wrong_classified, accuracy_file, \
                     precision_file, recall_file, f1_score_file, wrong_paths = self.__ml_model.classify_results(tensor_test,
-                                                                                                       test_states,
-                                                                                                       predicted_results,
-                                                                                                       states_predicted,
-                                                                                                       test_paths,
-                                                                                                       test_file_samples)
+                                                                                                               test_states,
+                                                                                                               predicted_results,
+                                                                                                               states_predicted,
+                                                                                                               test_paths,
+                                                                                                               test_file_samples)
+            self.__accuracy_avg += test_accuracy
+            self.__precision_avg += test_precision
+            self.__recall_avg += test_recall
+            self.__f1_score_avg += test_f_score
             log_file = "iteration_" + str(i) + "_log_file.txt"
             print("Saving result...")
             save_file_path = path.join(SAVING_PATHS, log_file)
@@ -82,3 +90,9 @@ class LeaveOneOutExperiment:
         test_paths = self.__patients_paths[len(self.__patients_paths) - test_number: len(self.__patients_paths)]
         self.__patients_paths = self.__patients_paths[test_number:] + self.__patients_paths[: test_number]
         return training_paths, validation_paths, test_paths
+
+    def get_metrics(self):
+        analysed_file = len(self.__patients_paths)
+        return (self.__accuracy_avg / analysed_file), (self.__precision_avg / analysed_file), (self.__recall_avg / analysed_file), \
+               (self.__recall_avg / analysed_file)
+
