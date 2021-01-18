@@ -57,8 +57,7 @@ class Experiment:
         evaluation_result, test_accuracy, test_precision, test_recall, test_f_score, wrong_classified, accuracy_file, \
             precision_file, recall_file, f1_score_file, wrong_paths = self.__ml_model.classify_results(tensor_test, states_test,
                                                                                                        predicted_results, states_predicted,
-                                                                                                       model[2] + model[3], samples_file_test,
-                                                                                                       len(test_list_diseases), len(test_list_healthy))
+                                                                                                       model[2] + model[3], samples_file_test)
         print("Saving result...")
         save_file_path = path.join("experiment_result", log_file)
         FileManager.log_results(accuracy_file, evaluation_result, f1_score_file, precision_file, recall_file, save_file_path,

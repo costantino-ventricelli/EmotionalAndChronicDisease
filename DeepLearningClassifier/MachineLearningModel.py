@@ -26,7 +26,7 @@ class MLModel:
         Il metodo di init dell ML-model imposta la rete neurale ricorrente bidirezionale con layer LSTM, la rete è composta
         da 16 layer e da un layer denso che provvederà ad applicare le trasformazioni necessarie provenienti dai layer
         precedenti per influenzare lo stato che verrà trasmesso agli stati successivi, dopo di che il modello avvia il
-        training ed il test sui dati passati al costruttore.
+        training ed il src sui dati passati al costruttore.
         @:param tensor_training: Contiene il tensore tridimensonale che verrà utilizzato come input per la fase di training
             della rete.
         @:param states_training: Contiene la lista degli stati dei pazienti passata alla rete neurale come secondo parametro
@@ -77,9 +77,9 @@ class MLModel:
         # regolatore L2 con lambda=0.001
         self.__model.add(Dense(units=1, activation='sigmoid', kernel_regularizer=regularizers.l2(0.001)))
         # Con questo comando vengono impostati i parametri di loss, l'ottimizzatore e la metrica che verrà valutata
-        # durante il test e la validazione.
+        # durante il src e la validazione.
         self.__model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-        # A questo punto vengono avviati il test e la validazione del modello, impostando le epoche e la demensione del
+        # A questo punto vengono avviati il src e la validazione del modello, impostando le epoche e la demensione del
         # batch.
         self.__history = self.__model.fit(tensor_training, states_training,
                                           epochs=20,
@@ -117,7 +117,7 @@ class MLModel:
         plt.show()
 
     """
-        Questo metodo è quello che sottoporrà la rete al test per valutarne successivamente i risultati.
+        Questo metodo è quello che sottoporrà la rete al src per valutarne successivamente i risultati.
         @:param tensor_test: Contiene il tensore tridimensionale che verrà passato come parametro per avviare la predizione
             dei risultati
         @:return: metodo restituisce una lista di 0-1 che identificano:
@@ -129,7 +129,7 @@ class MLModel:
         if self.__detrend:
             tensor_test -= self.__mean
             tensor_test /= self.__std_dev
-        # Avvio la predizione dei risultati passando alla rete il tensore di test come input.
+        # Avvio la predizione dei risultati passando alla rete il tensore di src come input.
         predicted_results = np.array(self.__model.predict(tensor_test))
         states_predicted = []
         # Scansiono la lista dei risultati e impostando nella lista degli stati il valore 1 se il risultato supera la
@@ -151,11 +151,11 @@ class MLModel:
         @:param test_list: Contiene la lista dei percorsi utilizzati per testare la rete neurale.
         @:param test_samples: Contiene una matrice che presenta i dati campionati utilizzati per testare la rete.
         @:return: Il metodo restituisce una tupla di 10 elementi:
-            - evaluation_result: contiene i dati di loss e accuracy ottenuti dal test della rete;
-            - accuracy: contiene il valore di accuratezza ottenuto dal test della rete;
-            - precision: contiene il valore di precisione ottenuto dal test della rete;
-            - recall: contiene il valore di recall ottenuto dal test della rete;
-            - f_score: contiene il valore di f1_score ottenuto dal test della rete;
+            - evaluation_result: contiene i dati di loss e accuracy ottenuti dal src della rete;
+            - accuracy: contiene il valore di accuratezza ottenuto dal src della rete;
+            - precision: contiene il valore di precisione ottenuto dal src della rete;
+            - recall: contiene il valore di recall ottenuto dal src della rete;
+            - f_score: contiene il valore di f1_score ottenuto dal src della rete;
             - il numero di pazienti che sono stati classificati male;
             - accuracy_score: contiene i dati di accuratezza calcolati sui singoli file classificati;
             - precision_score: contiene i dati di precisione calcolati sui singoli file classificati;
@@ -163,21 +163,20 @@ class MLModel:
             - f1_score: contiene i dati di f1_score calcolati sui singoli file classificati.
             - wrong_paths: contiene la lista dei file classificati erroneamente.
     """
-    def classify_results(self, tensor_test, states_test, predicted_results, states_predicted, test_list, test_samples,
-                         diseased_number, healthy_number):
+    def classify_results(self, tensor_test, states_test, predicted_results, states_predicted, test_list, test_samples):
         if self.__detrend:
             tensor_test -= self.__mean
             tensor_test /= self.__std_dev
-        # Valuto il modello sui dati di test
+        # Valuto il modello sui dati di src
         evaluation_result = self.__model.evaluate(tensor_test, states_test)
-        # Calcolo l'accuratezza del test.
+        # Calcolo l'accuratezza del src.
         accuracy = accuracy_score(states_test, states_predicted)
         # Calcolo precisione, recall e f_score della classificazione, utilizzando una media binaria in quanto ho due
         # classi di classificazione.
         precision, recall, f_score, _ = get_four_metrics(states_test, states_predicted, labels=[0, 1], average='macro')
         avg_predicting_samples = []
         avg_test_samples = []
-        # Questo ciclo permette di calcolre la media su ogni sequenza di campioni utilizzati per il test del modello.
+        # Questo ciclo permette di calcolre la media su ogni sequenza di campioni utilizzati per il src del modello.
         for i in range(len(test_samples)):
             avg_predicting = 0
             avg_test = states_test[i * test_samples[i]]
@@ -187,7 +186,7 @@ class MLModel:
             avg_test_samples.append(avg_test)
             avg_predicting_samples.append(1 if (avg_predicting / test_samples[i]) > CLASS_CHANGE else 0)
         # Genero il vettore di ground truth che mi permetterà di verificare i risultati ottenuti dalla calssificazione
-        # di ogni file di test.
+        # di ogni file di src.
         print("Diagnosis: ", avg_test_samples)
         print("Predicted: ", avg_predicting_samples)
         health_ids, _ = FileManager.get_healthy_disease_list()

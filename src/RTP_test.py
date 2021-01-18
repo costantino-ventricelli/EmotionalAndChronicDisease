@@ -3,7 +3,7 @@ from Expreriment.RTPExperimentModel import Experiment
 
 
 def main():
-    print("Experiment test")
+    print("Experiment src")
     healthy_tasks = [MOM, BANK_CHECK, SIGNATURE_2, NATURAL_SENTENCE]
     disease_tasks = [HELLO, SIGNATURE_1, LE, WINDOW]
     test_tasks = [LISTENING, V_POINT]

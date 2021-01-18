@@ -6,7 +6,7 @@
 
    Questa classe si occupa della conversione del dataset Emothaw nel dataset necessario per l'applicazione di riconosci-
    mento dello stato di salute attraverso biometria. Ovvero un modello di Machine Learning adattato nell'anno accademico
-   2020 per poter eseguire test su altri dataset.
+   2020 per poter eseguire src su altri dataset.
 """
 import csv
 import os

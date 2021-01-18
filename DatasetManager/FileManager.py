@@ -2,8 +2,8 @@
 
 import os
 import re
-
 import pandas
+import csv
 
 RESOURCE_DIRECTORY = "resource"
 
@@ -14,7 +14,7 @@ class FileManager:
         self.__dataset = os.path.join(RESOURCE_DIRECTORY, dataset_name)
         self.__dataset_directory = FileManager.get_path_directories(self.__dataset)
         self.__patient_paths = FileManager.__get_patient_paths(self.__dataset_directory)
-        self.__files_path = FileManager.__get_files_path(self.__patient_paths)
+        self.__files_path = FileManager.__get_files_from_paths(self.__patient_paths)
 
     def get_dataset_directory(self): return self.__dataset_directory
 
@@ -75,14 +75,30 @@ class FileManager:
         @:return: restituisce tutti i percorsi del dataset con tutti i file per i task in esso contenuti.
     """
     @staticmethod
-    def __get_files_path(patients_directory):
+    def __get_files_from_paths(patients_directory):
         files = []
         try:
             # Itero su tutte le directory del dataset prelevando tutti i file di task con estensione txt.
             for patient in patients_directory:
-                for file in os.listdir(patient):
-                    if file.endswith(".txt"):
-                        files.append(os.path.join(patient, file))
+                files = FileManager.get_files_from_path(patient, files)
+        except OSError as er:
+            raise er
+        return files
+
+    """
+        @:param directory: contiene la cartella da analizzare per ottenere la lista dei file.
+        @:param files: contiene la lista di file eventualmente già prelevati, se impostata a None genera e restituisce 
+                la lista dei file solo della cartella indicata.
+        @:return: restituisce una lista di percorsi aggiornata con i nuovi percorsi individuati nella cartella.
+    """
+    @staticmethod
+    def get_files_from_path(directory, files):
+        if files is None:
+            files = []
+        try:
+            for file in os.listdir(directory):
+                if file.endswith(".txt"):
+                    files.append(os.path.join(directory, file))
         except OSError as er:
             raise er
         return files
@@ -95,6 +111,14 @@ class FileManager:
     def get_id_from_path(path):
         # Viene effettuata la ricerca dell'espressione regolare che permetterà di prelevare l'id del paziente dal percorso.
         return re.search(r'_u(.*?)_', path).group(1)
+
+    @staticmethod
+    def get_ids_from_paths(paths):
+        ids = []
+        for path in paths:
+            split = path.split(os.sep)
+            ids.append(int(split[len(split) - 1]))
+        return ids
 
     """
         @:param path: contiene il percorso di un task.
@@ -162,6 +186,21 @@ class FileManager:
             length = len(list(file))
             file.close()
         return length
+
+    """
+        @:param paths: contiene la lista dei percorsi che indicano i file da filtrare.
+        @:param min_dim: indica il numero minimo di righe che il file deve avere.
+        @:return: restituisce una nuova lista di file filtrata in base al numero minimo di righe.
+    """
+    @staticmethod
+    def filter_file(paths, min_dim):
+        filtered_paths = []
+        for path in paths:
+            with open(paths, 'r') as file:
+                rows = csv.reader(file, delimiter=' ')
+                if len(list(rows)) >= min_dim:
+                    filtered_paths.append(path)
+        return filtered_paths
 
     @staticmethod
     def log_results(accuracy_file, evaluation_result, f1_score_file, precision_file, recall_file, save_file_path,

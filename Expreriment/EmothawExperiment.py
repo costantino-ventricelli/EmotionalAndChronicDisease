@@ -13,7 +13,7 @@ class EmothawExperiment:
 
     """
         Nel costruttore dell'esperimento viene avviata la modellazione della rete neurale utilizzando i dati del dataset
-        standard per addestramento, validazione e test.
+        standard per addestramento, validazione e src.
     """
     def __init__(self, healthy_task, disease_task, test_task, file_samples):
         self.__healthy_task = healthy_task
@@ -26,7 +26,7 @@ class EmothawExperiment:
         self.__ml_model = experiment.get_ml_model()
 
     """
-        Questo metodo avvia il test del modello con i nuovi dati ottenuti dal dataset di emothaw.
+        Questo metodo avvia il src del modello con i nuovi dati ottenuti dal dataset di emothaw.
     """
     def execute_emothaw_experiment(self):
         file_manager = FileManager("ConvertedEmothaw")

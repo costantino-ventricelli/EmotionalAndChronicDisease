@@ -76,7 +76,7 @@ class RHSDistanceExtract:
     def extract_rhs_from_unknown(self, path):
         # Il processo di estrazione è praticamente identico a quello del precedente metodo solo che in questo caso i file
         # analizzati sono singoli e non si genera il vettore contenente i valori di confronto che saranno necessari nelle
-        # fasi di addestramento, validazione e test.
+        # fasi di addestramento, validazione e src.
         x_axis = []
         y_axis = []
         bottom_status = []

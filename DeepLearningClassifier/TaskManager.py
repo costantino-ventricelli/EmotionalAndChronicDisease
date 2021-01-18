@@ -16,7 +16,7 @@ class TaskManager:
         # Ottengo le liste degli id dei pazienti sani e malati.
         healthy_id, diseased_id = FileManager.get_healthy_disease_list()
         # h => healthy, d => diseased
-        # Separo il dataset tra training test e validazione a seconda della condizione dei pazienti.
+        # Separo il dataset tra training src e validazione a seconda della condizione dei pazienti.
         h_ids_training = healthy_id[0:25]
         h_ids_validation = healthy_id[25:33]
         h_ids_test = healthy_id[33:56]
@@ -28,7 +28,7 @@ class TaskManager:
     """
         Questo metodo permette di ottenere una serie di liste contenti i percorsi che porterranno ad una serie di file 
         che ci permetteranno di ottenere un dataset per la generazione del modello di ML, ogni lista individua una fase
-        del processo di validazone(training, validation, test) individuando inoltre i file che verranno utilizzati per 
+        del processo di validazone(training, validation, src) individuando inoltre i file che verranno utilizzati per 
         la caratterizzazione delle due class di pazienti: malato e sano.
         @:param paths: contiene i percorsi di tutti i file contenenti i valori campionati per tutti i task nel dataset
         @:param healthy_task: contiene una lista di tutti i task che sono stati selezionati per addestrare e validare il
@@ -92,7 +92,7 @@ class TaskManager:
     """
         @:param training_item: indica il numero di file che verranno effettivamente utilizzati per l'addestramento del modello.
         @:param validation_item: indica il numero di file che verranno effettivamente utilizzati per la validazionde del modello.
-        @:param test_item: indica il numero di file che verranno effettivamente utilizzati per il test del modello.
+        @:param test_item: indica il numero di file che verranno effettivamente utilizzati per il src del modello.
         @:param minimum_row: indica il nuemero minimo di righe che devono essere presenti nel file per considerarlo 
                                 valido per il modello.
         @:param ml_model: è una lista di liste, dove ogni lista è una delle sei liste individuate da "split()":
