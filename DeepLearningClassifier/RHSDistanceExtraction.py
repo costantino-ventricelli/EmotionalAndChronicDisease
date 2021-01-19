@@ -14,6 +14,9 @@ BOTTOM_STATUS = 6
 FEATURES = 3
 INTERVALS_NUMBER = 3
 
+HEALTHY_STATE = 0
+DISEASE_STATE = 1
+
 
 class RHSDistanceExtract:
 
@@ -44,6 +47,12 @@ class RHSDistanceExtract:
         y_axis = []
         bottom_status = []
         states = []
+        x_axis_healthy = []
+        y_axis_healthy = []
+        bottom_status_healthy = []
+        x_axis_disease = []
+        y_axis_disease = []
+        bottom_status_disease = []
         # Calcolo il numero totale dei campioni che verranno generati
         total_samples = len(path_list) * self.__num_samples
         # Genero la lista che indicherà il numero di campioni prelevati da ogni file
@@ -58,16 +67,33 @@ class RHSDistanceExtract:
             partial_bs, partial_x, partial_y = self.__read_samples_from_file(path)
             # Trasformo i punti distinti dei campioni nelle sequenze RHS.
             partial_bs, partial_x, partial_y = self.__transform_point_in_rhs(partial_bs, partial_x, partial_y)
-            # Genero il verrore che conterrà gli stati per ogni campione calcolato.
-            states += [state for _ in range(self.__num_samples)]
-            # Genero tre sotto insiemi dai campioni originali, il numero di campioni è stablilito a priori
-            bottom_status, x_axis, y_axis = self.__extract_subs_from_samples(bottom_status, x_axis, y_axis, partial_bs, partial_x,
-                                                                             partial_y)
+            # Genero il verrore che conterrà gli stati per ogni campione calcolato dividendo i campioni tra healthy e disease.
+            if state == HEALTHY_STATE:
+                # Genero tre sotto insiemi dai campioni originali, il numero di campioni è stablilito a priori
+                bottom_status_healthy, x_axis_healthy, y_axis_healthy = self.__extract_subs_from_samples(bottom_status,
+                                                                                                         x_axis, y_axis,
+                                                                                                         partial_bs,
+                                                                                                         partial_x,
+                                                                                                         partial_y)
+            else:
+                bottom_status_disease, x_axis_disease, y_axis_disease = self.__extract_subs_from_samples(bottom_status,
+                                                                                                         x_axis, y_axis,
+                                                                                                         partial_bs,
+                                                                                                         partial_x,
+                                                                                                         partial_y)
+        print("HEALTHY SAMPLES: ", len(bottom_status_healthy))
+        print("DISEASE SAMPLES: ", len(bottom_status_disease))
+        x_axis, y_axis, bottom_status = self.__join_dataset([bottom_status_healthy, x_axis_healthy, y_axis_healthy],
+                                                                    [bottom_status_disease, x_axis_disease, y_axis_disease])
         # Creo il tensore tridimensionale manipolando degli array numpy, unisco prima i tre array che contengono
         # i campioni rhs, poi li linearizzo ed infine genero un tensore 3d (numero_campioni, lunghezza_camioni, numero_feature).
         three_dimensional_tensor = np.array(np.column_stack((x_axis, y_axis, bottom_status)))
         samples_length = int(len(three_dimensional_tensor) / total_samples)
         three_dimensional_tensor = np.reshape(three_dimensional_tensor, (total_samples, samples_length, FEATURES))
+        # Genero il vettore degli stati.
+        for i in range(int(len(three_dimensional_tensor) / 2)):
+            states.append(HEALTHY_STATE)
+            states.append(DISEASE_STATE)
         return three_dimensional_tensor, np.array(states), total_samples, samples_file
 
     """
@@ -89,6 +115,30 @@ class RHSDistanceExtract:
         samples_length = int(len(three_dimensional_tensor) / self.__num_samples)
         three_dimensional_tensor = np.reshape(three_dimensional_tensor, (self.__num_samples, samples_length, FEATURES))
         return three_dimensional_tensor
+
+    """
+        @:param healthy_model: contiene il modello degli esempi per i pazienti sani.
+        @:param disease_model: contiene il modello degli esempi per i pazienti malati.
+        @:return: restituisce le liste contententi i campioni alternati tra healthy e disease.
+    """
+    def __join_dataset(self, healthy_model, disease_model):
+        x_axis = []
+        y_axis = []
+        bottom_status = []
+        expanded_samples = (self.__minimum_samples * 2)
+        for i in range(expanded_samples):
+            bottom_status, x_axis, y_axis = RHSDistanceExtract.__set_model(i, bottom_status, x_axis,
+                                                                           y_axis, expanded_samples, healthy_model)
+            bottom_status, x_axis, y_axis = RHSDistanceExtract.__set_model(i, bottom_status, x_axis,
+                                                                           y_axis, expanded_samples, disease_model)
+        return bottom_status, x_axis, y_axis
+
+    @staticmethod
+    def __set_model(i, bottom_status, x_axis, y_axis, expanded_samples, healthy_model):
+        bottom_status += healthy_model[0][i * expanded_samples: (i * expanded_samples) + expanded_samples]
+        x_axis += healthy_model[1][i * expanded_samples: (i * expanded_samples) + expanded_samples]
+        y_axis += healthy_model[2][i * expanded_samples: (i * expanded_samples) + expanded_samples]
+        return bottom_status, x_axis, y_axis
 
     """
         Il metdodo permette di leggere in 4 array tutti i campioni presenti in uno dei file generati dall'esecuzione di 
