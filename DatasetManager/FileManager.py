@@ -5,12 +5,20 @@ import re
 import pandas
 import csv
 
+
 RESOURCE_DIRECTORY = "resource"
 
 
 class FileManager:
 
     def __init__(self, dataset_name):
+        working_dir = os.getcwd()
+        split_dir = working_dir.split(os.sep)
+        if split_dir[len(split_dir) - 1] == "src":
+            split_dir.pop()
+        working_dir = FileManager.__join_directory(split_dir)
+        print(working_dir)
+        os.chdir(working_dir)
         self.__dataset = os.path.join(RESOURCE_DIRECTORY, dataset_name)
         self.__dataset_directory = FileManager.get_path_directories(self.__dataset)
         self.__patient_paths = FileManager.__get_patient_paths(self.__dataset_directory)
@@ -21,6 +29,13 @@ class FileManager:
     def get_patient_paths(self): return self.__patient_paths
 
     def get_files_path(self): return self.__files_path
+
+    @staticmethod
+    def __join_directory(split_dir):
+        path = os.sep
+        for slice in split_dir:
+            path = os.path.join(path, slice)
+        return path
 
     """
         @:param id: contiene l'id da verificare.
@@ -110,7 +125,7 @@ class FileManager:
     @staticmethod
     def get_id_from_path(path):
         # Viene effettuata la ricerca dell'espressione regolare che permetterà di prelevare l'id del paziente dal percorso.
-        return re.search(r'_u(.*?)_', path).group(1)
+        return int(re.search(r'_u(.*?)_', path).group(1))
 
     @staticmethod
     def get_ids_from_paths(paths):

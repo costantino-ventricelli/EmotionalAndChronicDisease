@@ -1,5 +1,8 @@
 # coding=utf-8
 
+import sys
+sys.path.append("..")
+
 from DatasetManager.Costants import *
 from Expreriment.RHSExperimentModel import Experiment
 
