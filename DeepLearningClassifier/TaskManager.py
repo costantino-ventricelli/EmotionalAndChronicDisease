@@ -65,7 +65,7 @@ class TaskManager:
             if task in healthy_task:
                 training_list_healthy, validation_list_healthy = TaskManager.__id_in_list(
                     id, path, listh_training, listh_validation, training_list_healthy, validation_list_healthy)
-            # In questo if si verificano i task selezionati per i tes
+            # In questo if si verificano i task selezionati per i test
             if task in test_task:
                 if id in listh_test:
                     test_list_healthy.append(path)
@@ -144,9 +144,9 @@ class TaskManager:
         @:diseased_path_list: contiene la lista dei percorsi per i pazienti malati
     """
     @staticmethod
-    def __id_in_list(id, path, healthy_list, diseased_list, healthy_path_list, diseased_path_list):
-        if id in healthy_list:
+    def __id_in_list(id, path, training_list, validation_list, healthy_path_list, diseased_path_list):
+        if id in training_list:
             healthy_path_list.append(path)
-        elif id in diseased_list:
+        elif id in validation_list:
             diseased_path_list.append(path)
         return healthy_path_list, diseased_path_list

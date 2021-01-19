@@ -50,7 +50,7 @@ class Experiment:
         # Genero il modello di DeepLearning con i tensori genererati.
         print("Create learning model...")
         self.__ml_model = MLModel(tensor_training, states_training, tensor_validation, states_validation, False)
-        self.__ml_model.show_summary_graph()
+        # self.__ml_model.show_summary_graph()
         print("Testing model...")
         # Testo il modello e valuto i risultati
         states_predicted, predicted_results = self.__ml_model.test_model(tensor_test)

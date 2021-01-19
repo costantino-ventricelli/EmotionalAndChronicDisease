@@ -110,7 +110,7 @@ class FileManager:
     @staticmethod
     def get_id_from_path(path):
         # Viene effettuata la ricerca dell'espressione regolare che permetterà di prelevare l'id del paziente dal percorso.
-        return re.search(r'_u(.*?)_', path).group(1)
+        return int(re.search(r'_u(.*?)_', path).group(1))
 
     @staticmethod
     def get_ids_from_paths(paths):
@@ -196,10 +196,8 @@ class FileManager:
     def filter_file(paths, min_dim):
         filtered_paths = []
         for path in paths:
-            with open(paths, 'r') as file:
-                rows = csv.reader(file, delimiter=' ')
-                if len(list(rows)) >= min_dim:
-                    filtered_paths.append(path)
+            if FileManager.get_file_rows(path) >= min_dim:
+                filtered_paths.append(path)
         return filtered_paths
 
     @staticmethod
