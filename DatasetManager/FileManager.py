@@ -211,10 +211,8 @@ class FileManager:
     def filter_file(paths, min_dim):
         filtered_paths = []
         for path in paths:
-            with open(paths, 'r') as file:
-                rows = csv.reader(file, delimiter=' ')
-                if len(list(rows)) >= min_dim:
-                    filtered_paths.append(path)
+            if FileManager.get_file_rows(path) >= min_dim:
+                filtered_paths.append(path)
         return filtered_paths
 
     @staticmethod
