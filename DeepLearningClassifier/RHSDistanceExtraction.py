@@ -4,6 +4,7 @@ import csv
 import numpy as np
 
 from DatasetManager.FileManager import FileManager
+from collections import Counter
 
 X_COORDINATE = 0
 Y_COORDINATE = 1

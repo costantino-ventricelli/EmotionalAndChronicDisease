@@ -1,10 +1,5 @@
 # coding=utf-8
 
-import plaidml.keras
-import os
-plaidml.keras.install_backend()
-os.environ["KERAS_BACKEND"] = "plaidml.keras.backend"
-
 import matplotlib.pyplot as plt
 import numpy as np
 from keras import initializers

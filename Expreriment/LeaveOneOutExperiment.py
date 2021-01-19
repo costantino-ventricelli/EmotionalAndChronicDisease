@@ -3,13 +3,14 @@
 import numpy as np
 import csv
 
+
 from os import path
 from os import sep
 from os import mkdir
 from DatasetManager.FileManager import FileManager
 from DeepLearningClassifier.MachineLearningModel import MLModel
-from DeepLearningClassifier.TaskManager import TaskManager
 from DeepLearningClassifier.RHSDistanceExtraction import RHSDistanceExtract
+from collections import Counter
 
 MINIMUM_SAMPLES = 2500
 SAMPLES = 50
@@ -41,14 +42,21 @@ class LeaveOneOutExperiment:
             print("Split path...")
             training_paths, validation_paths, test_paths = self.__split_patients(test_number, validation_number)
             print("Generate Machine Learning model...")
-            training_paths, validation_paths, test_paths = LeaveOneOutExperiment.__create_ml_dataset([training_paths, validation_paths, test_paths])
+            training_paths, validation_paths, test_paths = LeaveOneOutExperiment.__create_ml_dataset([training_paths,
+                                                                                                      validation_paths,
+                                                                                                      test_paths])
             feature_extractor = RHSDistanceExtract(MINIMUM_SAMPLES, SAMPLES)
             print("Training tensor extraction...")
-            tensor_training, training_states, training_samples, training_file_samples = feature_extractor.extract_rhs_known_state(training_paths)
+            tensor_training, training_states, training_samples, training_file_samples = \
+                feature_extractor.extract_rhs_known_state(training_paths)
+            print("Training states: ", Counter(training_states))
             print("Validation tensor extraction...")
-            tensor_validation, validation_states, validation_samples, validation_file_samples = feature_extractor.extract_rhs_known_state(validation_paths)
+            tensor_validation, validation_states, validation_samples, validation_file_samples = \
+                feature_extractor.extract_rhs_known_state(validation_paths)
+            print("Validation states: ", Counter(validation_states))
             print("Tensor training extraction...")
-            tensor_test, test_states, test_samples, test_file_samples = feature_extractor.extract_rhs_known_state(test_paths)
+            tensor_test, test_states, test_samples, test_file_samples = \
+                feature_extractor.extract_rhs_known_state(test_paths)
             print("Create learning model")
             self.__ml_model = MLModel(tensor_training, training_states, tensor_validation, validation_states, False)
             print("Testing model...")
