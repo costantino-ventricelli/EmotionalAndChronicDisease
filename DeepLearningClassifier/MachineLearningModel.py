@@ -38,7 +38,7 @@ class MLModel:
         @:param detrend: Indica al modello se effettuare il detrend dei tensori utilizzando la deviazione standard e il
             mean value.
     """
-    def __init__(self, tensor_training, states_training, tensor_validation, states_validation, detrend):
+    def __init__(self, tensor_training, states_training, tensor_validation, states_validation, bach_size, detrend):
         self.__detrend = detrend
         if detrend:
             self.__mean = tensor_training.mean(axis=0)
@@ -52,23 +52,7 @@ class MLModel:
         # Aggiungo il layers bidirezionali alla rete di tipo LSTM, con i valori di kernel_inizialization, e recurrent_activation
         # impostati in modo da ottenere una distribuzione normale dei valori iniziali.
         self.__model.add(Bidirectional(LSTM(
-            units=128,
-            use_bias=True,
-            return_sequences=True,
-            kernel_initializer=initializers.RandomNormal(mean=0.0, stddev=0.01, seed=None),
-            recurrent_initializer=initializers.RandomNormal(mean=0.0, stddev=0.01, seed=None),
-            bias_initializer='zeros'), merge_mode='concat'))
-        self.__model.add(Dropout(0.3))
-        self.__model.add(Bidirectional(LSTM(
-            units=128,
-            use_bias=True,
-            return_sequences=True,
-            kernel_initializer=initializers.RandomNormal(mean=0.0, stddev=0.01, seed=None),
-            recurrent_initializer=initializers.RandomNormal(mean=0.0, stddev=0.01, seed=None),
-            bias_initializer='zeros'), merge_mode='concat'))
-        self.__model.add(Dropout(0.3))
-        self.__model.add(Bidirectional(LSTM(
-            units=128,
+            units=256,
             use_bias=True,
             kernel_initializer=initializers.RandomNormal(mean=0.0, stddev=0.01, seed=None),
             recurrent_initializer=initializers.RandomNormal(mean=0.0, stddev=0.01, seed=None),
@@ -83,9 +67,8 @@ class MLModel:
         # batch.
         self.__history = self.__model.fit(tensor_training, states_training,
                                           epochs=20,
-                                          batch_size=256,
-                                          validation_data=(tensor_validation, states_validation),
-                                          verbose=1)
+                                          batch_size=bach_size,
+                                          validation_data=(tensor_validation, states_validation), verbose=1)
         # Vengono presentate le informazioni relative allo svolgimento di training e validazione.
         print(self.__model.summary())
 
@@ -138,7 +121,7 @@ class MLModel:
             states_predicted.append(0 if result <= CLASS_CHANGE else 1)
         # Trasformo la lista dei risultati in un'array numpay.
         states_predicted = np.array(states_predicted).astype(np.int)
-        return states_predicted, predicted_results
+        return states_predicted
 
     """
         Questo metodo può essere avviato dopo aver effettuato la prima predizione sui dati e solo se si hanno a disposizone

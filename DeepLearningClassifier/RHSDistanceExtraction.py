@@ -43,58 +43,61 @@ class RHSDistanceExtract:
             - samples_file: contiene il numero di campioni estratti per ogni file.
     """
     def extract_rhs_known_state(self, path_list):
-        x_axis = []
-        y_axis = []
-        bottom_status = []
+        healthy_x = []
+        healthy_y = []
+        healthy_bs = []
+        disease_x = []
+        disease_y = []
+        disease_bs = []
         states = []
-        x_axis_healthy = []
-        y_axis_healthy = []
-        bottom_status_healthy = []
-        x_axis_disease = []
-        y_axis_disease = []
-        bottom_status_disease = []
-        # Calcolo il numero totale dei campioni che verranno generati
-        total_samples = len(path_list) * self.__num_samples
-        # Genero la lista che indicherà il numero di campioni prelevati da ogni file
-        samples_file = [self.__num_samples for _ in range(len(path_list))]
-        # Ottengo la lista degli id sani e la lista degli id malati
-        healthy_ids, disease_ids = FileManager.get_healthy_disease_list()
+        final_tensor = []
+        control_list, _ = FileManager.get_healthy_disease_list()
         for path in path_list:
-            # Ottengo l'id del paziente al percorso che sto analizzando
             id = FileManager.get_id_from_path(path)
-            state = FileManager.get_state_from_id(id, healthy_ids)
-            # Leggo tutti i campioni presenti nel file indicato dal percorso che sto ispezionando in questo momento
-            partial_bs, partial_x, partial_y = self.__read_samples_from_file(path)
-            # Trasformo i punti distinti dei campioni nelle sequenze RHS.
-            partial_bs, partial_x, partial_y = self.__transform_point_in_rhs(partial_bs, partial_x, partial_y)
-            # Genero il verrore che conterrà gli stati per ogni campione calcolato dividendo i campioni tra healthy e disease.
+            state = FileManager.get_state_from_id(id, control_list)
+            partial_x, partial_y, partial_bs = RHSDistanceExtract.__read_samples_from_file(path)
+            partial_x, partial_y, partial_bs = self.__transform_point_in_rhs(partial_x, partial_y, partial_bs)
+            partial_x, partial_y, partial_bs = self.__extract_subs_from_samples(partial_x, partial_y, partial_bs)
             if state == HEALTHY_STATE:
-                # Genero tre sotto insiemi dai campioni originali, il numero di campioni è stablilito a priori
-                bottom_status_healthy, x_axis_healthy, y_axis_healthy = self.__extract_subs_from_samples(bottom_status,
-                                                                                                         x_axis, y_axis,
-                                                                                                         partial_bs,
-                                                                                                         partial_x,
-                                                                                                         partial_y)
+                self.__create_sample_sequence(healthy_x, healthy_y, healthy_bs, partial_x, partial_y, partial_bs)
             else:
-                bottom_status_disease, x_axis_disease, y_axis_disease = self.__extract_subs_from_samples(bottom_status,
-                                                                                                         x_axis, y_axis,
-                                                                                                         partial_bs,
-                                                                                                         partial_x,
-                                                                                                         partial_y)
-        print("HEALTHY SAMPLES: ", len(bottom_status_healthy))
-        print("DISEASE SAMPLES: ", len(bottom_status_disease))
-        x_axis, y_axis, bottom_status = self.__join_dataset([bottom_status_healthy, x_axis_healthy, y_axis_healthy],
-                                                                    [bottom_status_disease, x_axis_disease, y_axis_disease])
-        # Creo il tensore tridimensionale manipolando degli array numpy, unisco prima i tre array che contengono
-        # i campioni rhs, poi li linearizzo ed infine genero un tensore 3d (numero_campioni, lunghezza_camioni, numero_feature).
-        three_dimensional_tensor = np.array(np.column_stack((x_axis, y_axis, bottom_status)))
-        samples_length = int(len(three_dimensional_tensor) / total_samples)
-        three_dimensional_tensor = np.reshape(three_dimensional_tensor, (total_samples, samples_length, FEATURES))
-        # Genero il vettore degli stati.
-        for i in range(int(len(three_dimensional_tensor) / 2)):
-            states.append(HEALTHY_STATE)
-            states.append(DISEASE_STATE)
-        return three_dimensional_tensor, np.array(states), total_samples, samples_file
+                self.__create_sample_sequence(disease_x, disease_y, disease_bs, partial_x, partial_y, partial_bs)
+        healthy_tensor = np.reshape((healthy_x + healthy_y + healthy_bs), (len(healthy_x), self.__num_samples, FEATURES))
+        disease_tensor = np.reshape((disease_x + disease_y + disease_bs), (len(disease_x), self.__num_samples, FEATURES))
+        for i in range(len(healthy_tensor)):
+            final_tensor.append(healthy_tensor[i])
+            final_tensor.append(disease_tensor[i])
+            states += [HEALTHY_STATE, DISEASE_STATE]
+        return np.array(final_tensor), np.array(states), len(final_tensor)
+
+    def extract_rhs_file(self, path):
+        x_samples = []
+        y_samples = []
+        bs_samples = []
+        control_list, _ = FileManager.get_healthy_disease_list()
+        id = FileManager.get_id_from_path(path)
+        state = FileManager.get_state_from_id(id, control_list)
+        partial_x, partial_y, partial_bs = RHSDistanceExtract.__read_samples_from_file(path)
+        partial_x, partial_y, partial_bs = self.__transform_point_in_rhs(partial_x, partial_y, partial_bs)
+        partial_x, partial_y, partial_bs = self.__extract_subs_from_samples(partial_x, partial_y, partial_bs)
+        self.__create_sample_sequence(x_samples, y_samples, bs_samples, partial_x, partial_y, partial_bs)
+        tensor = np.reshape((x_samples + y_samples + bs_samples), (len(x_samples), self.__minimum_samples, FEATURES))
+        states = [state for _ in range(len(x_samples))]
+        return tensor, states
+
+
+
+    def __create_sample_sequence(self, healthy_x, healthy_y, healthy_bs, partial_x, partial_y, partial_bs):
+        healthy_x += self.__slice_array(partial_x)
+        healthy_y += self.__slice_array(partial_y)
+        healthy_bs += self.__slice_array(partial_bs)
+
+    def __slice_array(self, array):
+        slice = len(array) // self.__num_samples
+        sliced_array = []
+        for i in range(slice):
+            sliced_array.append(array[i * self.__num_samples: (i * self.__num_samples) + self.__num_samples])
+        return sliced_array
 
     """
         @:param path: contiene il file da cui estrarre i campioni RHS.
@@ -165,7 +168,7 @@ class RHSDistanceExtract:
         # Elimino i duplicati dalle lista.
         partial_x, partial_y, timestamp, partial_bs = FileManager.delete_duplicates(partial_x,
                                                                                     partial_y, timestamp, partial_bs)
-        return partial_bs, partial_x, partial_y
+        return partial_x, partial_y, partial_bs
 
     """
         Questo metodo si occupa della trasformazione di punti campionati in sequenze rhs.
@@ -176,7 +179,7 @@ class RHSDistanceExtract:
         @:return: il metodo quindi restituisce tre nuove liste, ma sta volta ogni elemento conterrà una sequenza rhs 
                     anziché un punto campionato.
     """
-    def __transform_point_in_rhs(self, partial_bs, partial_x, partial_y):
+    def __transform_point_in_rhs(self, partial_x, partial_y, partial_bs):
         # Calcolo le sequenze rhs, come distanza tra due punti contigui.
         for i in range(0, len(partial_x) - 1):
             partial_x[i] = float(partial_x[i + 1]) - float(partial_x[i])
@@ -192,7 +195,7 @@ class RHSDistanceExtract:
             partial_x += [partial_x[len(partial_x) - 1] for _ in range(len(partial_x) - 1, self.__minimum_samples)]
             partial_y += [partial_y[len(partial_y) - 1] for _ in range(len(partial_y) - 1, self.__minimum_samples)]
             partial_bs += [partial_bs[len(partial_bs) - 1] for _ in range(len(partial_bs) - 1, self.__minimum_samples)]
-        return partial_bs, partial_x, partial_y
+        return partial_x, partial_y, partial_bs
 
     """
         Questo metodo permette di estrarre tre sottosequeze dai campioni rhs, che verranno combinate poi in un unico vettore.
@@ -203,9 +206,12 @@ class RHSDistanceExtract:
         @:param partial_y: contiene la lista dei campioni rhs estratta per quel file.
         @:param partial_ps: contiene la lista dei campioni rhs estratta per quel file.
     """
-    def __extract_subs_from_samples(self, bottom_status, x_axis, y_axis, partial_bs, partial_x, partial_y):
+    def __extract_subs_from_samples(self, partial_x, partial_y, partial_bs):
+        x_axis = []
+        y_axis = []
+        bottom_status = []
         for i in range(0, INTERVALS_NUMBER):
             x_axis += partial_x[self.__start_point[i]: self.__end_point[i]]
             y_axis += partial_y[self.__start_point[i]: self.__end_point[i]]
             bottom_status += partial_bs[self.__start_point[i]: self.__end_point[i]]
-        return bottom_status, x_axis, y_axis
+        return x_axis, y_axis, bottom_status

@@ -39,29 +39,23 @@ class Experiment:
         # Estraggo i campioni RHS dalle diverse liste di punti campionati.
         feature_extraction = RHSDistanceExtract(minimum_samples, NUM_FILE_SAMPLES)
         print("Training tensor extraction...")
-        tensor_training, states_training, samples_training, samples_file_training = \
+        tensor_training, states_training, samples_training = \
             feature_extraction.extract_rhs_known_state(model[0] + model[1])
-        print("Test tensor extraction...")
-        tensor_test, states_test, samples_test, samples_file_test = \
-            feature_extraction.extract_rhs_known_state(model[2] + model[3])
         print("Validation tensor extraction...")
-        tensor_validation, states_validation, samples_validation, samples_file_validation = \
+        tensor_validation, states_validation, samples_validation = \
             feature_extraction.extract_rhs_known_state(model[4] + model[5])
         # Genero il modello di DeepLearning con i tensori genererati.
         print("Create learning model...")
-        self.__ml_model = MLModel(tensor_training, states_training, tensor_validation, states_validation, False)
-        # self.__ml_model.show_summary_graph()
+        self.__ml_model = MLModel(tensor_training, states_training, tensor_validation, states_validation, NUM_FILE_SAMPLES, False)
+        self.__ml_model.show_summary_graph()
         print("Testing model...")
-        # Testo il modello e valuto i risultati
-        states_predicted, predicted_results = self.__ml_model.test_model(tensor_test)
-        evaluation_result, test_accuracy, test_precision, test_recall, test_f_score, wrong_classified, accuracy_file, \
-            precision_file, recall_file, f1_score_file, wrong_paths = self.__ml_model.classify_results(tensor_test, states_test,
-                                                                                                       predicted_results, states_predicted,
-                                                                                                       model[2] + model[3], samples_file_test)
-        print("Saving result...")
-        save_file_path = path.join("experiment_result", log_file)
-        FileManager.log_results(accuracy_file, evaluation_result, f1_score_file, precision_file, recall_file, save_file_path,
-                                test_accuracy, test_f_score, test_precision, test_recall, wrong_classified, wrong_paths)
+        test_paths = model[2] + model[3]
+        control_list, _ = FileManager.get_healthy_disease_list()
+        for test_path in test_paths:
+            print("Test for patient: ", FileManager.get_id_from_path(test_path))
+            print("State for patient: ", FileManager.get_state_from_id(id, control_list))
+            tensor = feature_extraction.extract_rhs_file(test_path)
+            print(self.__ml_model.test_model(tensor))
 
     def get_ml_model(self):
         return self.__ml_model
