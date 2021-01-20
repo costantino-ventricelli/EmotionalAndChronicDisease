@@ -59,10 +59,9 @@ class Experiment:
             print("Test for patient: ", id)
             print("State for patient: ", state)
             tensor = feature_extraction.extract_rhs_file(test_path)
-            predicted_results += self.__ml_model.test_model(tensor)
-            theoretical_results += [state for _ in range(len(predicted_results))]
-            print("Predicted results: ", predicted_results)
-            print("Theoretical results: ", theoretical_results)
+            predicted_result, theoretical_result = self.__ml_model.test_model(tensor, state)
+            self.__ml_model.evaluate_results(predicted_result, theoretical_result)
+
 
 
     def get_ml_model(self):
