@@ -62,7 +62,7 @@ class Experiment:
                 file.write("Theoretical state for patient: " + str(state))
                 tensor, theoretical_result = feature_extraction.extract_rhs_file(test_path)
                 predicted_result, evaluation_result, sample_average = self.__ml_model.test_model(tensor, theoretical_result)
-                file.write("Evaluation result: " + evaluation_result)
+                file.write("Evaluation result  loss: " + str(evaluation_result[0]) + " accuracy: " + str(evaluation_result[1]))
                 file.write("State predicted: " + str(sample_average))
                 predicted_results.append(sample_average)
                 theoretical_results.append(state)
