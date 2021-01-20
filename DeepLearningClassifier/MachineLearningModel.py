@@ -122,11 +122,11 @@ class MLModel:
         # Trasformo la lista dei risultati in un'array numpay.
         states_predicted = np.array(states_predicted).astype(np.int)
         evaluation_result = self.__model.evaluate(tensor_test, theoretical_states)
-        theoretical_states_average = 0
-        for state in theoretical_states:
-            theoretical_states_average += state
-        theoretical_states_average = (1 if theoretical_states_average / len(theoretical_states) > CLASS_CHANGE else 0)
-        return states_predicted, evaluation_result, theoretical_states_average
+        predicted_state_average = 0
+        for state in states_predicted:
+            predicted_state_average += state
+        predicted_state_average = (1 if predicted_state_average / len(states_predicted) > CLASS_CHANGE else 0)
+        return states_predicted, evaluation_result, predicted_state_average
 
     """
         Questo metodo può essere avviato dopo aver effettuato la prima predizione sui dati e solo se si hanno a disposizone
