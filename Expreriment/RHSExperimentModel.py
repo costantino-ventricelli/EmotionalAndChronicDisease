@@ -62,8 +62,8 @@ class Experiment:
             tensor, theoretical_result = feature_extraction.extract_rhs_file(test_path)
             predicted_result, evaluation_result, sample_average = self.__ml_model.test_model(tensor, theoretical_result)
             print("Evaluation result: ", evaluation_result)
-            predicted_results += predicted_result
-            theoretical_results += theoretical_result
+            predicted_results += list(predicted_result)
+            theoretical_results += list(theoretical_result)
         accuracy, precision, recall, f_score = MLModel.evaluate_results(predicted_results, theoretical_results)
         print("Accuracy: ", accuracy)
         print("Precision: ", precision)

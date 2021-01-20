@@ -52,7 +52,7 @@ class MLModel:
         # Aggiungo il layers bidirezionali alla rete di tipo LSTM, con i valori di kernel_inizialization, e recurrent_activation
         # impostati in modo da ottenere una distribuzione normale dei valori iniziali.
         self.__model.add(Bidirectional(LSTM(
-            units=256,
+            units=16,
             use_bias=True,
             kernel_initializer=initializers.RandomNormal(mean=0.0, stddev=0.01, seed=None),
             recurrent_initializer=initializers.RandomNormal(mean=0.0, stddev=0.01, seed=None),
@@ -66,7 +66,7 @@ class MLModel:
         # A questo punto vengono avviati il src e la validazione del modello, impostando le epoche e la demensione del
         # batch.
         self.__history = self.__model.fit(tensor_training, states_training,
-                                          epochs=20,
+                                          epochs=40,
                                           batch_size=bach_size,
                                           validation_data=(tensor_validation, states_validation), verbose=1)
         # Vengono presentate le informazioni relative allo svolgimento di training e validazione.
