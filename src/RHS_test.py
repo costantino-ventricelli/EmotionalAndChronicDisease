@@ -10,14 +10,14 @@ from Expreriment.RHSExperimentModel import Experiment
 def main():
     print("Start experiment suite")
     experiment_test()
-    """experiment_one()
+    experiment_one()
     experiment_tow()
     experiment_three()
     experiment_four()
     experiment_five()
     experiment_six()
     experiment_seven()
-    experiment_eight()"""
+    experiment_eight()
 
 
 def experiment_test():

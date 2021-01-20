@@ -109,7 +109,6 @@ class MLModel:
             Inoltre restituisce una lista di valori che rappresentano i risultati della predizione effettuata dalla rete. 
     """
     def test_model(self, tensor_test, theoretical_states):
-        print(np.shape(tensor_test))
         if self.__detrend:
             tensor_test -= self.__mean
             tensor_test /= self.__std_dev

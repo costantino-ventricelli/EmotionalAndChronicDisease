@@ -54,23 +54,25 @@ class Experiment:
         control_list, _ = FileManager.get_healthy_disease_list()
         predicted_results = []
         theoretical_results = []
-        for test_path in test_paths:
-            id = FileManager.get_id_from_path(test_path)
-            state = FileManager.get_state_from_id(id, control_list)
-            print("Test for patient: ", id)
-            print("State for patient: ", state)
-            tensor, theoretical_result = feature_extraction.extract_rhs_file(test_path)
-            predicted_result, evaluation_result, sample_average = self.__ml_model.test_model(tensor, theoretical_result)
-            print("Evaluation result: ", evaluation_result)
-            print("State predicted: ", sample_average)
-            predicted_results.append(sample_average)
-            theoretical_results.append(state)
-            print("\n")
-        accuracy, precision, recall, f_score = MLModel.evaluate_results(predicted_results, theoretical_results)
-        print("Accuracy: ", accuracy)
-        print("Precision: ", precision)
-        print("Recall: ", recall)
-        print("F-score: ", f_score)
+        with open(log_file, 'w') as file:
+            for test_path in test_paths:
+                id = FileManager.get_id_from_path(test_path)
+                state = FileManager.get_state_from_id(id, control_list)
+                file.write("Test for patient: " + str(id))
+                file.write("Theoretical state for patient: " + str(state))
+                tensor, theoretical_result = feature_extraction.extract_rhs_file(test_path)
+                predicted_result, evaluation_result, sample_average = self.__ml_model.test_model(tensor, theoretical_result)
+                file.write("Evaluation result: " + evaluation_result)
+                file.write("State predicted: " + str(sample_average))
+                predicted_results.append(sample_average)
+                theoretical_results.append(state)
+                print("\n")
+            accuracy, precision, recall, f_score = MLModel.evaluate_results(predicted_results, theoretical_results)
+            file.write("Global accuracy: " + str(int(accuracy * 100)) + "%")
+            file.write("Global precision: " + str(int(precision * 100)) + "%")
+            file.write("Global recall: " + str(int(recall * 100)) + "%")
+            file.write("Global f_score: " + str(int(f_score * 100)) + "%")
+            file.close()
 
     def get_ml_model(self):
         return self.__ml_model
