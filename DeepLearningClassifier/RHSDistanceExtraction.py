@@ -85,7 +85,7 @@ class RHSDistanceExtract:
         print("shape x_samples: ", np.shape(x_samples))
         tensor = np.reshape((x_samples + y_samples + bs_samples), (len(x_samples), self.__num_samples, FEATURES))
         states = [state for _ in range(len(x_samples))]
-        return tensor, states
+        return np.array(tensor), np.array(states)
 
     def __create_sample_sequence(self, healthy_x, healthy_y, healthy_bs, partial_x, partial_y, partial_bs):
         healthy_x += self.__slice_array(partial_x)

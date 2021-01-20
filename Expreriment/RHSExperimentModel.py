@@ -51,11 +51,19 @@ class Experiment:
         print("Testing model...")
         test_paths = model[2] + model[3]
         control_list, _ = FileManager.get_healthy_disease_list()
+        predicted_results = []
+        theoretical_results = []
         for test_path in test_paths:
-            print("Test for patient: ", FileManager.get_id_from_path(test_path))
-            print("State for patient: ", FileManager.get_state_from_id(id, control_list))
+            id = FileManager.get_id_from_path(test_path)
+            state = FileManager.get_state_from_id(id, control_list)
+            print("Test for patient: ", id)
+            print("State for patient: ", state)
             tensor = feature_extraction.extract_rhs_file(test_path)
-            print(self.__ml_model.test_model(tensor))
+            predicted_results += self.__ml_model.test_model(tensor)
+            theoretical_results += [state for _ in range(len(predicted_results))]
+            print("Predicted results: ", predicted_results)
+            print("Theoretical results: ", theoretical_results)
+
 
     def get_ml_model(self):
         return self.__ml_model
