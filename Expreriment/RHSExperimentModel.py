@@ -62,6 +62,7 @@ class Experiment:
             tensor, theoretical_result = feature_extraction.extract_rhs_file(test_path)
             predicted_result, evaluation_result, sample_average = self.__ml_model.test_model(tensor, theoretical_result)
             print("Evaluation result: ", evaluation_result)
+            print("State predicted: ", sample_average)
             predicted_results.append(sample_average)
             theoretical_results.append(state)
             print("\n")
