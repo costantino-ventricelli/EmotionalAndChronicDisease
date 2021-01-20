@@ -62,10 +62,15 @@ class Experiment:
             tensor, states = feature_extraction.extract_rhs_file(test_path)
             print("Tensor shape: ", np.shape(tensor))
             print("States len: ", len(states))
-            predicted_result, theoretical_result = self.__ml_model.test_model(tensor, states)
-            self.__ml_model.evaluate_results(predicted_result, theoretical_result)
-
-
+            predicted_result, evaluation_result = self.__ml_model.test_model(tensor, states)
+            accuracy, precision, recall, f_score, predicated_sample = MLModel.evaluate_results(predicted_result, states)
+            print("Evaluation result: ", evaluation_result)
+            print("Predicted result: ", predicted_result)
+            print("Accuracy: ", accuracy)
+            print("Precision: ", precision)
+            print("Recall: ", recall)
+            print("Fscore: ", f_score)
+            print("Predicted_samples: ", predicated_sample)
 
     def get_ml_model(self):
         return self.__ml_model

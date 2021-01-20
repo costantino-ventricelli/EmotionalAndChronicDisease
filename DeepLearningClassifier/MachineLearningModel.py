@@ -192,14 +192,15 @@ class MLModel:
             recall_score(avg_test_samples, avg_predicting_samples, average='macro'), f1_score(avg_test_samples, avg_predicting_samples, average='macro'), \
             wrong_paths
 
-    def evaluate_results(self, predicted_states, theoretical_states):
+    @staticmethod
+    def evaluate_results(predicted_states, theoretical_states):
         accuracy = accuracy_score(theoretical_states, predicted_states)
         precision, recall, f_score, _ = get_four_metrics(theoretical_states, predicted_states, labels=[0, 1], average="macro")
         theoretical_states_average = 0
         for state in theoretical_states:
             theoretical_states_average += state
         theoretical_states_average = (1 if theoretical_states_average / len(theoretical_states) > CLASS_CHANGE else 0)
-
+        return accuracy, precision, recall, f_score, theoretical_states_average
 
     """
         @:param tensor: Contiene il tensore su cui avviare la previsione dei risultati utilizzando il modello precedentemente
