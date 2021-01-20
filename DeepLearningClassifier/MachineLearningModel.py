@@ -108,7 +108,7 @@ class MLModel:
             2: disease
             Inoltre restituisce una lista di valori che rappresentano i risultati della predizione effettuata dalla rete. 
     """
-    def test_model(self, tensor_test, states):
+    def test_model(self, tensor_test, theoretical_states):
         print(np.shape(tensor_test))
         if self.__detrend:
             tensor_test -= self.__mean
@@ -122,8 +122,12 @@ class MLModel:
             states_predicted.append(0 if result <= CLASS_CHANGE else 1)
         # Trasformo la lista dei risultati in un'array numpay.
         states_predicted = np.array(states_predicted).astype(np.int)
-        evaluation_result = self.__model.evaluate(tensor_test, states)
-        return states_predicted, evaluation_result
+        evaluation_result = self.__model.evaluate(tensor_test, theoretical_states)
+        theoretical_states_average = 0
+        for state in theoretical_states:
+            theoretical_states_average += state
+        theoretical_states_average = (1 if theoretical_states_average / len(theoretical_states) > CLASS_CHANGE else 0)
+        return states_predicted, evaluation_result, theoretical_states_average
 
     """
         Questo metodo può essere avviato dopo aver effettuato la prima predizione sui dati e solo se si hanno a disposizone
@@ -196,11 +200,7 @@ class MLModel:
     def evaluate_results(predicted_states, theoretical_states):
         accuracy = accuracy_score(theoretical_states, predicted_states)
         precision, recall, f_score, _ = get_four_metrics(theoretical_states, predicted_states, labels=[0, 1], average="macro")
-        theoretical_states_average = 0
-        for state in theoretical_states:
-            theoretical_states_average += state
-        theoretical_states_average = (1 if theoretical_states_average / len(theoretical_states) > CLASS_CHANGE else 0)
-        return accuracy, precision, recall, f_score, theoretical_states_average
+        return accuracy, precision, recall, f_score
 
     """
         @:param tensor: Contiene il tensore su cui avviare la previsione dei risultati utilizzando il modello precedentemente

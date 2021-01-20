@@ -49,11 +49,11 @@ class LeaveOneOutExperiment:
             print("Training tensor extraction...")
             tensor_training, training_states, training_samples, training_file_samples = \
                 feature_extractor.extract_rhs_known_state(training_paths)
-            print("Training states: ", Counter(training_states))
+            print("Training theoretical_states: ", Counter(training_states))
             print("Validation tensor extraction...")
             tensor_validation, validation_states, validation_samples, validation_file_samples = \
                 feature_extractor.extract_rhs_known_state(validation_paths)
-            print("Validation states: ", Counter(validation_states))
+            print("Validation theoretical_states: ", Counter(validation_states))
             print("Tensor training extraction...")
             tensor_test, test_states, test_samples, test_file_samples = \
                 feature_extractor.extract_rhs_known_state(test_paths)

@@ -59,18 +59,16 @@ class Experiment:
             state = FileManager.get_state_from_id(id, control_list)
             print("Test for patient: ", id)
             print("State for patient: ", state)
-            tensor, states = feature_extraction.extract_rhs_file(test_path)
-            print("Tensor shape: ", np.shape(tensor))
-            print("States len: ", len(states))
-            predicted_result, evaluation_result = self.__ml_model.test_model(tensor, states)
-            accuracy, precision, recall, f_score, predicated_sample = MLModel.evaluate_results(predicted_result, states)
+            tensor, theoretical_result = feature_extraction.extract_rhs_file(test_path)
+            predicted_result, evaluation_result, sample_average = self.__ml_model.test_model(tensor, theoretical_result)
             print("Evaluation result: ", evaluation_result)
-            print("Predicted result: ", predicted_result)
-            print("Accuracy: ", accuracy)
-            print("Precision: ", precision)
-            print("Recall: ", recall)
-            print("Fscore: ", f_score)
-            print("Predicted_samples: ", predicated_sample)
+            predicted_results += predicted_result
+            theoretical_results += theoretical_result
+        accuracy, precision, recall, f_score = MLModel.evaluate_results(predicted_results, theoretical_results)
+        print("Accuracy: ", accuracy)
+        print("Precision: ", precision)
+        print("Recall: ", recall)
+        print("F-score: ", f_score)
 
     def get_ml_model(self):
         return self.__ml_model

@@ -35,7 +35,7 @@ class RTPExtraction:
             @:return: come detto il metodo restituisce:
                 - three_dimensional_tensor:
                     samples[timestamp[x_axis, y_axis, time_stamp, pen_status]]]
-                _ states: una lista contenente tutti gli stati individuati per i file passati in input.
+                _ theoretical_states: una lista contenente tutti gli stati individuati per i file passati in input.
                 - total_sample: il numero totale dei campioni calcolati per quella lista di file.
                 - samples_file: contiene il numero di campioni estratti per ogni file.
         """
