@@ -195,7 +195,8 @@ class MLModel:
 
     def evaluate_results(self, predicted_states, theoretical_states):
         accuracy = accuracy_score(theoretical_states, predicted_states)
-        precision
+        precision, recall, f_score, _ = get_four_metrics(theoretical_states, predicted_states, labels=[0, 1], average="macro")
+
 
     """
         @:param tensor: Contiene il tensore su cui avviare la previsione dei risultati utilizzando il modello precedentemente

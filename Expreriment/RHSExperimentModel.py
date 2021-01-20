@@ -1,7 +1,8 @@
 # coding=utf-8
 
-from os import path
+import numpy as np
 
+from os import path
 from DeepLearningClassifier.MachineLearningModel import MLModel
 from DeepLearningClassifier.RHSDistanceExtraction import RHSDistanceExtract
 from DeepLearningClassifier.TaskManager import TaskManager
@@ -58,8 +59,10 @@ class Experiment:
             state = FileManager.get_state_from_id(id, control_list)
             print("Test for patient: ", id)
             print("State for patient: ", state)
-            tensor = feature_extraction.extract_rhs_file(test_path)
-            predicted_result, theoretical_result = self.__ml_model.test_model(tensor, state)
+            tensor, states = feature_extraction.extract_rhs_file(test_path)
+            print("Tensor shape: ", np.shape(tensor))
+            print("States len: ", len(states))
+            predicted_result, theoretical_result = self.__ml_model.test_model(tensor, states)
             self.__ml_model.evaluate_results(predicted_result, theoretical_result)
 
 
