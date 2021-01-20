@@ -66,7 +66,7 @@ class RHSDistanceExtract:
         disease_tensor = np.reshape((disease_x + disease_y + disease_bs), (len(disease_x), self.__num_samples, FEATURES))
         print("Healthy tensor: ", np.shape(healthy_tensor))
         print("Disease tensor: ", np.shape(disease_tensor))
-        for i in range(len(healthy_tensor)):
+        for i in range(len(healthy_tensor if len(healthy_tensor) < len(disease_tensor) else len(disease_tensor))):
             final_tensor.append(healthy_tensor[i])
             final_tensor.append(disease_tensor[i])
             states += [HEALTHY_STATE, DISEASE_STATE]
