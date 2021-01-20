@@ -80,12 +80,12 @@ class RHSDistanceExtract:
         partial_x, partial_y, partial_bs = RHSDistanceExtract.__read_samples_from_file(path)
         partial_x, partial_y, partial_bs = self.__transform_point_in_rhs(partial_x, partial_y, partial_bs)
         partial_x, partial_y, partial_bs = self.__extract_subs_from_samples(partial_x, partial_y, partial_bs)
+        print("len partial_x ", len(partial_x))
         self.__create_sample_sequence(x_samples, y_samples, bs_samples, partial_x, partial_y, partial_bs)
-        tensor = np.reshape((x_samples + y_samples + bs_samples), (len(x_samples), self.__minimum_samples, FEATURES))
+        print("shape x_samples: ", np.shape(x_samples))
+        tensor = np.reshape((x_samples + y_samples + bs_samples), (len(x_samples), self.__num_samples, FEATURES))
         states = [state for _ in range(len(x_samples))]
         return tensor, states
-
-
 
     def __create_sample_sequence(self, healthy_x, healthy_y, healthy_bs, partial_x, partial_y, partial_bs):
         healthy_x += self.__slice_array(partial_x)
