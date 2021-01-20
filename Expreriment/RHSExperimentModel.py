@@ -21,6 +21,7 @@ class Experiment:
         self.__ml_model = None
 
     def execute_experiment(self, dataset, healthy_tasks, disease_tasks, test_tasks, minimum_samples, log_file):
+        log_file = path.join("experiment_result", log_file)
         file_manager = FileManager(dataset)
         file_paths = file_manager.get_files_path()
         minimum_row_file = minimum_samples + 1
