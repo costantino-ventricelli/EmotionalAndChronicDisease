@@ -109,7 +109,7 @@ class MLModel:
             Inoltre restituisce una lista di valori che rappresentano i risultati della predizione effettuata dalla rete. 
     """
     def test_model(self, tensor_test, state):
-        print(tensor_test)
+        print(np.shape(tensor_test))
         if self.__detrend:
             tensor_test -= self.__mean
             tensor_test /= self.__std_dev
@@ -194,7 +194,8 @@ class MLModel:
             wrong_paths
 
     def evaluate_results(self, predicted_states, theoretical_states):
-        print("Coming soon..")
+        accuracy = accuracy_score(theoretical_states, predicted_states)
+        precision
 
     """
         @:param tensor: Contiene il tensore su cui avviare la previsione dei risultati utilizzando il modello precedentemente

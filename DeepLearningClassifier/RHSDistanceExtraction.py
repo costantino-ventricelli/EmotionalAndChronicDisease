@@ -83,7 +83,7 @@ class RHSDistanceExtract:
         print("len partial_x ", len(partial_x))
         self.__create_sample_sequence(x_samples, y_samples, bs_samples, partial_x, partial_y, partial_bs)
         tensor = np.reshape((x_samples + y_samples + bs_samples), (len(x_samples), self.__num_samples, FEATURES))
-        print("shape x_samples: ", np.shape(x_samples))
+        print("shape x_samples: ", np.shape(tensor))
         states = [state for _ in range(len(x_samples))]
         return np.array(tensor), np.array(states)
 
