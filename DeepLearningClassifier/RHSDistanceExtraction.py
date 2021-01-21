@@ -215,7 +215,7 @@ class RHSDistanceExtract:
         y_axis = []
         bottom_status = []
         for i in range(0, INTERVALS_NUMBER):
-            x_axis += partial_x[self.__start_point[i]: self.__end_point[i]]
-            y_axis += partial_y[self.__start_point[i]: self.__end_point[i]]
-            bottom_status += partial_bs[self.__start_point[i]: self.__end_point[i]]
+            x_axis = np.concatenate(x_axis, partial_x[self.__start_point[i]: self.__end_point[i]])
+            y_axis = np.concatenate(y_axis, partial_y[self.__start_point[i]: self.__end_point[i]])
+            bottom_status = np.concatenate(bottom_status, partial_bs[self.__start_point[i]: self.__end_point[i]])
         return x_axis, y_axis, bottom_status
