@@ -67,7 +67,7 @@ class MLModel:
         # batch.
         self.__history = self.__model.fit(tensor_training, states_training,
                                           epochs=40,
-                                          batch_size=bach_size,
+                                          batch_size=128,
                                           validation_data=(tensor_validation, states_validation), verbose=1)
         # Vengono presentate le informazioni relative allo svolgimento di training e validazione.
         print(self.__model.summary())
