@@ -58,8 +58,8 @@ class RHSDistanceExtract:
             id = FileManager.get_id_from_path(path)
             state = FileManager.get_state_from_id(id, control_list)
             partial_x, partial_y, partial_bs = RHSDistanceExtract.__read_samples_from_file(path)
-            partial_x = list(np.interp(partial_x, [np.min(partial_x), np.max(partial_y)], INTERPOL_INTERVAL))
-            partial_y = list(np.interp(partial_y, [np.min(partial_y), np.max(partial_y)], INTERPOL_INTERVAL))
+            partial_x = np.interp(partial_x, [np.min(partial_x), np.max(partial_y)], INTERPOL_INTERVAL)
+            partial_y = np.interp(partial_y, [np.min(partial_y), np.max(partial_y)], INTERPOL_INTERVAL)
             partial_x, partial_y, partial_bs = self.__transform_point_in_rhs(partial_x, partial_y, partial_bs)
             partial_x, partial_y, partial_bs = self.__extract_subs_from_samples(partial_x, partial_y, partial_bs)
             if state == HEALTHY_STATE:
@@ -172,7 +172,7 @@ class RHSDistanceExtract:
         # Elimino i duplicati dalle lista.
         partial_x, partial_y, timestamp, partial_bs = FileManager.delete_duplicates(partial_x,
                                                                                     partial_y, timestamp, partial_bs)
-        return np.array(partial_x), np.array(partial_y), partial_bs
+        return np.array(partial_x).astype(float), np.array(partial_y).astype(float), np.array(partial_bs).astype(float)
 
     """
         Questo metodo si occupa della trasformazione di punti campionati in sequenze rhs.
@@ -190,9 +190,9 @@ class RHSDistanceExtract:
             partial_y[i] = float(partial_y[i + 1]) - float(partial_y[i])
             partial_bs[i] = float(partial_bs[i + 1]) - float(partial_bs[i])
         # Elimino l'ultimo elemento della lista in quanto ha valore solo come punto campionato.
-        partial_x.pop()
-        partial_y.pop()
-        partial_bs.pop()
+        partial_x = np.delete(partial_x, (partial_x.size - 1))
+        partial_y = np.delete(partial_y, (partial_y.size - 1))
+        partial_bs = np.delete(partial_bs, (partial_bs.size - 1))
         # Se il numero di sequenze rhs non dovesse rivelarsi sufficiente, in base al numero minimo di campioni che verrà
         # selezionato, genero "sinteticamente" le sequenze replicando l'ultima fino a raggiungere il numero minimo accettabile.
         if len(partial_x) < self.__minimum_samples:
