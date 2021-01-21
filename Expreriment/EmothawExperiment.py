@@ -1,10 +1,11 @@
 # coding=utf-8
 
-from Expreriment.RHSExperimentModel import Experiment
+from collections import Counter
+
+from DatasetManager.FileManager import FileManager
 from DeepLearningClassifier.RHSDistanceExtraction import RHSDistanceExtract
 from DeepLearningClassifier.TaskManager import TaskManager
-from DatasetManager.FileManager import FileManager
-from collections import Counter
+from Expreriment.RHSExperimentModel import Experiment
 
 NUM_FILE_SAMPLES = 50
 

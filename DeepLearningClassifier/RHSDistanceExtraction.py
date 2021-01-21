@@ -17,8 +17,6 @@ INTERVALS_NUMBER = 3
 HEALTHY_STATE = 0
 DISEASE_STATE = 1
 
-INTERPOL_INTERVAL = [0, 1]
-
 
 class RHSDistanceExtract:
 
@@ -27,7 +25,7 @@ class RHSDistanceExtract:
         @:param num_samples: contiene il numero di campioni che verranno prelevati da ogni sequenza RHS.
     """
     def __init__(self, minimum_samples, num_samples):
-        self.__num_samples = num_samples
+        self.__num_samples = num_samples * 2
         self.__minimum_samples = minimum_samples
         self.__end_point = [self.__minimum_samples, self.__minimum_samples - 50, 175]
         self.__start_point = [0, 50, 75]
@@ -58,22 +56,19 @@ class RHSDistanceExtract:
             id = FileManager.get_id_from_path(path)
             state = FileManager.get_state_from_id(id, control_list)
             partial_x, partial_y, partial_bs = RHSDistanceExtract.__read_samples_from_file(path)
-            partial_x = np.interp(partial_x, [np.min(partial_x), np.max(partial_y)], INTERPOL_INTERVAL)
-            partial_y = np.interp(partial_y, [np.min(partial_y), np.max(partial_y)], INTERPOL_INTERVAL)
             partial_x, partial_y, partial_bs = self.__transform_point_in_rhs(partial_x, partial_y, partial_bs)
             partial_x, partial_y, partial_bs = self.__extract_subs_from_samples(partial_x, partial_y, partial_bs)
             if state == HEALTHY_STATE:
                 self.__create_sample_sequence(healthy_x, healthy_y, healthy_bs, partial_x, partial_y, partial_bs)
             else:
                 self.__create_sample_sequence(disease_x, disease_y, disease_bs, partial_x, partial_y, partial_bs)
-        healthy_tensor = np.reshape((healthy_x + healthy_y + healthy_bs), (len(healthy_x), self.__num_samples, FEATURES))
-        disease_tensor = np.reshape((disease_x + disease_y + disease_bs), (len(disease_x), self.__num_samples, FEATURES))
-        print("Healthy tensor: ", np.shape(healthy_tensor))
-        print("Disease tensor: ", np.shape(disease_tensor))
+        healthy_tensor = np.reshape(np.array(healthy_x + healthy_y + healthy_bs), (len(healthy_x), self.__num_samples, FEATURES))
+        disease_tensor = np.reshape(np.array(disease_x + disease_y + disease_bs), (len(disease_x), self.__num_samples, FEATURES))
         for i in range(len(healthy_tensor) if len(healthy_tensor) < len(disease_tensor) else len(disease_tensor)):
             final_tensor.append(healthy_tensor[i])
             final_tensor.append(disease_tensor[i])
             states += [HEALTHY_STATE, DISEASE_STATE]
+        print("Generated tensor: ", np.shape(final_tensor))
         return np.array(final_tensor), np.array(states), len(final_tensor)
 
     def extract_rhs_file(self, path):
@@ -104,50 +99,6 @@ class RHSDistanceExtract:
         return sliced_array
 
     """
-        @:param path: contiene il file da cui estrarre i campioni RHS.
-        @:return: restituisce un tensore tridimensionale conentente i campioni RHS estratti dal file.
-    """
-    def extract_rhs_from_unknown(self, path):
-        # Il processo di estrazione è praticamente identico a quello del precedente metodo solo che in questo caso i file
-        # analizzati sono singoli e non si genera il vettore contenente i valori di confronto che saranno necessari nelle
-        # fasi di addestramento, validazione e src.
-        x_axis = []
-        y_axis = []
-        bottom_status = []
-        partial_bs, partial_x, partial_y = self.__read_samples_from_file(path)
-        partial_bs, partial_x, partial_y = self.__transform_point_in_rhs(partial_bs, partial_x, partial_y)
-        bottom_status, x_axis, y_axis = self.__extract_subs_from_samples(bottom_status, x_axis, y_axis, partial_bs, partial_x,
-                                                                         partial_y)
-        three_dimensional_tensor = np.array(np.column_stack((x_axis, y_axis, bottom_status)))
-        samples_length = int(len(three_dimensional_tensor) / self.__num_samples)
-        three_dimensional_tensor = np.reshape(three_dimensional_tensor, (self.__num_samples, samples_length, FEATURES))
-        return three_dimensional_tensor
-
-    """
-        @:param healthy_model: contiene il modello degli esempi per i pazienti sani.
-        @:param disease_model: contiene il modello degli esempi per i pazienti malati.
-        @:return: restituisce le liste contententi i campioni alternati tra healthy e disease.
-    """
-    def __join_dataset(self, healthy_model, disease_model):
-        x_axis = []
-        y_axis = []
-        bottom_status = []
-        expanded_samples = (self.__minimum_samples * 2)
-        for i in range(expanded_samples):
-            bottom_status, x_axis, y_axis = RHSDistanceExtract.__set_model(i, bottom_status, x_axis,
-                                                                           y_axis, expanded_samples, healthy_model)
-            bottom_status, x_axis, y_axis = RHSDistanceExtract.__set_model(i, bottom_status, x_axis,
-                                                                           y_axis, expanded_samples, disease_model)
-        return bottom_status, x_axis, y_axis
-
-    @staticmethod
-    def __set_model(i, bottom_status, x_axis, y_axis, expanded_samples, healthy_model):
-        bottom_status += healthy_model[0][i * expanded_samples: (i * expanded_samples) + expanded_samples]
-        x_axis += healthy_model[1][i * expanded_samples: (i * expanded_samples) + expanded_samples]
-        y_axis += healthy_model[2][i * expanded_samples: (i * expanded_samples) + expanded_samples]
-        return bottom_status, x_axis, y_axis
-
-    """
         Il metdodo permette di leggere in 4 array tutti i campioni presenti in uno dei file generati dall'esecuzione di 
         un task, dopo di che elimina tutti i duplicati.
         @:param path: contiene il percorso del file che si deve analizzare.
@@ -164,10 +115,10 @@ class RHSDistanceExtract:
             # una virgola.
             rows = csv.reader(csv_file, delimiter=' ')
             for row in rows:
-                partial_x.append(row[X_COORDINATE])
-                partial_y.append(row[Y_COORDINATE])
-                partial_bs.append(row[BOTTOM_STATUS])
-                timestamp.append(row[TIMESTAMP])
+                partial_x.append(float(row[X_COORDINATE]))
+                partial_y.append(float(row[Y_COORDINATE]))
+                partial_bs.append(float(row[BOTTOM_STATUS]))
+                timestamp.append(float(row[TIMESTAMP]))
             csv_file.close()
         # Elimino i duplicati dalle lista.
         partial_x, partial_y, timestamp, partial_bs = FileManager.delete_duplicates(partial_x,
@@ -183,7 +134,8 @@ class RHSDistanceExtract:
         @:return: il metodo quindi restituisce tre nuove liste, ma sta volta ogni elemento conterrà una sequenza rhs 
                     anziché un punto campionato.
     """
-    def __transform_point_in_rhs(self, partial_x, partial_y, partial_bs):
+    @staticmethod
+    def __transform_point_in_rhs(partial_x, partial_y, partial_bs):
         # Calcolo le sequenze rhs, come distanza tra due punti contigui.
         for i in range(0, len(partial_x) - 1):
             partial_x[i] = float(partial_x[i + 1]) - float(partial_x[i])
@@ -193,12 +145,6 @@ class RHSDistanceExtract:
         partial_x = np.delete(partial_x, (partial_x.size - 1))
         partial_y = np.delete(partial_y, (partial_y.size - 1))
         partial_bs = np.delete(partial_bs, (partial_bs.size - 1))
-        # Se il numero di sequenze rhs non dovesse rivelarsi sufficiente, in base al numero minimo di campioni che verrà
-        # selezionato, genero "sinteticamente" le sequenze replicando l'ultima fino a raggiungere il numero minimo accettabile.
-        if len(partial_x) < self.__minimum_samples:
-            partial_x += [partial_x[len(partial_x) - 1] for _ in range(len(partial_x) - 1, self.__minimum_samples)]
-            partial_y += [partial_y[len(partial_y) - 1] for _ in range(len(partial_y) - 1, self.__minimum_samples)]
-            partial_bs += [partial_bs[len(partial_bs) - 1] for _ in range(len(partial_bs) - 1, self.__minimum_samples)]
         return partial_x, partial_y, partial_bs
 
     """

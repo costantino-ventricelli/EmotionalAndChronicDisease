@@ -1,16 +1,14 @@
 # coding=utf-8
 
-import numpy as np
-import csv
 
-
+from collections import Counter
+from os import mkdir
 from os import path
 from os import sep
-from os import mkdir
+
 from DatasetManager.FileManager import FileManager
 from DeepLearningClassifier.MachineLearningModel import MLModel
 from DeepLearningClassifier.RHSDistanceExtraction import RHSDistanceExtract
-from collections import Counter
 
 MINIMUM_SAMPLES = 2500
 SAMPLES = 50

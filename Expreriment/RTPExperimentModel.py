@@ -1,12 +1,11 @@
 # coding=utf-8
 
-import numpy as np
-
 from os import path
+
+from DatasetManager.FileManager import FileManager
 from DeepLearningClassifier.MachineLearningModel import MLModel
 from DeepLearningClassifier.RTPExtraction import RTPExtraction
 from DeepLearningClassifier.TaskManager import TaskManager
-from DatasetManager.FileManager import FileManager
 
 NUM_FILE_SAMPLES = 50
 

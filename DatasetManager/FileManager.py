@@ -2,8 +2,8 @@
 
 import os
 import re
-import pandas
 
+import pandas
 
 RESOURCE_DIRECTORY = "resource"
 

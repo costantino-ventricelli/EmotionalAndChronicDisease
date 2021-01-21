@@ -1,8 +1,8 @@
 # coding=utf-8
 
 import csv
-
 from os import path as pt
+
 from DatasetManager import Costants
 from DatasetManager.FileManager import FileManager
 
