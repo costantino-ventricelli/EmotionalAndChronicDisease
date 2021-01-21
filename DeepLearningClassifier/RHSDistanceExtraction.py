@@ -64,10 +64,18 @@ class RHSDistanceExtract:
                 self.__create_sample_sequence(disease_x, disease_y, disease_bs, partial_x, partial_y, partial_bs)
         healthy_tensor = np.reshape(np.array(healthy_x + healthy_y + healthy_bs), (len(healthy_x), self.__num_samples, FEATURES))
         disease_tensor = np.reshape(np.array(disease_x + disease_y + disease_bs), (len(disease_x), self.__num_samples, FEATURES))
-        for i in range(len(healthy_tensor) if len(healthy_tensor) < len(disease_tensor) else len(disease_tensor)):
+        """for i in range(len(healthy_tensor) if len(healthy_tensor) < len(disease_tensor) else len(disease_tensor)):
             final_tensor.append(healthy_tensor[i])
             final_tensor.append(disease_tensor[i])
-            states += [HEALTHY_STATE, DISEASE_STATE]
+            states += [HEALTHY_STATE, DISEASE_STATE]"""
+        if len(healthy_tensor) < len(disease_tensor):
+            end_point = len(healthy_tensor)
+        else:
+            end_point = len(disease_tensor)
+        final_tensor.append(healthy_tensor[0: end_point])
+        final_tensor.append(disease_tensor[0: end_point])
+        states += [HEALTHY_STATE for _ in range(end_point)]
+        states += [DISEASE_STATE for _ in range(end_point)]
         print("Generated tensor: ", np.shape(final_tensor))
         return np.array(final_tensor), np.array(states), len(final_tensor)
 
