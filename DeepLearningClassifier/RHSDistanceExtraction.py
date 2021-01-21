@@ -72,8 +72,8 @@ class RHSDistanceExtract:
             end_point = len(healthy_tensor)
         else:
             end_point = len(disease_tensor)
-        final_tensor.append(healthy_tensor[0: end_point])
-        final_tensor.append(disease_tensor[0: end_point])
+        print("end point: ", end_point)
+        final_tensor = np.concatenate((healthy_tensor[0: end_point], disease_tensor[0: end_point]))
         states += [HEALTHY_STATE for _ in range(end_point)]
         states += [DISEASE_STATE for _ in range(end_point)]
         print("Generated tensor: ", np.shape(final_tensor))
