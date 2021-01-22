@@ -65,7 +65,7 @@ class LeaveOneOutExperiment:
                     file.write("File analized: " + test_path + " state predicted for file: " + str(avg_state)
                                + " state diagnosed: " + str(state) + " for patient: " + str(id) + "\n")
                     file.write("Evaluation result => loss: " + str(evaluation_result[0]) + ", accuracy: " + str(evaluation_result[1]) + "\n")
-                    predicted_results += predicted_result
+                    predicted_results += list(predicted_result)
                     diagnosed_states += states
                 accuracy, precision, recall, f_score = self.__ml_model.evaluate_results(predicted_results, diagnosed_states)
                 file.write("GLOBAL ACCURACY: " + str(accuracy * 100) + "%\n")
