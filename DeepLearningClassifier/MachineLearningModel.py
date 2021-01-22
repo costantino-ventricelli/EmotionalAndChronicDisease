@@ -47,7 +47,7 @@ class MLModel:
             bias_initializer='zeros'), merge_mode='concat'))
         # Aggiungo il layer denso che permetterà di modificare lo stato in ingresso ai layer successivi, utilizzano il
         # regolatore L2 con lambda=0.001
-        self.__model.add(Dense(units=1, activation='sigmoid', kernel_regularizer=regularizers.l2(0.001)))
+        self.__model.add(Dense(units=1, activation='relu', kernel_regularizer=regularizers.l2(0.001)))
         # Con questo comando vengono impostati i parametri di loss, l'ottimizzatore e la metrica che verrà valutata
         # durante il src e la validazione.
         self.__model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
