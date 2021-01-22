@@ -65,7 +65,6 @@ class RHSDistanceExtract:
                 self.__create_sample_sequence(healthy_x, healthy_y, healthy_bs, partial_x, partial_y, partial_bs)
             else:
                 self.__create_sample_sequence(disease_x, disease_y, disease_bs, partial_x, partial_y, partial_bs)
-
         # Dopo aver ultimato l'estrazione genero due tensori tridimensionali, uno per i pazienti sani e uno per i pazienti malati
         healthy_tensor = np.reshape(np.array(healthy_x + healthy_y + healthy_bs), (len(healthy_x), self.__num_samples, FEATURES))
         disease_tensor = np.reshape(np.array(disease_x + disease_y + disease_bs), (len(disease_x), self.__num_samples, FEATURES))
@@ -96,6 +95,8 @@ class RHSDistanceExtract:
         partial_x, partial_y, partial_bs = RHSDistanceExtract.__read_samples_from_file(path)
         partial_x, partial_y, partial_bs = self.__transform_point_in_rhs(partial_x, partial_y, partial_bs)
         partial_x, partial_y, partial_bs = self.__extract_subs_from_samples(partial_x, partial_y, partial_bs)
+        if mean_x is None:
+            raise ValueError("Mean and StdDeviation must be declared.")
         self.__create_sample_sequence(x_samples, y_samples, bs_samples, partial_x, partial_y, partial_bs)
         tensor = np.reshape((x_samples + y_samples + bs_samples), (len(x_samples), self.__num_samples, FEATURES))
         states = [state for _ in range(len(x_samples))]
