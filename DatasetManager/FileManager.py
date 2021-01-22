@@ -10,11 +10,8 @@ RESOURCE_DIRECTORY = "resource"
 class FileManager:
 
     def __init__(self, dataset_name):
-        working_dir = os.getcwd()
-        split_dir = working_dir.split(os.sep)
-        if split_dir[len(split_dir) - 1] == "src":
-            split_dir.pop()
-        working_dir = FileManager.__join_directory(split_dir)
+        print(os.path.dirname(os.path.abspath('__file__')))
+        working_dir = os.path.dirname(os.path.abspath('__file__'))
         os.chdir(working_dir)
         self.__dataset = os.path.join(RESOURCE_DIRECTORY, dataset_name)
         self.__dataset_directory = FileManager.get_path_directories(self.__dataset)
