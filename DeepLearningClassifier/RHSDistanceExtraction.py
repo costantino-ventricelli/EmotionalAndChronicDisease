@@ -4,7 +4,6 @@ import csv
 import numpy as np
 
 from DatasetManager.FileManager import FileManager
-from collections import Counter
 
 X_COORDINATE = 0
 Y_COORDINATE = 1
@@ -66,6 +65,7 @@ class RHSDistanceExtract:
                 self.__create_sample_sequence(healthy_x, healthy_y, healthy_bs, partial_x, partial_y, partial_bs)
             else:
                 self.__create_sample_sequence(disease_x, disease_y, disease_bs, partial_x, partial_y, partial_bs)
+
         # Dopo aver ultimato l'estrazione genero due tensori tridimensionali, uno per i pazienti sani e uno per i pazienti malati
         healthy_tensor = np.reshape(np.array(healthy_x + healthy_y + healthy_bs), (len(healthy_x), self.__num_samples, FEATURES))
         disease_tensor = np.reshape(np.array(disease_x + disease_y + disease_bs), (len(disease_x), self.__num_samples, FEATURES))

@@ -10,7 +10,6 @@ from keras.layers import LSTM
 from keras.models import Sequential
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import precision_recall_fscore_support as get_four_metrics
-from sklearn.preprocessing import StandardScaler
 
 CLASS_CHANGE = 0.55
 
@@ -32,9 +31,6 @@ class MLModel:
             parametro per la validazione
     """
     def __init__(self, tensor_training, states_training, tensor_validation, states_validation):
-        self.__standard_scaler = StandardScaler()
-        tensor_training = self.__standard_scaler.fit_transform(tensor_training)
-        tensor_validation = self.__standard_scaler.fit_transform(tensor_validation)
         # Imposto il modello come sequenziale.
         self.__model = Sequential()
         # Aggiungo il layers bidirezionali alla rete di tipo LSTM, con i valori di kernel_inizialization, e recurrent_activation
@@ -97,7 +93,6 @@ class MLModel:
             Inoltre restituisce una lista di valori che rappresentano i risultati della predizione effettuata dalla rete. 
     """
     def test_model(self, tensor_test, theoretical_states):
-        tensor_test = self.__standard_scaler.fit(tensor_test)
         # Avvio la predizione dei risultati passando alla rete il tensore di src come input.
         predicted_results = np.array(self.__model.predict(tensor_test))
         states_predicted = []
