@@ -107,13 +107,12 @@ class MLModel:
         for state in states_predicted:
             predicted_state_average += state
         predicted_state_average = (1 if predicted_state_average / len(states_predicted) > CLASS_CHANGE else 0)
-        return np.array(states_predicted).astype(float), np.array(evaluation_result).astype(float), \
-               np.array(predicted_state_average).astype(float)
+        return states_predicted, evaluation_result, predicted_state_average
 
     @staticmethod
     def evaluate_results(predicted_states, theoretical_states):
         accuracy = accuracy_score(theoretical_states, predicted_states)
-        precision, recall, f_score, _ = get_four_metrics(theoretical_states, predicted_states, labels=[0, 1], average="macro")
+        precision, recall, f_score, _ = get_four_metrics(theoretical_states, predicted_states, labels=np.unique(predicted_states), average="macro")
         return accuracy, precision, recall, f_score
 
     """

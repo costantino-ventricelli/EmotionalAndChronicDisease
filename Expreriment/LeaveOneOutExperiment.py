@@ -31,7 +31,6 @@ class LeaveOneOutExperiment:
         self.__precision_avg = 0
         self.__recall_avg = 0
         self.__f1_score_avg = 0
-        self.__control_list = FileManager.get_healthy_disease_list()
         if not path.exists(SAVING_PATHS):
             mkdir(SAVING_PATHS)
 
@@ -55,19 +54,19 @@ class LeaveOneOutExperiment:
             print("Create learning model")
             self.__ml_model = MLModel(tensor_training, training_states, tensor_validation, validation_states)
             print("Testing model...")
-            with open(path.join(SAVING_PATHS, "log_file_" + str(i) + ".txt")) as file:
-                predicted_results = np.zeros(0)
-                diagnosed_states = np.zeros(0)
+            with open(path.join(SAVING_PATHS, "log_file_" + str(i) + ".txt"), 'w') as file:
+                predicted_results = []
+                diagnosed_states = []
                 for test_path in test_paths:
                     id = FileManager.get_id_from_path(test_path)
-                    state = FileManager.get_state_from_id(id, self.__control_list)
+                    state = FileManager.get_state_from_id(id)
                     test_tensor, states = feature_extractor.extract_rhs_file(test_path)
                     predicted_result, evaluation_result, avg_state = self.__ml_model.test_model(test_tensor, states)
                     file.write("File analized: " + test_path + " state predicted for file: " + str(avg_state)
                                + " state diagnosed: " + str(state) + " for patient: " + str(id) + "\n")
                     file.write("Evaluation result => loss: " + str(evaluation_result[0]) + ", accuracy: " + str(evaluation_result[1]) + "\n")
-                    predicted_results = np.concatenate(predicted_results, predicted_result)
-                    diagnosed_states = np.concatenate(diagnosed_states, states)
+                    predicted_results.append(predicted_result)
+                    diagnosed_states.append(states)
                 accuracy, precision, recall, f_score = self.__ml_model.evaluate_results(predicted_results, diagnosed_states)
                 file.write("GLOBAL ACCURACY: " + str(accuracy * 100) + "%\n")
                 file.write("GLOBAL PRECISION: " + str(precision * 100) + "%\n")

@@ -1,11 +1,12 @@
 # coding=utf-8
 
-from os import path
+import numpy as np
 
-from DatasetManager.FileManager import FileManager
+from os import path
 from DeepLearningClassifier.MachineLearningModel import MLModel
 from DeepLearningClassifier.RHSDistanceExtraction import RHSDistanceExtract
 from DeepLearningClassifier.TaskManager import TaskManager
+from DatasetManager.FileManager import FileManager
 
 NUM_FILE_SAMPLES = 50
 
@@ -47,17 +48,16 @@ class Experiment:
             feature_extraction.extract_rhs_known_state(model[4] + model[5])
         # Genero il modello di DeepLearning con i tensori genererati.
         print("Create learning model...")
-        self.__ml_model = MLModel(tensor_training, states_training, tensor_validation, states_validation, NUM_FILE_SAMPLES)
+        self.__ml_model = MLModel(tensor_training, states_training, tensor_validation, states_validation)
         self.__ml_model.show_summary_graph()
         print("Testing model...")
         test_paths = model[2] + model[3]
-        control_list, _ = FileManager.get_healthy_disease_list()
         predicted_results = []
         theoretical_results = []
         with open(log_file, 'w') as file:
             for test_path in test_paths:
                 id = FileManager.get_id_from_path(test_path)
-                state = FileManager.get_state_from_id(id, control_list)
+                state = FileManager.get_state_from_id(id)
                 file.write("Test for patient: " + str(id) + "\n")
                 file.write("Theoretical state for patient: " + str(state) + "\n")
                 tensor, theoretical_result = feature_extraction.extract_rhs_file(test_path)
@@ -68,10 +68,10 @@ class Experiment:
                 theoretical_results.append(state)
                 print("\n")
             accuracy, precision, recall, f_score = MLModel.evaluate_results(predicted_results, theoretical_results)
-            file.write("Global accuracy: " + str(int(accuracy * 100)) + "%" + "\n")
-            file.write("Global precision: " + str(int(precision * 100)) + "%" + "\n")
-            file.write("Global recall: " + str(int(recall * 100)) + "%" + "\n")
-            file.write("Global f_score: " + str(int(f_score * 100)) + "%" + "\n")
+            file.write("Global accuracy: " + str(int(accuracy * 100)) + "%\n")
+            file.write("Global precision: " + str(int(precision * 100)) + "%\n")
+            file.write("Global recall: " + str(int(recall * 100)) + "%\n")
+            file.write("Global f_score: " + str(int(f_score * 100)) + "%\n")
             file.close()
 
     def get_ml_model(self):

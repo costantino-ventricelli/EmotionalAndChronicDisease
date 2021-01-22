@@ -2,7 +2,6 @@
 
 import os
 import re
-
 import pandas
 
 RESOURCE_DIRECTORY = "resource"
@@ -15,7 +14,7 @@ class FileManager:
         split_dir = working_dir.split(os.sep)
         if split_dir[len(split_dir) - 1] == "src":
             split_dir.pop()
-        working_dir = FileManager.__join_directory(split_dir)
+        working_dir = "D:/dev/python/EmotionalAndChronicDisease"
         os.chdir(working_dir)
         self.__dataset = os.path.join(RESOURCE_DIRECTORY, dataset_name)
         self.__dataset_directory = FileManager.get_path_directories(self.__dataset)
@@ -42,11 +41,15 @@ class FileManager:
                   1 se l'id appartiene alla lista di utenti malati.
     """
     @staticmethod
-    def get_state_from_id(id, healthy_ids):
-        if id in healthy_ids:
-            return 0
+    def get_state_from_id(id):
+        state = 0
+        healthy, disease = FileManager.get_healthy_disease_list()
+        if id in healthy:
+            state = 0
         else:
-            return 1
+            state = 1
+        return state
+
 
     """
         @:param main_directory_path: contiene il path per la directory generale del dataset
