@@ -54,7 +54,7 @@ class LeaveOneOutExperiment:
             print("Create learning model")
             self.__ml_model = MLModel(tensor_training, training_states, tensor_validation, validation_states)
             print("Testing model...")
-            with open(path.join(SAVING_PATHS, "log_file_" + str(i) + "txt")) as file:
+            with open(path.join(SAVING_PATHS, "log_file_" + str(i) + ".txt")) as file:
                 predicted_results = []
                 diagnosed_states = []
                 for test_path in test_paths:
