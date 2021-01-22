@@ -36,11 +36,9 @@ class RHSDistanceExtract:
         la bontà del modello.
         @:param path_list: contiene la lista dei file di campioni da analizzare.
         @:return: come detto il metodo restituisce:
-            - three_dimensional_tensor:
-                samples[timestamp[x_axis, y_axis, button_status]]]
-            _ theoretical_states: una lista contenente tutti gli stati individuati per i file passati in input.
-            - total_sample: il numero totale dei campioni calcolati per quella lista di file.
-            - samples_file: contiene il numero di campioni estratti per ogni file.
+            - final tensor: tensore tridimensionale contentente i capioni prelevati dai file.
+            _ states: array contentente i gli stati corrispondenti di ogni campione rilevato.
+            - len(final_tensor): contiene il numero dei campioni che compongono il tensore.
     """
     def extract_rhs_known_state(self, path_list):
         healthy_x = []
@@ -50,35 +48,45 @@ class RHSDistanceExtract:
         disease_y = []
         disease_bs = []
         states = []
-        final_tensor = []
         control_list, _ = FileManager.get_healthy_disease_list()
         for path in path_list:
+            # Acuqisisco l'id del paziente
             id = FileManager.get_id_from_path(path)
+            # Acquisisco lo stato del paziente
             state = FileManager.get_state_from_id(id, control_list)
+            # Leggo i punti campionati nel file
             partial_x, partial_y, partial_bs = RHSDistanceExtract.__read_samples_from_file(path)
+            # Trasformo i punti in segmenti RHS.
             partial_x, partial_y, partial_bs = self.__transform_point_in_rhs(partial_x, partial_y, partial_bs)
+            # Raddoppio il numero dei campioni RHS così da ampliare il dataset.
             partial_x, partial_y, partial_bs = self.__extract_subs_from_samples(partial_x, partial_y, partial_bs)
+            # Suddivido i capioni in base allo stato di salute del paziente a cui appartengono, dopo di che genero degli
+            # array mono dimensionali di lunghezza pari alla lunghezza dei campioni richiesta dal Modello.
             if state == HEALTHY_STATE:
                 self.__create_sample_sequence(healthy_x, healthy_y, healthy_bs, partial_x, partial_y, partial_bs)
             else:
                 self.__create_sample_sequence(disease_x, disease_y, disease_bs, partial_x, partial_y, partial_bs)
+        # Dopo aver ultimato l'estrazione genero due tensori tridimensionali, uno per i pazienti sani e uno per i pazienti malati
         healthy_tensor = np.reshape(np.array(healthy_x + healthy_y + healthy_bs), (len(healthy_x), self.__num_samples, FEATURES))
         disease_tensor = np.reshape(np.array(disease_x + disease_y + disease_bs), (len(disease_x), self.__num_samples, FEATURES))
-        """for i in range(len(healthy_tensor) if len(healthy_tensor) < len(disease_tensor) else len(disease_tensor)):
-            final_tensor.append(healthy_tensor[i])
-            final_tensor.append(disease_tensor[i])
-            states += [HEALTHY_STATE, DISEASE_STATE]"""
+        # A questo punto per ottenere un dataset bilanciato in ogni situazione valuto quale dei due tensori possiede meno.
         if len(healthy_tensor) < len(disease_tensor):
             end_point = len(healthy_tensor)
         else:
             end_point = len(disease_tensor)
-        print("end point: ", end_point)
+        # Il tensore con meno campioni verrà utilizzato per generare il tensore finale, il quale verrà composto inserendo
+        # prima tutti gli utenti sani e poi tutti gli utenti sani, si è già provato un approccio alternato, ma ha dato
+        # scarsi risultati.
         final_tensor = np.concatenate((healthy_tensor[0: end_point], disease_tensor[0: end_point]))
-        states += [HEALTHY_STATE for _ in range(end_point)]
-        states += [DISEASE_STATE for _ in range(end_point)]
-        print("Generated tensor: ", np.shape(final_tensor))
+        # Genero infine il vettore gli stati
+        states += [HEALTHY_STATE for _ in range(end_point)] + [DISEASE_STATE for _ in range(end_point)]
         return np.array(final_tensor), np.array(states), len(final_tensor)
 
+    """
+        Questo metodo si comporta esattamente come il precedente, solo che questo considera un solo file per volta e quindi
+        non effettua il bilanciamento del dataset, questo metodo è utile per prelevare i campioni necessari al test del 
+        modello
+    """
     def extract_rhs_file(self, path):
         x_samples = []
         y_samples = []
@@ -94,11 +102,19 @@ class RHSDistanceExtract:
         states = [state for _ in range(len(x_samples))]
         return np.array(tensor), np.array(states)
 
+    """
+        Questo metodo permette di generare dei vettori contenenti i campioni dell'array, generando tre nuovi vettori di
+        lunghezza prestabilita dal numero di campioni che il sistema ha richiesto.
+    """
     def __create_sample_sequence(self, healthy_x, healthy_y, healthy_bs, partial_x, partial_y, partial_bs):
         healthy_x += self.__slice_array(partial_x)
         healthy_y += self.__slice_array(partial_y)
         healthy_bs += self.__slice_array(partial_bs)
 
+    """
+        Questo metodo è quello che effettua la divisione dell'array originale in una matrice con numero di colonne pari 
+        al numero di campioni richiesti.
+    """
     def __slice_array(self, array):
         slice = len(array) // self.__num_samples
         sliced_array = []

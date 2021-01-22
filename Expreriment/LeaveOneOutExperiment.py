@@ -30,6 +30,7 @@ class LeaveOneOutExperiment:
         self.__precision_avg = 0
         self.__recall_avg = 0
         self.__f1_score_avg = 0
+        self.__control_list = FileManager.get_healthy_disease_list()
         if not path.exists(SAVING_PATHS):
             mkdir(SAVING_PATHS)
 
@@ -45,39 +46,33 @@ class LeaveOneOutExperiment:
                                                                                                       test_paths])
             feature_extractor = RHSDistanceExtract(MINIMUM_SAMPLES, SAMPLES)
             print("Training tensor extraction...")
-            tensor_training, training_states, training_samples, training_file_samples = \
-                feature_extractor.extract_rhs_known_state(training_paths)
-            print("Training theoretical_states: ", Counter(training_states))
+            tensor_training, training_states, training_samples = feature_extractor.extract_rhs_known_state(training_paths)
+            print("Training patients states: ", Counter(training_states))
             print("Validation tensor extraction...")
-            tensor_validation, validation_states, validation_samples, validation_file_samples = \
-                feature_extractor.extract_rhs_known_state(validation_paths)
-            print("Validation theoretical_states: ", Counter(validation_states))
-            print("Tensor training extraction...")
-            tensor_test, test_states, test_samples, test_file_samples = \
-                feature_extractor.extract_rhs_known_state(test_paths)
+            tensor_validation, validation_states, validation_samples = feature_extractor.extract_rhs_known_state(validation_paths)
+            print("Validation patients states: ", Counter(validation_states))
             print("Create learning model")
-            self.__ml_model = MLModel(tensor_training, training_states, tensor_validation, validation_states, False)
+            self.__ml_model = MLModel(tensor_training, training_states, tensor_validation, validation_states)
             print("Testing model...")
-            # Testo il modello e valuto i risultati
-            states_predicted, predicted_results = self.__ml_model.test_model(tensor_test)
-            evaluation_result, test_accuracy, test_precision, test_recall, test_f_score, wrong_classified, accuracy_file, \
-                    precision_file, recall_file, f1_score_file, wrong_paths = self.__ml_model.classify_results(tensor_test,
-                                                                                                               test_states,
-                                                                                                               predicted_results,
-                                                                                                               states_predicted,
-                                                                                                               test_paths,
-                                                                                                               test_file_samples)
-            self.__accuracy_avg += test_accuracy
-            self.__precision_avg += test_precision
-            self.__recall_avg += test_recall
-            self.__f1_score_avg += test_f_score
-            log_file = "iteration_" + str(i) + "_log_file.txt"
-            print("Saving result...")
-            save_file_path = path.join(SAVING_PATHS, log_file)
-            FileManager.log_results(accuracy_file, evaluation_result, f1_score_file, precision_file, recall_file,
-                                    save_file_path,
-                                    test_accuracy, test_f_score, test_precision, test_recall, wrong_classified,
-                                    wrong_paths)
+            with open(path.join(SAVING_PATHS, "log_file_" + str(i) + "txt")) as file:
+                predicted_results = []
+                diagnosed_states = []
+                for test_path in test_paths:
+                    id = FileManager.get_id_from_path(test_path)
+                    state = FileManager.get_state_from_id(id, self.__control_list)
+                    test_tensor, states = feature_extractor.extract_rhs_file(test_path)
+                    predicted_result, evaluation_result, avg_state = self.__ml_model.test_model(test_tensor, states)
+                    file.write("File analized: " + test_path + " state predicted for file: " + str(avg_state)
+                               + " state diagnosed: " + str(state) + " for patient: " + str(id) + "\n")
+                    file.write("Evaluation result => loss: " + str(evaluation_result[0]) + ", accuracy: " + str(evaluation_result[1]) + "\n")
+                    predicted_results += predicted_result
+                    diagnosed_states += states
+                accuracy, precision, recall, f_score = self.__ml_model.evaluate_results(predicted_results, diagnosed_states)
+                file.write("GLOBAL ACCURACY: " + str(accuracy * 100) + "%\n")
+                file.write("GLOBAL PRECISION: " + str(precision * 100) + "%\n")
+                file.write("GLOBAL RECALL: " + str(recall * 100) + "%\n")
+                file.write("GLOBAL F_SCORE: " + str(f_score * 100) + "%\n")
+                file.close()
 
     @staticmethod
     def print_model(ml_model):
@@ -101,9 +96,4 @@ class LeaveOneOutExperiment:
         test_paths = self.__patients_paths[len(self.__patients_paths) - test_number: len(self.__patients_paths)]
         self.__patients_paths = self.__patients_paths[test_number:] + self.__patients_paths[: test_number]
         return training_paths, validation_paths, test_paths
-
-    def get_metrics(self):
-        analysed_file = len(self.__patients_paths)
-        return (self.__accuracy_avg / analysed_file), (self.__precision_avg / analysed_file), (self.__recall_avg / analysed_file), \
-               (self.__recall_avg / analysed_file)
 

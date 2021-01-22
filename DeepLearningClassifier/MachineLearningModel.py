@@ -28,11 +28,9 @@ class MLModel:
         @:param tensor_validation: Contiene il tensore tridimensionale che verrà utilizzato come input per la fase di
             validation.
         @:param states_validation: Contiene la lista degli stati dei pazienti passata alla rete neurale come secondo
-            parametro per la validazione.
-        @:param detrend: Indica al modello se effettuare il detrend dei tensori utilizzando la deviazione standard e il
-            mean value.
+            parametro per la validazione
     """
-    def __init__(self, tensor_training, states_training, tensor_validation, states_validation, bach_size):
+    def __init__(self, tensor_training, states_training, tensor_validation, states_validation):
         # Imposto il modello come sequenziale.
         self.__model = Sequential()
         # Aggiungo il layers bidirezionali alla rete di tipo LSTM, con i valori di kernel_inizialization, e recurrent_activation
