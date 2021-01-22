@@ -95,8 +95,6 @@ class RHSDistanceExtract:
         partial_x, partial_y, partial_bs = RHSDistanceExtract.__read_samples_from_file(path)
         partial_x, partial_y, partial_bs = self.__transform_point_in_rhs(partial_x, partial_y, partial_bs)
         partial_x, partial_y, partial_bs = self.__extract_subs_from_samples(partial_x, partial_y, partial_bs)
-        if mean_x is None:
-            raise ValueError("Mean and StdDeviation must be declared.")
         self.__create_sample_sequence(x_samples, y_samples, bs_samples, partial_x, partial_y, partial_bs)
         tensor = np.reshape((x_samples + y_samples + bs_samples), (len(x_samples), self.__num_samples, FEATURES))
         states = [state for _ in range(len(x_samples))]

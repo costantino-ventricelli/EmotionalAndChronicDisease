@@ -31,10 +31,6 @@ class MLModel:
             parametro per la validazione
     """
     def __init__(self, tensor_training, states_training, tensor_validation, states_validation):
-        self.__std = np.std(tensor_training, axis=0)
-        self.__mean = np.mean(tensor_training, axis=0)
-        tensor_training = (tensor_training - self.__mean) / self.__std
-        tensor_validation = (tensor_validation - self.__mean) / self.__std
         # Imposto il modello come sequenziale.
         self.__model = Sequential()
         # Aggiungo il layers bidirezionali alla rete di tipo LSTM, con i valori di kernel_inizialization, e recurrent_activation
@@ -97,7 +93,6 @@ class MLModel:
             Inoltre restituisce una lista di valori che rappresentano i risultati della predizione effettuata dalla rete. 
     """
     def test_model(self, tensor_test, theoretical_states):
-        tensor_test = (tensor_test - self.__mean) / self.__std
         # Avvio la predizione dei risultati passando alla rete il tensore di src come input.
         predicted_results = np.array(self.__model.predict(tensor_test))
         states_predicted = []
