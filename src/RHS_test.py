@@ -50,6 +50,7 @@ def experiment_tow():
     experiment.execute_experiment("Dataset", healthy_tasks, disease_tasks, test_tasks, 2500,
                                   path.join("balanced_dataset", "second_experiment.txt"))
 
+
 def experiment_three():
     print("Experiment three")
     healthy_tasks = [MOM, BANK_CHECK, SIGNATURE_2, CLOCK]

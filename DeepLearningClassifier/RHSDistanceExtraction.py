@@ -47,6 +47,7 @@ class RHSDistanceExtract:
         disease_x = []
         disease_y = []
         disease_bs = []
+        # TODO: Random forest, decision three, logistic regression
         states = []
         for path in path_list:
             # Acuqisisco l'id del paziente
