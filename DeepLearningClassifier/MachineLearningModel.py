@@ -117,7 +117,8 @@ class MLModel:
     @staticmethod
     def evaluate_results(predicted_states, theoretical_states):
         accuracy = accuracy_score(theoretical_states, predicted_states)
-        precision, recall, f_score, _ = get_four_metrics(theoretical_states, predicted_states, labels=np.unique(predicted_states), average="macro")
+        precision, recall, f_score, _ = get_four_metrics(theoretical_states, predicted_states,
+                                                         labels=[0, 1], average="macro")
         return accuracy, precision, recall, f_score
 
     """

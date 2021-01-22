@@ -12,7 +12,8 @@ class FileManager:
     def __init__(self, dataset_name):
         print(os.path.dirname(os.path.abspath('__file__')))
         working_dir = os.path.dirname(os.path.abspath('__file__'))
-        os.chdir(working_dir)
+        if os.path.basename(working_dir) == 'src':
+            os.chdir(os.path.dirname(working_dir))
         self.__dataset = os.path.join(RESOURCE_DIRECTORY, dataset_name)
         self.__dataset_directory = FileManager.get_path_directories(self.__dataset)
         self.__patient_paths = FileManager.__get_patient_paths(self.__dataset_directory)
