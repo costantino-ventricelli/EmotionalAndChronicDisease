@@ -6,6 +6,7 @@ from DatasetManager import FileManager
 from DatasetManager.Costants import *
 from DeepLearningClassifier import *
 from copy import deepcopy
+from collections import Counter
 
 
 KEY_TUPLE = 0
@@ -84,53 +85,79 @@ class TaskSelection:
                 actual_tuple = max(best_results.items())
         return previous_max
 
+    """
+        Questo metdodo permette di individuare i percorsi che verranno utilizzati per l'addestramento e la validazione 
+        del modello, separandoli da quelli di test.
+    """
     def __select_paths_from_tasks(self, tasks):
+        # Ottengo la lista degli id etichettati come malati e come sani
         healthy_ids, disease_ids = FileManager.get_healthy_disease_list()
         paths = []
+        # Raccolgo tutti i percorsi che contengono i campioni di quel task
         for task in tasks:
             paths += TaskManager.get_list_from_task(task, self.__file_manager.get_files_path())
+        # Filtro i file in base alla dimensione degli stessi
         paths = FileManager.filter_file(paths, min_dim=self.__minimum_samples + 1)
+        # Separo i percorsi individuando un utente sano e uno malato su cui effettuare i test necessari.
         healthy_paths = TaskSelection.__get_test_for_state(healthy_ids, paths)
         disease_paths = TaskSelection.__get_test_for_state(disease_ids, paths)
+        # Creo la lista completa dei file per il test
         if not healthy_paths or not disease_paths:
             test_paths = []
         else:
             test_paths = healthy_paths + disease_paths
+        # Elimino i file del test da quelli usati per il training e la validazione.
         for i in range(len(test_paths)):
             if test_paths[i] in paths:
                 del paths[paths.index(test_paths[i])]
+        # Calcolo il numero di file necessari per la validazione.
         validation_number = int(np.ceil(len(paths) * 0.2))
         return paths, test_paths, validation_number
 
+    """
+        Questo metodo permette di raccogliere tutti i file di un paziente, selezionati anche in base ai task necessari, 
+        li restituisce.
+    """
     @staticmethod
     def __get_test_for_state(ids, paths):
         i = 0
         return_paths = []
-        while len(return_paths) != 0 and i < len(return_paths):
+        while len(return_paths) == 0 and i < len(paths):
             return_paths = FileManager.get_all_file_of_id(ids[i], paths)
             i += 1
         return return_paths
 
     """
-    
+        Questo metodo permette di generare i tre tensori con i relativi targhet per addestramento, validazione e test del modello.
     """
     def __extract_rhs_segment(self, paths, test_paths, validation_number):
+        # Genero il tensore di training.
         training_tensor, training_states, _ = self.__feature_extraction.extract_rhs_known_state(
             paths[0: (len(paths) - validation_number)])
+        # Genero il tensore di validazione.
         validation_tensor, validation_states, _ = self.__feature_extraction.extract_rhs_known_state(
             paths[(len(paths) - validation_number): len(paths)])
+        # Genero il tensore di test.
         test_tensor, test_states, _ = self.__feature_extraction.extract_rhs_known_state(test_paths)
         return test_states, test_tensor, training_states, training_tensor, validation_states, validation_tensor
 
+    """
+        Questo metdo permette di addestrare, validare e testare il modello, calcolando le quattro metriche di riferimento.
+    """
     @staticmethod
     def __create_and_evaluate_model(task, test_states, test_tensor, training_states, training_tensor,
                                     validation_states, validation_tensor, best_results):
         machine_learning = MLModel(training_tensor, training_states, validation_tensor, validation_states)
         predicted_results, evaluation, _ = machine_learning.test_model(test_tensor, test_states)
+        print("Predicted results: ", Counter(predicted_results).items())
+        print("Test states: ", Counter(test_states).items())
         accuracy, precision, recall, f_score = machine_learning.evaluate_results(predicted_results, test_states)
         best_results = TaskSelection.__fill_dictionary(best_results, accuracy, f_score, precision, recall, task)
         return best_results
 
+    """
+        Questo metodo permette di aggiornare un dizionario che permetterà di tracciare i risultati ottenuti dal sistema
+    """
     @staticmethod
     def __fill_dictionary(best_results, accuracy, f_score, precision, recall, task):
         if (accuracy, precision, recall, f_score) in best_results:
