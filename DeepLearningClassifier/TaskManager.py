@@ -74,6 +74,9 @@ class TaskManager:
         return training_list_diseased, training_list_healthy, test_list_healthy, test_list_diseased, \
             validation_list_diseased, validation_list_healthy
 
+    """
+        Questo metodo permette di ottenere i file relativi ad un task in particolare
+    """
     @staticmethod
     def get_list_from_task(task, paths):
         task_paths = []
@@ -82,6 +85,9 @@ class TaskManager:
                 task_paths.append(path)
         return task_paths
 
+    """
+        
+    """
     @staticmethod
     def get_task_from_paths(paths, tasks):
         ids_task = {}

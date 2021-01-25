@@ -214,18 +214,10 @@ class FileManager:
 
     @staticmethod
     def get_all_file_of_id(id, paths):
-        loop = True
-        find_id = False
-        iterator = 0
         id_files = []
-        while loop and iterator < len(paths):
-            actual_id = FileManager.get_id_from_path(paths[iterator])
-            if id == actual_id:
-                id_files.append(paths[iterator])
-                find_id = True
-            else:
-                loop = True if find_id is False else False
-            iterator += 1
+        for path in paths:
+            if id == FileManager.get_id_from_path(path):
+                id_files.append(path)
         return id_files
 
     @staticmethod
