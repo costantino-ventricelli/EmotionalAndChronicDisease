@@ -36,12 +36,18 @@ class TaskSelection:
             # Per il test vengono selezionati due utenti uno etichettato come sano e uno etichettato come malato, per ottenere
             # misuarizioni sulle prestazioni del sistema più precise ed affidabili.
             paths, test_paths, validation_number = self.__select_paths(task)
-            # Estraggo i segmenti RHS per training, validazione e test del sistema.
-            test_states, test_tensor, training_states, training_tensor, validation_states, validation_tensor = self.__extract_rhs_segment(
-                paths, test_paths, validation_number)
-            # Genero il sistema e valuto i risultati.
-            self.__best_results = TaskSelection.__create_and_evaluate_model(task, test_states, test_tensor, training_states, training_tensor,
-                                                                            validation_states, validation_tensor, self.__best_results)
+            # Questo controllo evita la catastrofe in quanto permette di verificare che ci siano entrambe le classi per
+            # poter effettuare la classificazione, quindi con questo controllo le possibilità di incorrere in problemi di
+            # bilanciamento del dataset si riduce accorpandosi con il controllo fatto al momento dell'estrazione delle feature.
+            if len(test_paths) > 1:
+                # Estraggo i segmenti RHS per training, validazione e test del sistema.
+                test_states, test_tensor, training_states, training_tensor, validation_states, validation_tensor = self.__extract_rhs_segment(
+                    paths, test_paths, validation_number)
+                # Genero il sistema e valuto i risultati.
+                self.__best_results = TaskSelection.__create_and_evaluate_model(task, test_states, test_tensor, training_states, training_tensor,
+                                                                                validation_states, validation_tensor, self.__best_results)
+            else:
+                print("The dataset is not balanced, there aren't the needed class for the classification.")
 
     """
         Questo metodo mi permette di avviare la selezione dei task partendo da quelli che hanno dato il miglior risultato
@@ -80,7 +86,7 @@ class TaskSelection:
         prev_states = FileManager.get_state_from_id(FileManager.get_id_from_path(paths[0]))
         paths.remove(paths[0])
         i = 0
-        while len(test_paths) <= 1:
+        while len(test_paths) <= 1 and i < len(paths):
             if prev_states != FileManager.get_state_from_id(FileManager.get_id_from_path(paths[i])):
                 test_paths.append(paths[i])
                 paths.remove(paths[i])
