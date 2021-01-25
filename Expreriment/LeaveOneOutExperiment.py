@@ -15,7 +15,7 @@ MINIMUM_SAMPLES = 2500
 SAMPLES = 50
 EXPERIMENT_RESULT = "experiment_result"
 LEAVE_ONE_OUT_FOLDER = "leave_one_out"
-SAVING_PATHS = EXPERIMENT_RESULT + sep + LEAVE_ONE_OUT_FOLDER
+SAVING_PATHS = sep + EXPERIMENT_RESULT + sep + LEAVE_ONE_OUT_FOLDER
 
 
 class LeaveOneOutExperiment:
@@ -24,7 +24,7 @@ class LeaveOneOutExperiment:
         self.__dataset = dataset
         dataset = FileManager(self.__dataset)
         self.__patients_paths = dataset.get_patient_paths()
-        self.__patients = FileManager.get_ids_from_paths(self.__patients_paths)
+        self.__patients = FileManager.get_ids_from_dir(self.__patients_paths)
         self.__patients.sort()
         self.__ml_model = None
         self.__accuracy_avg = 0

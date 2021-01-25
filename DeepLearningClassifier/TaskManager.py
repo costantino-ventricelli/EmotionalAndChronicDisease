@@ -12,17 +12,17 @@ RESOURCE_DIRECTORY = "resource"
 class TaskManager:
 
     @staticmethod
-    def __split():
+    def __split(training_numbers, validation_numbers):
         # Ottengo le liste degli id dei pazienti sani e malati.
         healthy_id, diseased_id = FileManager.get_healthy_disease_list()
         # h => healthy, d => diseased
         # Separo il dataset tra training src e validazione a seconda della condizione dei pazienti.
-        h_ids_training = healthy_id[0:25]
-        h_ids_validation = healthy_id[25:33]
-        h_ids_test = healthy_id[33:56]
-        d_ids_training = diseased_id[0:25]
-        d_ids_validation = diseased_id[25:33]
-        d_ids_test = diseased_id[33:80]
+        h_ids_training = healthy_id[0: training_numbers]
+        h_ids_validation = healthy_id[training_numbers: training_numbers + validation_numbers]
+        h_ids_test = healthy_id[training_numbers + validation_numbers: len(healthy_id)]
+        d_ids_training = diseased_id[0:training_numbers]
+        d_ids_validation = diseased_id[training_numbers: training_numbers + validation_numbers]
+        d_ids_test = diseased_id[training_numbers + validation_numbers: len(diseased_id)]
         return h_ids_training, h_ids_validation, h_ids_test, d_ids_training, d_ids_validation, d_ids_test
 
     """
@@ -40,16 +40,16 @@ class TaskManager:
                     del paziente.
     """
     @staticmethod
-    def split(paths, healthy_task, diseased_task, test_task):
+    def split(paths, healthy_task, diseased_task, test_task, training_number, validation_number):
         # Ottengo le liste degli id dei pazienti selezionati per eseguire le varie di modellazione, distinguendo tra id
         # di pazienti sani e malati.
-        listh_training, listh_validation, listh_test, listd_training, listd_validation, listd_test = TaskManager.__split()
-        training_list_diseased = []  # (l1)
-        training_list_healthy = []  # (l2)
-        test_list_healthy = []  # (l3)
-        test_list_diseased = []  # (l4)
-        validation_list_diseased = []  # (l5)
-        validation_list_healthy = []  # (l6)
+        listh_training, listh_validation, listh_test, listd_training, listd_validation, listd_test = TaskManager.__split(training_number, validation_number)
+        training_list_diseased = []
+        training_list_healthy = []
+        test_list_healthy = []
+        test_list_diseased = []
+        validation_list_diseased = []
+        validation_list_healthy = []
         # In questo for vengono individuati dati path del sistema tutti i task che sono stati selezionati per la modellazione
         # se il task si identifica come uno dei task richiesti allora si verifica l'id a cui il task appartiene per essere
         # correttamente smistato nella lista di appartenenza corretta.
@@ -73,6 +73,14 @@ class TaskManager:
                     test_list_diseased.append(path)
         return training_list_diseased, training_list_healthy, test_list_healthy, test_list_diseased, \
             validation_list_diseased, validation_list_healthy
+
+    @staticmethod
+    def get_list_from_task(task, paths):
+        task_paths = []
+        for path in paths:
+            if task in "_" + FileManager.get_task_from_path(path) + ".":
+                task_paths.append(path)
+        return task_paths
 
     @staticmethod
     def get_task_from_paths(paths, tasks):
@@ -133,7 +141,7 @@ class TaskManager:
                 for path in ml_model[i]:
                     file.write(path + "\n")
             file.close()
-        return ml_model
+        return ml_model[0], ml_model[1], ml_model[2], ml_model[3], ml_model[4], ml_model[5]
 
     """
         @:param id: contiene l'id del paziente selezionato.

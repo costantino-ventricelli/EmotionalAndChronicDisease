@@ -7,6 +7,7 @@ MILLISECONDS = 1000
 MICROSECONDS = 10000000
 NANOSECONDS = 1000000000
 
+# Hand
 CLOCK = "_cdt."
 NATURAL_SENTENCE = "_sw."
 PENTAGON = "_ipc."
@@ -30,6 +31,7 @@ LE = "_le."
 MOM = "_mom."
 WINDOW = "_w."
 LISTENING = "_ds."
+# Emothaw
 HOUSE = '_sc.'
 FOUR_WORDS = '_fw.'
 LEFT_RING = '_lr.'

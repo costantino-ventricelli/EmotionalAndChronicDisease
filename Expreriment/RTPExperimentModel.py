@@ -28,7 +28,7 @@ class Experiment:
         print("Test task: ", test_tasks)
         # Separo le i task in base agli utenti che li hanno svolti.
         training_list_disease, training_list_healthy, test_list_healthy, test_list_diseases, \
-            validation_list_diseased, validation_list_healthy = TaskManager.split(file_paths, healthy_tasks, disease_tasks, test_tasks)
+            validation_list_diseased, validation_list_healthy = TaskManager.split(file_paths, healthy_tasks, disease_tasks, test_tasks, training_number=25, validation_number=8)
         model = [training_list_disease, training_list_healthy, test_list_diseases, test_list_healthy, validation_list_diseased, validation_list_healthy]
         # Elimino i file che non raggiungono la grandezza richiesta
         model = TaskManager.check_file_dimension(TRAINING_FILE, VALIDATION_FILE, TEST_FILE, minimum_row_file, model)

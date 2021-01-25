@@ -10,7 +10,6 @@ RESOURCE_DIRECTORY = "resource"
 class FileManager:
 
     def __init__(self, dataset_name):
-        print(os.path.dirname(os.path.abspath('__file__')))
         working_dir = os.path.dirname(os.path.abspath('__file__'))
         if os.path.basename(working_dir) == 'src':
             os.chdir(os.path.dirname(working_dir))
@@ -126,7 +125,7 @@ class FileManager:
         return int(re.search(r'_u(.*?)_', path).group(1))
 
     @staticmethod
-    def get_ids_from_paths(paths):
+    def get_ids_from_dir(paths):
         ids = []
         for path in paths:
             split = path.split(os.sep)
