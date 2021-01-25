@@ -60,7 +60,7 @@ class TaskSelection:
         prev_states = FileManager.get_state_from_id(FileManager.get_id_from_path(paths[0]))
         paths.remove(paths[0])
         i = 0
-        while len(test_paths) <= 1:
+        while len(test_paths) <= 1 and i < len(paths):
             if prev_states != FileManager.get_state_from_id(FileManager.get_id_from_path(paths[i])):
                 test_paths.append(paths[i])
                 paths.remove(paths[i])
