@@ -14,7 +14,14 @@ VALUE_TUPLE = 1
 
 class TaskSelection:
 
+    """
+        @:param samples_len: contiene la lunghezza che avranno i campioni all'interno dei tensori
+        @:param minumum_samples: contiene la lunghezza minima in termini di righe dei file da considerare come adatti
+        Il metodo di init permette di generare una prima classifica dei task che ottengono i risultati migliori basandosi
+        sulle quattro metriche messe in ordine di importanza all'interno della tupla (accuracy, precision, recall, f_score)
+    """
     def __init__(self, samples_len, minimum_samples):
+        # Lista dei task del dataset hand
         self.__tasks = [CLOCK, NATURAL_SENTENCE, PENTAGON, MATRIX_1, MATRIX_2, MATRIX_3, TRIAL_1, T_TRIAL_1, T_TRIAL_2,
                         TRIAL_2, HELLO, V_POINT, H_POINT, SQUARE, SIGNATURE_1, SIGNATURE_2, COPY_SPIRAL, TRACED_SPIRAL,
                         BANK_CHECK, LE, MOM, WINDOW, LISTENING]
@@ -23,16 +30,29 @@ class TaskSelection:
         self.__best_results = {}
         self.__file_manager = FileManager("Dataset")
         self.__feature_extraction = RHSDistanceExtract(minimum_samples, samples_len)
+        # Con questo loop posso avviare apprendimenti su ogni task del dataset, ciò mi permetterà di individiare il task
+        # migliore da cui iniziare la selezione.
         for task in self.__tasks:
+            # Per il test vengono selezionati due utenti uno etichettato come sano e uno etichettato come malato, per ottenere
+            # misuarizioni sulle prestazioni del sistema più precise ed affidabili.
             paths, test_paths, validation_number = self.__select_paths(task)
+            # Estraggo i segmenti RHS per training, validazione e test del sistema.
             test_states, test_tensor, training_states, training_tensor, validation_states, validation_tensor = self.__extract_rhs_segment(
                 paths, test_paths, validation_number)
+            # Genero il sistema e valuto i risultati.
             self.__best_results = TaskSelection.__create_and_evaluate_model(task, test_states, test_tensor, training_states, training_tensor,
                                                                             validation_states, validation_tensor, self.__best_results)
 
+    """
+        Questo metodo mi permette di avviare la selezione dei task partendo da quelli che hanno dato il miglior risultato
+        nell inizializzazione.
+    """
     def execute_task_selection(self):
+        # Selezioni i task migliori con i rispettivi risultati.
         previous_max = max(self.__best_results.items())
         actual_tuple = max(self.__best_results.items())
+        # La selezione continuerà fino al deterioramento dei risultati, ovvero appena uno dei quatto paramentri si abbassa
+        # la selezione viene interrotta.
         while previous_max[KEY_TUPLE] <= actual_tuple[KEY_TUPLE]:
             actual_tasks = actual_tuple[VALUE_TUPLE]
             best_results = {}
