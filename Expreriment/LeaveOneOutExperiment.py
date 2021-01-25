@@ -36,6 +36,8 @@ class LeaveOneOutExperiment:
 
     def start_experiment(self, validation_number, test_number):
         print("Leave one out experiment start.")
+        global_results = np.zeros(0)
+        global_diagnosed_states = np.zeros(0)
         for i in range(len(self.__patients)):
             print(i, " iteration:")
             print("Split path...")
@@ -67,14 +69,16 @@ class LeaveOneOutExperiment:
                     file.write("Evaluation result => loss: " + str(evaluation_result[0]) + ", accuracy: " + str(evaluation_result[1]) + "\n")
                     print("States: ", np.shape(states))
                     print("Result: ", np.shape(predicted_result))
-                    predicted_results = np.concatenate(predicted_results, predicted_result)
-                    diagnosed_states = np.concatenate(diagnosed_states, states)
-                accuracy, precision, recall, f_score = self.__ml_model.evaluate_results(predicted_results, diagnosed_states)
-                file.write("GLOBAL ACCURACY: " + str(accuracy * 100) + "%\n")
-                file.write("GLOBAL PRECISION: " + str(precision * 100) + "%\n")
-                file.write("GLOBAL RECALL: " + str(recall * 100) + "%\n")
-                file.write("GLOBAL F_SCORE: " + str(f_score * 100) + "%\n")
+                    predicted_results = np.concatenate((predicted_results, np.array(predicted_result)))
+                    diagnosed_states = np.concatenate((diagnosed_states, np.array(states)))
                 file.close()
+        with open(path.join(SAVING_PATHS, "log_file.txt"), 'w') as file:
+            accuracy, precision, recall, f_score = self.__ml_model.evaluate_results(predicted_results, diagnosed_states)
+            file.write("GLOBAL ACCURACY: " + str(accuracy * 100) + "%\n")
+            file.write("GLOBAL PRECISION: " + str(precision * 100) + "%\n")
+            file.write("GLOBAL RECALL: " + str(recall * 100) + "%\n")
+            file.write("GLOBAL F_SCORE: " + str(f_score * 100) + "%\n")
+            file.close()
 
     @staticmethod
     def print_model(ml_model):
