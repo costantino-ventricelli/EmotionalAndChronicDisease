@@ -1,13 +1,13 @@
 # coding=utf-8
 
+from collections import Counter
+from copy import deepcopy
+
 import numpy as np
 
 from DatasetManager import FileManager
 from DatasetManager.Costants import *
 from DeepLearningClassifier import *
-from copy import deepcopy
-from collections import Counter
-
 
 KEY_TUPLE = 0
 VALUE_TUPLE = 1

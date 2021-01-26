@@ -57,7 +57,7 @@ class RTPExtraction:
             # Ottengo l'id dell'utente che sto analizzando
             id = FileManager.get_id_from_path(path)
             # Ottengo lo stato di salute del paziente.
-            state = FileManager.get_state_from_id(id, healthy_ids)
+            state = FileManager.get_state_from_id(id)
             # Leggo i campioni dal file.
             partial_x, partial_y, partial_pen_status, partial_new_strokes, partial_time_stamps = RTPExtraction.__read_samples_from_file(path)
             # Trasformo i campioni in RowTouchPoint

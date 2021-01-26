@@ -1,11 +1,11 @@
 # coding=utf-8
 
-import numpy as np
-
 from collections import Counter
 from os import mkdir
 from os import path
 from os import sep
+
+import numpy as np
 
 from DatasetManager.FileManager import FileManager
 from DeepLearningClassifier.MachineLearningModel import MLModel
