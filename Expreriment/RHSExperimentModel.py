@@ -1,8 +1,9 @@
 # coding=utf-8
 
 from os import path
-from DeepLearningClassifier import *
+
 from DatasetManager import FileManager
+from DeepLearningClassifier import *
 
 NUM_FILE_SAMPLES = 50
 

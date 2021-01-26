@@ -1,7 +1,7 @@
 # coding=utf-8
 
-from Expreriment.EmothawExperiment import EmothawExperiment
 from DatasetManager.Costants import *
+from Expreriment.EmothawExperiment import EmothawExperiment
 
 
 def main():

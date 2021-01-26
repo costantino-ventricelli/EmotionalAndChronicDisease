@@ -1,13 +1,13 @@
 # coding=utf-8
 
+from collections import Counter
+from copy import deepcopy
+
 import numpy as np
 
 from DatasetManager import FileManager
 from DatasetManager.Costants import *
 from DeepLearningClassifier import *
-from copy import deepcopy
-from collections import Counter
-
 
 KEY_TUPLE = 0
 VALUE_TUPLE = 1
@@ -61,6 +61,7 @@ class TaskSelection:
         # La selezione continuerà fino al deterioramento dei risultati, ovvero appena uno dei quatto paramentri si abbassa
         # la selezione viene interrotta.
         while previous_max[KEY_TUPLE] <= actual_tuple[KEY_TUPLE]:
+            print("Actual tuple: ", actual_tuple)
             # Seleziono la lista dei task appartenente al migliore dei risultati selezionato precedentemente.
             actual_tasks = actual_tuple[VALUE_TUPLE]
             # Creo il nuovo dizionario che permetterà di salvare i risultati

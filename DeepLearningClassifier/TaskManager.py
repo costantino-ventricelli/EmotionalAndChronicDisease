@@ -80,9 +80,14 @@ class TaskManager:
     @staticmethod
     def get_list_from_task(task, paths):
         task_paths = []
-        for path in paths:
-            if task in "_" + FileManager.get_task_from_path(path) + ".":
-                task_paths.append(path)
+        try:
+            for path in paths:
+                if task in '_' + FileManager.get_task_from_path(path) + '.':
+                    task_paths.append(path)
+        except TypeError as error:
+            print("Error: ", error)
+            print("Task: ", '_' + task + '.')
+            print("Paths: ", paths)
         return task_paths
 
     """
