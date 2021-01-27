@@ -65,9 +65,9 @@ class TaskSelection:
         # La selezione continuerà fino al deterioramento dei risultati, ovvero appena uno dei quatto paramentri si abbassa
         # la selezione viene interrotta.
         file.close()
+        # Creo il nuovo dizionario che permetterà di salvare i risultati
+        best_results = {}
         while previous_max[KEY_TUPLE] <= actual_tuple[KEY_TUPLE]:
-            # Creo il nuovo dizionario che permetterà di salvare i risultati
-            best_results = {}
             # Scansionando tutti i tasks dovrei essere in grado di aggiungere nuovi tasks alla selezione.
             for task in self.__tasks:
                 file = open(os.path.join('experiment_result', 'log_file.txt'), 'a')
@@ -93,6 +93,7 @@ class TaskSelection:
                 # Salvo i risultati precedenti prima di aggiornare il sitema con i nuovi dati.
                 previous_max = deepcopy(actual_tuple)
                 actual_tuple = max(best_results.items())
+            best_results.clear()
         return previous_max
 
     """
@@ -160,6 +161,8 @@ class TaskSelection:
         machine_learning = MLModel(training_tensor, training_states, validation_tensor, validation_states)
         predicted_results, evaluation, _ = machine_learning.test_model(test_tensor, test_states)
         accuracy, precision, recall, f_score = machine_learning.evaluate_results(predicted_results, test_states)
+        print("Predicted result: ", Counter(predicted_results).items())
+        print("Theoretical result: ", Counter(test_states).items())
         TaskSelection.__fill_dictionary(best_results, accuracy, f_score, precision, recall, task)
         return best_results
 
