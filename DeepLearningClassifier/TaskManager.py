@@ -30,13 +30,13 @@ class TaskManager:
         che ci permetteranno di ottenere un dataset per la generazione del modello di ML, ogni lista individua una fase
         del processo di validazone(training, validation, src) individuando inoltre i file che verranno utilizzati per 
         la caratterizzazione delle due class di pazienti: malato e sano.
-        @:param paths: contiene i percorsi di tutti i file contenenti i valori campionati per tutti i task nel dataset
-        @:param healthy_task: contiene una lista di tutti i task che sono stati selezionati per addestrare e validare il
+        @:param paths: contiene i percorsi di tutti i file contenenti i valori campionati per tutti i tasks nel dataset
+        @:param healthy_task: contiene una lista di tutti i tasks che sono stati selezionati per addestrare e validare il
                                 modello per i pazienti sani.
-        @:param diseased_task: contiene una lista di tutti i task che sono stai selezionati per addestrare e validare il
+        @:param diseased_task: contiene una lista di tutti i tasks che sono stai selezionati per addestrare e validare il
                                 modello per i pazienti malati.
-        @:param test_task: contiene una lista dei task che sono stati selezionati per testare il modello.
-        @:return: restituisce 6 liste contenti i vari percorsi dei file che sono stati selezionati per task e per classe 
+        @:param test_task: contiene una lista dei tasks che sono stati selezionati per testare il modello.
+        @:return: restituisce 6 liste contenti i vari percorsi dei file che sono stati selezionati per tasks e per classe 
                     del paziente.
     """
     @staticmethod
@@ -50,22 +50,22 @@ class TaskManager:
         test_list_diseased = []
         validation_list_diseased = []
         validation_list_healthy = []
-        # In questo for vengono individuati dati path del sistema tutti i task che sono stati selezionati per la modellazione
-        # se il task si identifica come uno dei task richiesti allora si verifica l'id a cui il task appartiene per essere
+        # In questo for vengono individuati dati path del sistema tutti i tasks che sono stati selezionati per la modellazione
+        # se il tasks si identifica come uno dei tasks richiesti allora si verifica l'id a cui il tasks appartiene per essere
         # correttamente smistato nella lista di appartenenza corretta.
         for path in paths:
             id = FileManager.get_id_from_path(path)
             task = "_" + FileManager.get_task_from_path(path) + "."
-            # Verifico se il task nel path è uno di quelli selezionati per i pazienti con malattia.
+            # Verifico se il tasks nel path è uno di quelli selezionati per i pazienti con malattia.
             if task in diseased_task:
                 # Verifico se l'id del paziente è presente nella lista dei pazienti con malattia.
                 training_list_diseased, validation_list_diseased = TaskManager.__id_in_list(
                     id, path, listd_training, listd_validation, training_list_diseased, validation_list_diseased)
-            # In questo if si verificano i task per i pazienti considerati sani
+            # In questo if si verificano i tasks per i pazienti considerati sani
             if task in healthy_task:
                 training_list_healthy, validation_list_healthy = TaskManager.__id_in_list(
                     id, path, listh_training, listh_validation, training_list_healthy, validation_list_healthy)
-            # In questo if si verificano i task selezionati per i test
+            # In questo if si verificano i tasks selezionati per i test
             if task in test_task:
                 if id in listh_test:
                     test_list_healthy.append(path)
@@ -75,18 +75,21 @@ class TaskManager:
             validation_list_diseased, validation_list_healthy
 
     """
-        Questo metodo permette di ottenere i file relativi ad un task in particolare
+        Questo metodo permette di ottenere i file relativi ad un tasks in particolare
     """
     @staticmethod
-    def get_list_from_task(task, paths):
+    def get_list_from_task(tasks, paths):
         task_paths = []
         try:
-            for path in paths:
-                if task in '_' + FileManager.get_task_from_path(path) + '.':
-                    task_paths.append(path)
+            if not isinstance(tasks, list):
+                tasks = [tasks]
+            for task in tasks:
+                for path in paths:
+                    if task in '_' + FileManager.get_task_from_path(path) + '.':
+                        task_paths.append(path)
         except TypeError as error:
             print("Error: ", error)
-            print("Task: ", task)
+            print("Task: ", tasks)
         return task_paths
 
     """

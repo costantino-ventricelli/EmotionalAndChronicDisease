@@ -11,7 +11,7 @@ MINIMUM_SAMPLES = 2000
 def main():
     task_selection = TaskSelection(SAMPLES_LEN, MINIMUM_SAMPLES)
     best_task = task_selection.execute_task_selection()
-    print("Best task combination (text dependent): ", best_task)
+    print("Best tasks combination (text dependent): ", best_task)
 
 
 if __name__ == '__main__':

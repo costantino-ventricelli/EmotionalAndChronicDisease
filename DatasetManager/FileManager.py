@@ -85,13 +85,13 @@ class FileManager:
 
     """
         @:param patients_directory: contiene tutti percorsi delle directories che rappresentano i pazienti nel dataset.
-        @:return: restituisce tutti i percorsi del dataset con tutti i file per i task in esso contenuti.
+        @:return: restituisce tutti i percorsi del dataset con tutti i file per i tasks in esso contenuti.
     """
     @staticmethod
     def __get_files_from_paths(patients_directory):
         files = []
         try:
-            # Itero su tutte le directory del dataset prelevando tutti i file di task con estensione txt.
+            # Itero su tutte le directory del dataset prelevando tutti i file di tasks con estensione txt.
             for patient in patients_directory:
                 files = FileManager.get_files_from_path(patient, files)
         except OSError as er:
@@ -117,8 +117,8 @@ class FileManager:
         return files
 
     """
-        @:param path: contiene il percorso di un file di task
-        @:return: restituisce l'id del paziente che ha svolto quel task.
+        @:param path: contiene il percorso di un file di tasks
+        @:return: restituisce l'id del paziente che ha svolto quel tasks.
     """
     @staticmethod
     def get_id_from_path(path):
@@ -134,12 +134,12 @@ class FileManager:
         return ids
 
     """
-        @:param path: contiene il percorso di un task.
-        @:return: restituisce l'dentificativo del task che quel file rappresenta
+        @:param path: contiene il percorso di un tasks.
+        @:return: restituisce l'dentificativo del tasks che quel file rappresenta
     """
     @staticmethod
     def get_task_from_path(path):
-        # Ricerca l'espressione regolare che identifica il task
+        # Ricerca l'espressione regolare che identifica il tasks
         return re.search(r'_u(.*?)_(.*?).txt', path).group(2)
 
     """
@@ -168,7 +168,7 @@ class FileManager:
         @:param x_axis: è la lista dei punti campionati per l'asse x
         @:param y_axis: è la lista dei punti campionati per l'asse y
         @:param time_stamp: è la lista dei punti campionati per il timestamp
-        @:param pen_status: è la lista dei punti campionati come bottom status nella scrittura dei task.
+        @:param pen_status: è la lista dei punti campionati come bottom status nella scrittura dei tasks.
         @:return: il metodo restituice una tupla di liste contentente tutte le liste di input private di tutti i punti 
             considerati come doppione.
     """

@@ -122,7 +122,7 @@ class RHSDistanceExtract:
 
     """
         Il metdodo permette di leggere in 4 array tutti i campioni presenti in uno dei file generati dall'esecuzione di 
-        un task, dopo di che elimina tutti i duplicati.
+        un tasks, dopo di che elimina tutti i duplicati.
         @:param path: contiene il percorso del file che si deve analizzare.
         @:return: restituisco i quattro vettori generati mentre si prelevavano i campioni dal file.
     """
