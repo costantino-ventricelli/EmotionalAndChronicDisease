@@ -4,6 +4,7 @@ from collections import Counter
 from copy import deepcopy
 
 import numpy as np
+import os
 
 from DatasetManager import FileManager
 from DatasetManager.Costants import *
@@ -55,23 +56,26 @@ class TaskSelection:
         nell inizializzazione.
     """
     def execute_task_selection(self):
+
+        file = open(os.path.join('experiment_result', 'log_file.txt'), 'w')
         # Selezioni i task migliori con i rispettivi risultati.
         previous_max = max(self.__best_results.items())
         actual_tuple = max(self.__best_results.items())
+        file.write("Max tuple in init: " + str(previous_max) + "\n")
         # La selezione continuerà fino al deterioramento dei risultati, ovvero appena uno dei quatto paramentri si abbassa
         # la selezione viene interrotta.
         while previous_max[KEY_TUPLE] <= actual_tuple[KEY_TUPLE]:
-            print("Actual tuple: ", actual_tuple)
-            # Seleziono la lista dei task appartenente al migliore dei risultati selezionato precedentemente.
-            actual_tasks = actual_tuple[VALUE_TUPLE]
             # Creo il nuovo dizionario che permetterà di salvare i risultati
             best_results = {}
             # Scansionando tutti i task dovrei essere in grado di aggiungere nuovi task alla selezione.
             for task in self.__tasks:
+                # Seleziono la lista dei task appartenente al migliore dei risultati selezionato precedentemente.
+                actual_tasks = actual_tuple[VALUE_TUPLE]
                 # Verifico che il task selezionato non sia già stato preso in analisi.
                 if task not in actual_tasks:
                     # Aggiungo il task alla lista di nuovi task da analizzare.
                     actual_tasks.append(task)
+                    file.write("Selected task: " + str(actual_tasks) + "\n")
                     # Seleziono i file per il modello compresi i file di test e il numero di file che verranno destinati
                     # alla validazione.
                     paths, test_paths, validation_number = self.__select_paths_from_tasks(actual_tasks)
@@ -81,6 +85,7 @@ class TaskSelection:
                     # Addestro e valuto il modello
                     best_results = TaskSelection.__create_and_evaluate_model(actual_tasks, test_states, test_tensor, training_states, training_tensor,
                                                                              validation_states, validation_tensor, best_results)
+                    file.write("Results for task: " + str(best_results.items()) + "\n\n")
                 # Salvo i risultati precedenti prima di aggiornare il sitema con i nuovi dati.
                 previous_max = deepcopy(actual_tuple)
                 actual_tuple = max(best_results.items())
@@ -163,6 +168,7 @@ class TaskSelection:
     def __fill_dictionary(best_results, accuracy, f_score, precision, recall, task):
         if (accuracy, precision, recall, f_score) in best_results:
             tasks = best_results.get((accuracy, precision, recall, f_score), None)
+            print("Updating dictionary: ", task)
             tasks.append(task)
             best_results.update({(accuracy, precision, recall, f_score): tasks})
         else:
