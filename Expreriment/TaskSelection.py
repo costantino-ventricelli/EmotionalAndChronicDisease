@@ -62,11 +62,13 @@ class TaskSelection:
         previous_max = max(self.__best_results.items())
         actual_tuple = max(self.__best_results.items())
         file.write("Max tuple in init: " + str(previous_max) + "\n")
-        # La selezione continuerà fino al deterioramento dei risultati, ovvero appena uno dei quatto paramentri si abbassa
-        # la selezione viene interrotta.
+        file.close()
         # Creo il nuovo dizionario che permetterà di salvare i risultati
         best_results = {}
+        # La selezione continuerà fino al deterioramento dei risultati, ovvero appena uno dei quatto paramentri si abbassa
+        # la selezione viene interrotta.
         while previous_max[KEY_TUPLE] <= actual_tuple[KEY_TUPLE]:
+            file = open(os.path.join('experiment_result', 'log_file.txt'), 'a')
             # Scansionando tutti i tasks dovrei essere in grado di aggiungere nuovi tasks alla selezione.
             for task in self.__tasks:
                 # Seleziono la lista dei tasks appartenente al migliore dei risultati selezionato precedentemente.
