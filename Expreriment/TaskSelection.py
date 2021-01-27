@@ -70,7 +70,7 @@ class TaskSelection:
             best_results = {}
             # Scansionando tutti i tasks dovrei essere in grado di aggiungere nuovi tasks alla selezione.
             for task in self.__tasks:
-                file = open(os.path.join('experiment_result', 'log_file.txt'), 'w')
+                file = open(os.path.join('experiment_result', 'log_file.txt'), 'a')
                 # Seleziono la lista dei tasks appartenente al migliore dei risultati selezionato precedentemente.
                 actual_tasks = list.copy(actual_tuple[VALUE_TUPLE])
                 # Verifico che il tasks selezionato non sia già stato preso in analisi.
@@ -175,5 +175,5 @@ class TaskSelection:
             print("Add tasks : ", task, " to: ", tasks)
             tasks.append(task)
         else:
-            best_results[(accuracy, precision, recall, f_score)] = [task]
+            best_results[(accuracy, precision, recall, f_score)] = task
         return best_results
