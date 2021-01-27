@@ -64,13 +64,11 @@ class TaskSelection:
         file.write("Max tuple in init: " + str(previous_max) + "\n")
         # La selezione continuerà fino al deterioramento dei risultati, ovvero appena uno dei quatto paramentri si abbassa
         # la selezione viene interrotta.
-        file.close()
         # Creo il nuovo dizionario che permetterà di salvare i risultati
         best_results = {}
         while previous_max[KEY_TUPLE] <= actual_tuple[KEY_TUPLE]:
             # Scansionando tutti i tasks dovrei essere in grado di aggiungere nuovi tasks alla selezione.
             for task in self.__tasks:
-                file = open(os.path.join('experiment_result', 'log_file.txt'), 'a')
                 # Seleziono la lista dei tasks appartenente al migliore dei risultati selezionato precedentemente.
                 actual_tasks = list.copy(actual_tuple[VALUE_TUPLE])
                 # Verifico che il tasks selezionato non sia già stato preso in analisi.
@@ -88,12 +86,14 @@ class TaskSelection:
                     # Addestro e valuto il modello
                     best_results = TaskSelection.__create_and_evaluate_model(actual_tasks, test_states, test_tensor, training_states, training_tensor,
                                                                              validation_states, validation_tensor, best_results)
-                    file.write("Results for tasks: " + str(best_results.items()) + "\n\n")
-                    file.close()
                 # Salvo i risultati precedenti prima di aggiornare il sitema con i nuovi dati.
                 previous_max = deepcopy(actual_tuple)
                 actual_tuple = max(best_results.items())
-            best_results.clear()
+                file.write("Previous max: " + str(previous_max) + "\n")
+                file.write("Actual max: " + str(actual_tuple) + "\n")
+            file.write("Results for tasks: " + str(best_results.items()) + "\n\n")
+            file.close()
+            best_results = best_results.clear()
         return previous_max
 
     """
