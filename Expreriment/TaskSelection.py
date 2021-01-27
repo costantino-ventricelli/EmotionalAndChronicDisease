@@ -159,8 +159,6 @@ class TaskSelection:
                                     validation_states, validation_tensor, best_results):
         machine_learning = MLModel(training_tensor, training_states, validation_tensor, validation_states)
         predicted_results, evaluation, _ = machine_learning.test_model(test_tensor, test_states)
-        print("Predicted results: ", Counter(predicted_results).items())
-        print("Test states: ", Counter(test_states).items())
         accuracy, precision, recall, f_score = machine_learning.evaluate_results(predicted_results, test_states)
         TaskSelection.__fill_dictionary(best_results, accuracy, f_score, precision, recall, task)
         return best_results
@@ -175,5 +173,5 @@ class TaskSelection:
             print("Add tasks : ", task, " to: ", tasks)
             tasks.append(task)
         else:
-            best_results[(accuracy, precision, recall, f_score)] = task
+            best_results[(accuracy, precision, recall, f_score)] = task if isinstance(task, list) else [task]
         return best_results
