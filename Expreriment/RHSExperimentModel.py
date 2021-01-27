@@ -22,10 +22,10 @@ class Experiment:
         file_manager = FileManager(dataset)
         file_paths = file_manager.get_files_path()
         minimum_row_file = minimum_samples + 1
-        print("Healthy task: ", healthy_tasks)
-        print("Disease task: ", disease_tasks)
-        print("Test task: ", test_tasks)
-        # Separo le i task in base agli utenti che li hanno svolti.
+        print("Healthy tasks: ", healthy_tasks)
+        print("Disease tasks: ", disease_tasks)
+        print("Test tasks: ", test_tasks)
+        # Separo le i tasks in base agli utenti che li hanno svolti.
         training_list_disease, training_list_healthy, test_list_healthy, test_list_diseases, \
             validation_list_diseased, validation_list_healthy = TaskManager.split(file_paths, healthy_tasks, disease_tasks, test_tasks, training_number=25, validation_number=8)
         # Elimino i file che non raggiungono la grandezza richiesta

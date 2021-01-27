@@ -19,11 +19,11 @@ class TaskSelection:
     """
         @:param samples_len: contiene la lunghezza che avranno i campioni all'interno dei tensori
         @:param minumum_samples: contiene la lunghezza minima in termini di righe dei file da considerare come adatti
-        Il metodo di init permette di generare una prima classifica dei task che ottengono i risultati migliori basandosi
+        Il metodo di init permette di generare una prima classifica dei tasks che ottengono i risultati migliori basandosi
         sulle quattro metriche messe in ordine di importanza all'interno della tupla (accuracy, precision, recall, f_score)
     """
     def __init__(self, samples_len, minimum_samples):
-        # Lista dei task del dataset hand
+        # Lista dei tasks del dataset hand
         self.__tasks = [CLOCK, NATURAL_SENTENCE, PENTAGON, MATRIX_1, MATRIX_2, MATRIX_3, TRIAL_1, T_TRIAL_1, T_TRIAL_2,
                         TRIAL_2, HELLO, V_POINT, H_POINT, SQUARE, SIGNATURE_1, SIGNATURE_2, COPY_SPIRAL, TRACED_SPIRAL,
                         BANK_CHECK, LE, MOM, WINDOW, LISTENING]
@@ -32,7 +32,7 @@ class TaskSelection:
         self.__best_results = {}
         self.__file_manager = FileManager("Dataset")
         self.__feature_extraction = RHSDistanceExtract(minimum_samples, samples_len)
-        # Con questo loop posso avviare apprendimenti su ogni task del dataset, ciò mi permetterà di individiare il task
+        # Con questo loop posso avviare apprendimenti su ogni tasks del dataset, ciò mi permetterà di individiare il tasks
         # migliore da cui iniziare la selezione.
         for task in self.__tasks:
             # Per il test vengono selezionati due utenti uno etichettato come sano e uno etichettato come malato, per ottenere
@@ -52,13 +52,13 @@ class TaskSelection:
                 print("The dataset is not balanced, there aren't the needed class for the classification.")
 
     """
-        Questo metodo mi permette di avviare la selezione dei task partendo da quelli che hanno dato il miglior risultato
+        Questo metodo mi permette di avviare la selezione dei tasks partendo da quelli che hanno dato il miglior risultato
         nell inizializzazione.
     """
     def execute_task_selection(self):
 
         file = open(os.path.join('experiment_result', 'log_file.txt'), 'w')
-        # Selezioni i task migliori con i rispettivi risultati.
+        # Selezioni i tasks migliori con i rispettivi risultati.
         previous_max = max(self.__best_results.items())
         actual_tuple = max(self.__best_results.items())
         file.write("Max tuple in init: " + str(previous_max) + "\n")
@@ -68,17 +68,17 @@ class TaskSelection:
         while previous_max[KEY_TUPLE] <= actual_tuple[KEY_TUPLE]:
             # Creo il nuovo dizionario che permetterà di salvare i risultati
             best_results = {}
-            # Scansionando tutti i task dovrei essere in grado di aggiungere nuovi task alla selezione.
+            # Scansionando tutti i tasks dovrei essere in grado di aggiungere nuovi tasks alla selezione.
             for task in self.__tasks:
                 file = open(os.path.join('experiment_result', 'log_file.txt'), 'w')
-                # Seleziono la lista dei task appartenente al migliore dei risultati selezionato precedentemente.
+                # Seleziono la lista dei tasks appartenente al migliore dei risultati selezionato precedentemente.
                 actual_tasks = list.copy(actual_tuple[VALUE_TUPLE])
-                # Verifico che il task selezionato non sia già stato preso in analisi.
+                # Verifico che il tasks selezionato non sia già stato preso in analisi.
                 if task not in actual_tasks:
-                    # Aggiungo il task alla lista di nuovi task da analizzare.
+                    # Aggiungo il tasks alla lista di nuovi tasks da analizzare.
                     actual_tasks.append(task)
                     print("Selected tasks: ", actual_tasks)
-                    file.write("Selected task: " + str(actual_tasks) + "\n")
+                    file.write("Selected tasks: " + str(actual_tasks) + "\n")
                     # Seleziono i file per il modello compresi i file di test e il numero di file che verranno destinati
                     # alla validazione.
                     paths, test_paths, validation_number = self.__select_paths_from_tasks(actual_tasks)
@@ -88,7 +88,7 @@ class TaskSelection:
                     # Addestro e valuto il modello
                     best_results = TaskSelection.__create_and_evaluate_model(actual_tasks, test_states, test_tensor, training_states, training_tensor,
                                                                              validation_states, validation_tensor, best_results)
-                    file.write("Results for task: " + str(best_results.items()) + "\n\n")
+                    file.write("Results for tasks: " + str(best_results.items()) + "\n\n")
                     file.close()
                 # Salvo i risultati precedenti prima di aggiornare il sitema con i nuovi dati.
                 previous_max = deepcopy(actual_tuple)
@@ -103,7 +103,7 @@ class TaskSelection:
         # Ottengo la lista degli id etichettati come malati e come sani
         healthy_ids, disease_ids = FileManager.get_healthy_disease_list()
         paths = []
-        # Raccolgo tutti i percorsi che contengono i campioni di quel task
+        # Raccolgo tutti i percorsi che contengono i campioni di quel tasks
         for task in tasks:
             paths += TaskManager.get_list_from_task(task, self.__file_manager.get_files_path())
         # Filtro i file in base alla dimensione degli stessi
@@ -125,7 +125,7 @@ class TaskSelection:
         return paths, test_paths, validation_number
 
     """
-        Questo metodo permette di raccogliere tutti i file di un paziente, selezionati anche in base ai task necessari, 
+        Questo metodo permette di raccogliere tutti i file di un paziente, selezionati anche in base ai tasks necessari, 
         li restituisce.
     """
     @staticmethod
@@ -172,7 +172,7 @@ class TaskSelection:
     def __fill_dictionary(best_results, accuracy, f_score, precision, recall, task):
         if (accuracy, precision, recall, f_score) in best_results:
             tasks = best_results.get((accuracy, precision, recall, f_score), None)
-            print("Add task : ", task, " to: ", tasks)
+            print("Add tasks : ", task, " to: ", tasks)
             tasks.append(task)
         else:
             best_results[(accuracy, precision, recall, f_score)] = [task]
