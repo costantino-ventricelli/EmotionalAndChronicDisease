@@ -87,7 +87,6 @@ class TaskManager:
         except TypeError as error:
             print("Error: ", error)
             print("Task: ", task)
-            print("Paths: ", paths)
         return task_paths
 
     """
