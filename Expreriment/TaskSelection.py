@@ -70,7 +70,7 @@ class TaskSelection:
             # Scansionando tutti i task dovrei essere in grado di aggiungere nuovi task alla selezione.
             for task in self.__tasks:
                 # Seleziono la lista dei task appartenente al migliore dei risultati selezionato precedentemente.
-                actual_tasks = actual_tuple[VALUE_TUPLE]
+                actual_tasks = list.copy(actual_tuple[VALUE_TUPLE])
                 # Verifico che il task selezionato non sia già stato preso in analisi.
                 if task not in actual_tasks:
                     # Aggiungo il task alla lista di nuovi task da analizzare.
@@ -83,8 +83,8 @@ class TaskSelection:
                     test_states, test_tensor, training_states, training_tensor, validation_states, validation_tensor = self.__extract_rhs_segment(
                         paths, test_paths, validation_number)
                     # Addestro e valuto il modello
-                    best_results = TaskSelection.__create_and_evaluate_model(actual_tasks, test_states, test_tensor, training_states, training_tensor,
-                                                                             validation_states, validation_tensor, best_results)
+                    TaskSelection.__create_and_evaluate_model(actual_tasks, test_states, test_tensor, training_states, training_tensor,
+                                                              validation_states, validation_tensor, best_results)
                     file.write("Results for task: " + str(best_results.items()) + "\n\n")
                 # Salvo i risultati precedenti prima di aggiornare il sitema con i nuovi dati.
                 previous_max = deepcopy(actual_tuple)
@@ -158,7 +158,7 @@ class TaskSelection:
         print("Predicted results: ", Counter(predicted_results).items())
         print("Test states: ", Counter(test_states).items())
         accuracy, precision, recall, f_score = machine_learning.evaluate_results(predicted_results, test_states)
-        best_results = TaskSelection.__fill_dictionary(best_results, accuracy, f_score, precision, recall, task)
+        TaskSelection.__fill_dictionary(best_results, accuracy, f_score, precision, recall, task)
         return best_results
 
     """
@@ -168,10 +168,7 @@ class TaskSelection:
     def __fill_dictionary(best_results, accuracy, f_score, precision, recall, task):
         if (accuracy, precision, recall, f_score) in best_results:
             tasks = best_results.get((accuracy, precision, recall, f_score), None)
-            print("Updating dictionary: ", task)
+            print("Add task : ", task, " to: ", task)
             tasks.append(task)
-            best_results.update({(accuracy, precision, recall, f_score): tasks})
         else:
             best_results[(accuracy, precision, recall, f_score)] = [task]
-        return best_results
-
