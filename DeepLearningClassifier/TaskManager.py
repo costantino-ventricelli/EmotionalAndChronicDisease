@@ -86,7 +86,7 @@ class TaskManager:
                     task_paths.append(path)
         except TypeError as error:
             print("Error: ", error)
-            print("Task: ", '_' + task + '.')
+            print("Task: ", + task)
             print("Paths: ", paths)
         return task_paths
 
