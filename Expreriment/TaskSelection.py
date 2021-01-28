@@ -82,6 +82,7 @@ class TaskSelection:
                     # Seleziono i file per il modello compresi i file di test e il numero di file che verranno destinati
                     # alla validazione.
                     paths, test_paths, validation_number = self.__select_paths_from_tasks(actual_tasks)
+                    # TODO: Il programma non si arresta e fa cose strane.
                     # Estraggo i segmenti RHS per i tensori.
                     test_states, test_tensor, training_states, training_tensor, validation_states, validation_tensor = self.__extract_rhs_segment(
                         paths, test_paths, validation_number)
@@ -89,8 +90,9 @@ class TaskSelection:
                     best_results = TaskSelection.__create_and_evaluate_model(actual_tasks, test_states, test_tensor, training_states, training_tensor,
                                                                              validation_states, validation_tensor, best_results)
                 # Salvo i risultati precedenti prima di aggiornare il sitema con i nuovi dati.
-                previous_max = deepcopy(actual_tuple)
-                actual_tuple = max(best_results.items())
+                if previous_max[KEY_TUPLE] <= actual_tuple[KEY_TUPLE]:
+                    previous_max = deepcopy(actual_tuple)
+                    actual_tuple = max(best_results.items())
                 file.write("Previous max: " + str(previous_max) + "\n")
                 file.write("Actual max: " + str(actual_tuple) + "\n")
             file.write("Results for tasks: " + str(best_results.items()) + "\n\n")

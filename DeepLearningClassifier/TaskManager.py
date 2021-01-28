@@ -93,7 +93,8 @@ class TaskManager:
         return task_paths
 
     """
-        
+        Il metodo permette di scansionare una lista di percorsi e ottenere tutti i task necessari associati al loro 
+        esecutore.
     """
     @staticmethod
     def get_task_from_paths(paths, tasks):
