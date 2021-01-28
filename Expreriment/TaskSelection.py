@@ -68,33 +68,43 @@ class TaskSelection:
         # La selezione continuerà fino al deterioramento dei risultati, ovvero appena uno dei quatto paramentri si abbassa
         # la selezione viene interrotta.
         while previous_max[KEY_TUPLE] <= actual_tuple[KEY_TUPLE]:
-            file = open(os.path.join('experiment_result', 'log_file.txt'), 'a')
+            print("Previous value: ", previous_max[KEY_TUPLE])
+            print("Actual value: ", actual_tuple[KEY_TUPLE])
             # Scansionando tutti i tasks dovrei essere in grado di aggiungere nuovi tasks alla selezione.
             for task in self.__tasks:
                 # Seleziono la lista dei tasks appartenente al migliore dei risultati selezionato precedentemente.
                 actual_tasks = list.copy(actual_tuple[VALUE_TUPLE])
+                try:
+                    np.shape(actual_tasks)[1]
+                except IndexError:
+                    actual_tasks = [actual_tasks]
                 # Verifico che il tasks selezionato non sia già stato preso in analisi.
-                if task not in actual_tasks:
-                    # Aggiungo il tasks alla lista di nuovi tasks da analizzare.
-                    actual_tasks.append(task)
-                    print("Selected tasks: ", actual_tasks)
-                    file.write("Selected tasks: " + str(actual_tasks) + "\n")
-                    # Seleziono i file per il modello compresi i file di test e il numero di file che verranno destinati
-                    # alla validazione.
-                    paths, test_paths, validation_number = self.__select_paths_from_tasks(actual_tasks)
-                    # TODO: Il programma non si arresta e fa cose strane.
-                    # Estraggo i segmenti RHS per i tensori.
-                    test_states, test_tensor, training_states, training_tensor, validation_states, validation_tensor = self.__extract_rhs_segment(
-                        paths, test_paths, validation_number)
-                    # Addestro e valuto il modello
-                    best_results = TaskSelection.__create_and_evaluate_model(actual_tasks, test_states, test_tensor, training_states, training_tensor,
-                                                                             validation_states, validation_tensor, best_results)
-                # Salvo i risultati precedenti prima di aggiornare il sitema con i nuovi dati.
-                if previous_max[KEY_TUPLE] <= actual_tuple[KEY_TUPLE]:
-                    previous_max = deepcopy(actual_tuple)
-                    actual_tuple = max(best_results.items())
-                file.write("Previous max: " + str(previous_max) + "\n")
-                file.write("Actual max: " + str(actual_tuple) + "\n")
+                for tasks in actual_tasks:
+                    print("Task: ", task)
+                    print("Actual tasks: ", tasks)
+                    if task not in tasks:
+                        # Aggiungo il tasks alla lista di nuovi tasks da analizzare.
+                        tasks.append(task)
+                        print("Selected tasks: ", tasks)
+                        file = open(os.path.join('experiment_result', 'log_file.txt'), 'a')
+                        file.write("Selected tasks: " + str(tasks) + "\n")
+                        file.close()
+                        # Seleziono i file per il modello compresi i file di test e il numero di file che verranno destinati
+                        # alla validazione.
+                        paths, test_paths, validation_number = self.__select_paths_from_tasks(tasks)
+                        # Estraggo i segmenti RHS per i tensori.
+                        test_states, test_tensor, training_states, training_tensor, validation_states, validation_tensor = self.__extract_rhs_segment(
+                            paths, test_paths, validation_number)
+                        # Addestro e valuto il modello
+                        best_results = TaskSelection.__create_and_evaluate_model(tasks, test_states, test_tensor, training_states, training_tensor,
+                                                                                 validation_states, validation_tensor, best_results)
+            # Salvo i risultati precedenti prima di aggiornare il sitema con i nuovi dati.
+            actual_tuple = max(best_results.items())
+            if previous_max[KEY_TUPLE] <= actual_tuple[KEY_TUPLE]:
+                previous_max = deepcopy(actual_tuple)
+            file = open(os.path.join('experiment_result', 'log_file.txt'), 'a')
+            file.write("Previous max: " + str(previous_max) + "\n")
+            file.write("Actual max: " + str(actual_tuple) + "\n")
             file.write("Results for tasks: " + str(best_results.items()) + "\n\n")
             file.close()
             best_results = best_results.clear()
@@ -167,6 +177,7 @@ class TaskSelection:
         accuracy, precision, recall, f_score = machine_learning.evaluate_results(predicted_results, test_states)
         print("Predicted result: ", Counter(predicted_results).items())
         print("Theoretical result: ", Counter(test_states).items())
+        print("Results: ", best_results.items())
         TaskSelection.__fill_dictionary(best_results, accuracy, f_score, precision, recall, task)
         return best_results
 
@@ -177,7 +188,13 @@ class TaskSelection:
     def __fill_dictionary(best_results, accuracy, f_score, precision, recall, task):
         if (accuracy, precision, recall, f_score) in best_results:
             tasks = best_results.get((accuracy, precision, recall, f_score), None)
-            print("Add tasks : ", task, " to: ", tasks)
+            if isinstance(task, list):
+                try:
+                    # Questo comando serve appositamente a scatenare l'eccezione nel caso in cui ci siano più liste di
+                    # task che restituiscano lo stesso risultato sulle 4 metriche.
+                    np.shape(tasks)[1]
+                except IndexError:
+                    tasks = [tasks]
             tasks.append(task)
         else:
             best_results[(accuracy, precision, recall, f_score)] = task if isinstance(task, list) else [task]
