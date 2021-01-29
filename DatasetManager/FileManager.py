@@ -126,6 +126,13 @@ class FileManager:
         return int(re.search(r'_u(.*?)_', path).group(1))
 
     @staticmethod
+    def get_ids_from_paths(paths):
+        ids = []
+        for path in paths:
+            ids.append(FileManager.get_id_from_path(path))
+        return ids
+
+    @staticmethod
     def get_ids_from_dir(paths):
         ids = []
         for path in paths:
@@ -163,6 +170,17 @@ class FileManager:
         for i in range(len(dementias)):
             healthy_ids.append(ids[i]) if dementias[i] == 0 else disease_ids.append(ids[i])
         return healthy_ids, disease_ids
+
+    @staticmethod
+    def get_all_ids():
+        column_names = ["ID", "DEMENTIA"]
+        diagnosis_table_path = os.path.join(RESOURCE_DIRECTORY, "diagnosis_table.csv")
+        # Il metodo apre il file contenente i dati per ogni utente che identificano con 0 un utente sano e con 1 un utente
+        # malato.
+        file = pandas.read_csv(diagnosis_table_path, sep=";", header=None, names=column_names)
+        # Trasformo in due liste le informazioni contenute nel file, una per gli ids
+        ids = file["ID"].tolist()
+        return ids
 
     """
         @:param x_axis: è la lista dei punti campionati per l'asse x
@@ -220,6 +238,16 @@ class FileManager:
             if id == FileManager.get_id_from_path(path):
                 id_files.append(path)
         return id_files
+
+    @staticmethod
+    def get_all_files_ids_tasks(ids, tasks, paths):
+        files = []
+        if not isinstance(tasks, list):
+            tasks = [tasks]
+        for path in paths:
+            if FileManager.get_id_from_path(path) in ids and ('_' + FileManager.get_task_from_path(path) + '.') in tasks:
+                files.append(path)
+        return files
 
     @staticmethod
     def log_results(accuracy_file, evaluation_result, f1_score_file, precision_file, recall_file, save_file_path,

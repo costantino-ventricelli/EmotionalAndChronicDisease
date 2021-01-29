@@ -78,7 +78,7 @@ class TaskManager:
         Questo metodo permette di ottenere i file relativi ad un tasks in particolare
     """
     @staticmethod
-    def get_list_from_task(tasks, paths):
+    def get_task_files(tasks, paths):
         task_paths = []
         try:
             if not isinstance(tasks, list):

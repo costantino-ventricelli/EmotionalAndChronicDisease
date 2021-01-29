@@ -12,6 +12,7 @@ from DeepLearningClassifier import *
 
 KEY_TUPLE = 0
 VALUE_TUPLE = 1
+FEATURES = 3
 
 
 class TaskSelection:
@@ -24,9 +25,7 @@ class TaskSelection:
     """
     def __init__(self, samples_len, minimum_samples):
         # Lista dei tasks del dataset hand
-        self.__tasks = [CLOCK, NATURAL_SENTENCE, PENTAGON, MATRIX_1, MATRIX_2, MATRIX_3, TRIAL_1, T_TRIAL_1, T_TRIAL_2,
-                        TRIAL_2, HELLO, V_POINT, H_POINT, SQUARE, SIGNATURE_1, SIGNATURE_2, COPY_SPIRAL, TRACED_SPIRAL,
-                        BANK_CHECK, LE, MOM, WINDOW, LISTENING]
+        self.__tasks = TASKS
         self.__samples_len = samples_len
         self.__minimum_samples = minimum_samples
         self.__best_results = {}
@@ -35,28 +34,34 @@ class TaskSelection:
         # Con questo loop posso avviare apprendimenti su ogni tasks del dataset, ciò mi permetterà di individiare il tasks
         # migliore da cui iniziare la selezione.
         for task in self.__tasks:
-            # Per il test vengono selezionati due utenti uno etichettato come sano e uno etichettato come malato, per ottenere
-            # misuarizioni sulle prestazioni del sistema più precise ed affidabili.
-            paths, test_paths, validation_number = self.__select_paths_from_tasks([task])
-            # Questo controllo evita la catastrofe in quanto permette di verificare che ci siano entrambe le classi per
-            # poter effettuare la classificazione, quindi con questo controllo le possibilità di incorrere in problemi di
-            # bilanciamento del dataset si riduce accorpandosi con il controllo fatto al momento dell'estrazione delle feature.
-            if len(test_paths) > 1:
-                # Estraggo i segmenti RHS per training, validazione e test del sistema.
-                test_states, test_tensor, training_states, training_tensor, validation_states, validation_tensor = self.__extract_rhs_segment(
-                    paths, test_paths, validation_number)
-                # Genero il sistema e valuto i risultati.
-                self.__best_results = TaskSelection.__create_and_evaluate_model(task, test_states, test_tensor, training_states, training_tensor,
-                                                                                validation_states, validation_tensor, self.__best_results)
-            else:
-                print("The dataset is not balanced, there aren't the needed class for the classification.")
+            ids = FileManager.get_all_ids()
+            predicted_states = np.zeros(0)
+            theoretical_states = np.zeros(0)
+            for test_id in ids:
+                print("Creating model and testing for id: ", test_id, " with task: ", task)
+                # Per il test vengono selezionati due utenti uno etichettato come sano e uno etichettato come malato, per ottenere
+                # misuarizioni sulle prestazioni del sistema più precise ed affidabili.
+                paths, test_paths, validation_number = self.__select_paths_from_tasks([task], test_id)
+                if len(test_paths) > 0:
+                    # Estraggo i segmenti RHS per training, validazione e test del sistema.
+                    test_states, test_tensor, training_states, training_tensor, validation_states, validation_tensor = self.__extract_rhs_segment(
+                        paths, test_paths, validation_number)
+                    ml_model = MLModel(training_tensor, training_states, validation_tensor, validation_states)
+                    predicted_states_partial, _, _ = ml_model.test_model(test_tensor, test_states)
+                    predicted_states = np.concatenate((predicted_states, np.array(predicted_states_partial).astype(float)))
+                    theoretical_states = np.concatenate((theoretical_states, np.array(test_states).astype(float)))
+                else:
+                    print("There are no test for user: ", test_id, " with task: ", task)
+            print("Predicted results: ", Counter(predicted_states).items())
+            print("Theoretical states: ", Counter(theoretical_states).items())
+            accuracy, precision, recall, f_score = MLModel.evaluate_results(predicted_states, theoretical_states)
+            TaskSelection.__fill_dictionary(self.__best_results, accuracy, f_score, precision, recall, task)
 
     """
         Questo metodo mi permette di avviare la selezione dei tasks partendo da quelli che hanno dato il miglior risultato
         nell inizializzazione.
     """
-    def execute_task_selection(self):
-
+    def execute_simple_task_selection(self):
         file = open(os.path.join('experiment_result', 'log_file.txt'), 'w')
         # Selezioni i tasks migliori con i rispettivi risultati.
         previous_max = max(self.__best_results.items())
@@ -72,32 +77,7 @@ class TaskSelection:
             print("Actual value: ", actual_tuple[KEY_TUPLE])
             # Scansionando tutti i tasks dovrei essere in grado di aggiungere nuovi tasks alla selezione.
             for task in self.__tasks:
-                # Seleziono la lista dei tasks appartenente al migliore dei risultati selezionato precedentemente.
-                actual_tasks = list.copy(actual_tuple[VALUE_TUPLE])
-                try:
-                    np.shape(actual_tasks)[1]
-                except IndexError:
-                    actual_tasks = [actual_tasks]
-                # Verifico che il tasks selezionato non sia già stato preso in analisi.
-                for tasks in actual_tasks:
-                    print("Task: ", task)
-                    print("Actual tasks: ", tasks)
-                    if task not in tasks:
-                        # Aggiungo il tasks alla lista di nuovi tasks da analizzare.
-                        tasks.append(task)
-                        print("Selected tasks: ", tasks)
-                        file = open(os.path.join('experiment_result', 'log_file.txt'), 'a')
-                        file.write("Selected tasks: " + str(tasks) + "\n")
-                        file.close()
-                        # Seleziono i file per il modello compresi i file di test e il numero di file che verranno destinati
-                        # alla validazione.
-                        paths, test_paths, validation_number = self.__select_paths_from_tasks(tasks)
-                        # Estraggo i segmenti RHS per i tensori.
-                        test_states, test_tensor, training_states, training_tensor, validation_states, validation_tensor = self.__extract_rhs_segment(
-                            paths, test_paths, validation_number)
-                        # Addestro e valuto il modello
-                        best_results = TaskSelection.__create_and_evaluate_model(tasks, test_states, test_tensor, training_states, training_tensor,
-                                                                                 validation_states, validation_tensor, best_results)
+                best_results = self.__for_all_task(actual_tuple, best_results, task)
             # Salvo i risultati precedenti prima di aggiornare il sitema con i nuovi dati.
             actual_tuple = max(best_results.items())
             if previous_max[KEY_TUPLE] <= actual_tuple[KEY_TUPLE]:
@@ -107,30 +87,63 @@ class TaskSelection:
             file.write("Actual max: " + str(actual_tuple) + "\n")
             file.write("Results for tasks: " + str(best_results.items()) + "\n\n")
             file.close()
-            best_results = best_results.clear()
+            best_results = {}
         return previous_max
+
+    def __for_all_task(self, actual_tuple, best_results, task):
+        # Seleziono la lista dei tasks appartenente al migliore dei risultati selezionato precedentemente.
+        actual_tasks = list.copy(actual_tuple[VALUE_TUPLE])
+        try:
+            np.shape(actual_tasks)[1]
+        except IndexError:
+            actual_tasks = [actual_tasks]
+        # Verifico che il tasks selezionato non sia già stato preso in analisi.
+        for tasks in actual_tasks:
+            print("Task: ", task)
+            print("Actual tasks: ", tasks)
+            if task not in tasks:
+                # Aggiungo il tasks alla lista di nuovi tasks da analizzare.
+                tasks.append(task)
+                print("Selected tasks: ", tasks)
+                file = open(os.path.join('experiment_result', 'log_file.txt'), 'a')
+                file.write("Selected tasks: " + str(tasks) + "\n")
+                file.close()
+                ids = FileManager.get_all_ids()
+                theoretical_states = np.zeros(0)
+                predicted_states = np.zeros(0)
+                for test_id in ids:
+                    print("Creating model and testing for id: ", test_id, " with tasks: ", tasks)
+                    # Seleziono i file per il modello compresi i file di test e il numero di file che verranno destinati
+                    # alla validazione.
+                    paths, test_paths, validation_number = self.__select_paths_from_tasks(tasks, test_id)
+                    if len(test_paths) > 0:
+                        # Estraggo i segmenti RHS per i tensori.
+                        test_states, test_tensor, training_states, training_tensor, validation_states, validation_tensor = self.__extract_rhs_segment(
+                            paths, test_paths, validation_number)
+                        ml_model = MLModel(training_tensor, training_states, validation_tensor, validation_states)
+                        predicted_states_partial, _, _ = ml_model.test_model(test_tensor, test_states)
+                        theoretical_states = np.concatenate((theoretical_states, np.array(test_states).astype(float)))
+                        predicted_states = np.concatenate((predicted_states, np.array(predicted_states_partial).astype(float)))
+                    else:
+                        print("There are no tests for id: ", test_id, " with tasks: ", tasks)
+                print("Predicted results: ", Counter(predicted_states).items())
+                print("Theoretical states: ", Counter(theoretical_states).items())
+                accuracy, precision, recall, f_score = MLModel.evaluate_results(predicted_states, theoretical_states)
+                best_results = TaskSelection.__fill_dictionary(best_results, accuracy, precision, recall, f_score, tasks)
+        return best_results
 
     """
         Questo metdodo permette di individuare i percorsi che verranno utilizzati per l'addestramento e la validazione 
         del modello, separandoli da quelli di test.
     """
-    def __select_paths_from_tasks(self, tasks):
-        # Ottengo la lista degli id etichettati come malati e come sani
-        healthy_ids, disease_ids = FileManager.get_healthy_disease_list()
+    def __select_paths_from_tasks(self, tasks, test_id):
         paths = []
         # Raccolgo tutti i percorsi che contengono i campioni di quel tasks
         for task in tasks:
-            paths += TaskManager.get_list_from_task(task, self.__file_manager.get_files_path())
+            paths += TaskManager.get_task_files(task, self.__file_manager.get_files_path())
         # Filtro i file in base alla dimensione degli stessi
         paths = FileManager.filter_file(paths, min_dim=self.__minimum_samples + 1)
-        # Separo i percorsi individuando un utente sano e uno malato su cui effettuare i test necessari.
-        healthy_paths = TaskSelection.__get_test_for_state(healthy_ids, paths)
-        disease_paths = TaskSelection.__get_test_for_state(disease_ids, paths)
-        # Creo la lista completa dei file per il test
-        if not healthy_paths or not disease_paths:
-            test_paths = []
-        else:
-            test_paths = healthy_paths + disease_paths
+        test_paths = FileManager.get_all_file_of_id(test_id, paths)
         # Elimino i file del test da quelli usati per il training e la validazione.
         for i in range(len(test_paths)):
             if test_paths[i] in paths:
@@ -138,19 +151,6 @@ class TaskSelection:
         # Calcolo il numero di file necessari per la validazione.
         validation_number = int(np.ceil(len(paths) * 0.2))
         return paths, test_paths, validation_number
-
-    """
-        Questo metodo permette di raccogliere tutti i file di un paziente, selezionati anche in base ai tasks necessari, 
-        li restituisce.
-    """
-    @staticmethod
-    def __get_test_for_state(ids, paths):
-        i = 0
-        return_paths = []
-        while len(return_paths) == 0 and i < len(paths):
-            return_paths = FileManager.get_all_file_of_id(ids[i], paths)
-            i += 1
-        return return_paths
 
     """
         Questo metodo permette di generare i tre tensori con i relativi targhet per addestramento, validazione e test del modello.
@@ -163,23 +163,13 @@ class TaskSelection:
         validation_tensor, validation_states, _ = self.__feature_extraction.extract_rhs_known_state(
             paths[(len(paths) - validation_number): len(paths)])
         # Genero il tensore di test.
-        test_tensor, test_states, _ = self.__feature_extraction.extract_rhs_known_state(test_paths)
+        test_tensor = np.zeros((0, self.__samples_len * 2, FEATURES), dtype=float)
+        test_states = np.zeros(0)
+        for path in test_paths:
+            partial_tensor, partial_states = self.__feature_extraction.extract_rhs_file(path)
+            test_tensor = np.concatenate((test_tensor, partial_tensor))
+            test_states = np.concatenate((test_states, partial_states))
         return test_states, test_tensor, training_states, training_tensor, validation_states, validation_tensor
-
-    """
-        Questo metdo permette di addestrare, validare e testare il modello, calcolando le quattro metriche di riferimento.
-    """
-    @staticmethod
-    def __create_and_evaluate_model(task, test_states, test_tensor, training_states, training_tensor,
-                                    validation_states, validation_tensor, best_results):
-        machine_learning = MLModel(training_tensor, training_states, validation_tensor, validation_states)
-        predicted_results, evaluation, _ = machine_learning.test_model(test_tensor, test_states)
-        accuracy, precision, recall, f_score = machine_learning.evaluate_results(predicted_results, test_states)
-        print("Predicted result: ", Counter(predicted_results).items())
-        print("Theoretical result: ", Counter(test_states).items())
-        print("Results: ", best_results.items())
-        TaskSelection.__fill_dictionary(best_results, accuracy, f_score, precision, recall, task)
-        return best_results
 
     """
         Questo metodo permette di aggiornare un dizionario che permetterà di tracciare i risultati ottenuti dal sistema
