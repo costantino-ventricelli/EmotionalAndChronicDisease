@@ -47,18 +47,19 @@ class TaskSelection:
                     test_states, test_tensor, training_states, training_tensor, validation_states, validation_tensor = self.__extract_rhs_segment(
                         paths, test_paths, validation_number)
                     try:
-                        ml_model = MLModel(training_tensor, training_states, validation_tensor, validation_states)
+                        """ml_model = MLModel(training_tensor, training_states, validation_tensor, validation_states)
+                        predicted_states_partial, _, _ = ml_model.test_model(test_tensor, test_states)
+                        predicted_states = np.concatenate(
+                            (predicted_states, np.array(predicted_states_partial).astype(float)))
+                        theoretical_states = np.concatenate((theoretical_states, np.array(test_states).astype(float)))"""
                     except ValueError as val:
                         print("Exception: ", val)
-                    predicted_states_partial, _, _ = ml_model.test_model(test_tensor, test_states)
-                    predicted_states = np.concatenate((predicted_states, np.array(predicted_states_partial).astype(float)))
-                    theoretical_states = np.concatenate((theoretical_states, np.array(test_states).astype(float)))
                 else:
                     print("There are no test for user: ", test_id, " with task: ", task)
             print("Predicted results: ", Counter(predicted_states).items())
             print("Theoretical states: ", Counter(theoretical_states).items())
-            accuracy, precision, recall, f_score = MLModel.evaluate_results(predicted_states, theoretical_states)
-            TaskSelection.__fill_dictionary(self.__best_results, accuracy, f_score, precision, recall, task)
+            """accuracy, precision, recall, f_score = MLModel.evaluate_results(predicted_states, theoretical_states)
+            TaskSelection.__fill_dictionary(self.__best_results, accuracy, f_score, precision, recall, task)"""
 
     """
         Questo metodo mi permette di avviare la selezione dei tasks partendo da quelli che hanno dato il miglior risultato
@@ -123,10 +124,17 @@ class TaskSelection:
                         # Estraggo i segmenti RHS per i tensori.
                         test_states, test_tensor, training_states, training_tensor, validation_states, validation_tensor = self.__extract_rhs_segment(
                             paths, test_paths, validation_number)
-                        ml_model = MLModel(training_tensor, training_states, validation_tensor, validation_states)
-                        predicted_states_partial, _, _ = ml_model.test_model(test_tensor, test_states)
-                        theoretical_states = np.concatenate((theoretical_states, np.array(test_states).astype(float)))
-                        predicted_states = np.concatenate((predicted_states, np.array(predicted_states_partial).astype(float)))
+                        try:
+                            ml_model = MLModel(training_tensor, training_states, validation_tensor, validation_states)
+                            predicted_states_partial, _, _ = ml_model.test_model(test_tensor, test_states)
+                            theoretical_states = np.concatenate((theoretical_states, np.array(test_states).astype(float)))
+                            predicted_states = np.concatenate((predicted_states, np.array(predicted_states_partial).astype(float)))
+                        except ValueError as error:
+                            print("Exception raise: ", error)
+                            print("Training tensor: ", np.shape(training_tensor), ", training states: ",
+                                  np.shape(training_states))
+                            print("Validation tensor: ", np.shape(validation_tensor), ", validation states: ",
+                                  np.shape(validation_states))
                     else:
                         print("There are no tests for id: ", test_id, " with tasks: ", tasks)
                 print("Predicted results: ", Counter(predicted_states).items())
