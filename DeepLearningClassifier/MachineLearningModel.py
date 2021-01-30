@@ -31,6 +31,11 @@ class MLModel:
             parametro per la validazione
     """
     def __init__(self, tensor_training, states_training, tensor_validation, states_validation):
+        # Verifico che le i valori siano stati correttamente passati alla funzione
+        if len(tensor_training) == 0 or len(states_training) == 0:
+            raise ValueError("There are no element in training element")
+        if len(tensor_validation) == 0 or len(states_validation) == 0:
+            raise ValueError("There are no element in validation element")
         # Imposto il modello come sequenziale.
         self.__model = Sequential()
         # Aggiungo il layers bidirezionali alla rete di tipo LSTM, con i valori di kernel_inizialization, e recurrent_activation
@@ -52,7 +57,7 @@ class MLModel:
         self.__history = self.__model.fit(tensor_training, states_training,
                                           epochs=40,
                                           batch_size=128,
-                                          validation_data=(tensor_validation, states_validation), verbose=0)
+                                          validation_data=(tensor_validation, states_validation), verbose=1)
         # Vengono presentate le informazioni relative allo svolgimento di training e validazione.
         print(self.__model.summary())
 

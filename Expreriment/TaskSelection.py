@@ -46,7 +46,10 @@ class TaskSelection:
                     # Estraggo i segmenti RHS per training, validazione e test del sistema.
                     test_states, test_tensor, training_states, training_tensor, validation_states, validation_tensor = self.__extract_rhs_segment(
                         paths, test_paths, validation_number)
-                    ml_model = MLModel(training_tensor, training_states, validation_tensor, validation_states)
+                    try:
+                        ml_model = MLModel(training_tensor, training_states, validation_tensor, validation_states)
+                    except ValueError as val:
+                        print("Exception: ", val)
                     predicted_states_partial, _, _ = ml_model.test_model(test_tensor, test_states)
                     predicted_states = np.concatenate((predicted_states, np.array(predicted_states_partial).astype(float)))
                     theoretical_states = np.concatenate((theoretical_states, np.array(test_states).astype(float)))

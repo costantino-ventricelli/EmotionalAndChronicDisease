@@ -47,6 +47,9 @@ class IndependentTaskSelection:
                     predicted_status = np.zeros(0)
                     theoretical_status = np.zeros(0)
                     for test_id in self.__ids:
+                        print("Generate model for id: ", test_id)
+                        print("Healthy task: ", healthy_task)
+                        print("Disease task: ", disease_task)
                         healthy_paths = IndependentTaskSelection.__delete_files(test_id, healthy_paths)
                         disease_paths = IndependentTaskSelection.__delete_files(test_id, disease_paths)
                         test_tasks = IndependentTaskSelection.__get_tasks_difference(self.__tasks, healthy_task,
@@ -54,17 +57,20 @@ class IndependentTaskSelection:
                         test_paths = FileManager.get_all_files_ids_tasks([test_id], list(test_tasks),
                                                                          self.__file_manager.get_files_path())
                         test_paths = FileManager.filter_file(test_paths, self.__minimum_samples + 1)
-                        disease_validation = int(np.ceil(len(disease_paths) * 0.20))
-                        if disease_validation < healthy_validation:
-                            validation = disease_validation
+                        if len(test_paths) > 0:
+                            disease_validation = int(np.ceil(len(disease_paths) * 0.20))
+                            if disease_validation < healthy_validation:
+                                validation = disease_validation
+                            else:
+                                validation = healthy_validation
+                            training_tensor, training_states, validation_tensor, validation_states, test_tensor, test_states = \
+                                self.__extract_rhs_segment(validation, healthy_paths, disease_paths, test_paths)
+                            ml_model = MLModel(training_tensor, training_states, validation_tensor, validation_states)
+                            predicted_status_partial, _, _ = ml_model.test_model(test_tensor, test_states)
+                            predicted_status = np.concatenate((predicted_status, predicted_status_partial))
+                            theoretical_status = np.concatenate((theoretical_status, test_states))
                         else:
-                            validation = healthy_validation
-                        training_tensor, training_states, validation_tensor, validation_states, test_tensor, test_states = \
-                            self.__extract_rhs_segment(validation, healthy_paths, disease_paths, test_paths)
-                        ml_model = MLModel(training_tensor, training_states, validation_tensor, validation_states)
-                        predicted_status_partial, _, _ = ml_model.test_model(test_tensor, test_states)
-                        predicted_status = np.concatenate((predicted_status, predicted_status_partial))
-                        theoretical_status = np.concatenate((theoretical_status, test_states))
+                            print("There are not test file for id: ", test_id)
                     accuracy, precision, recall, f_score = MLModel.evaluate_results(predicted_status, theoretical_status)
                     with open(os.path.join(directory, 'init_file.csv'), 'a') as file:
                         csv_file = csv.writer(file, delimiter=';', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
@@ -91,5 +97,10 @@ class IndependentTaskSelection:
         validation_paths = healthy_paths[validation: len(healthy_paths)] + disease_paths[validation: len(disease_paths)]
         training_tensor, training_states, _ = self.__feature_extraction.extract_rhs_known_state(training_paths)
         validation_tensor, validation_states, _ = self.__feature_extraction.extract_rhs_known_state(validation_paths)
-        test_tensor, test_states, _ = self.__feature_extraction.extract_rhs_known_state(test_paths)
+        test_tensor = np.zeros((0, self.__samples_len * 2, FEATURES))
+        test_states = np.zeros(0)
+        for path in test_paths:
+            partial_tensor, partial_states = self.__feature_extraction.extract_rhs_file(path)
+            test_tensor = np.concatenate((test_tensor, partial_tensor))
+            test_states = np.concatenate((test_states, partial_states))
         return training_tensor, training_states, validation_tensor, validation_states, test_tensor, test_states
