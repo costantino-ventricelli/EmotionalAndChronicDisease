@@ -9,6 +9,7 @@ from keras.layers import Dense
 from keras.layers import LSTM
 from keras.models import Sequential
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import precision_score
 from sklearn.metrics import precision_recall_fscore_support as get_four_metrics
 
 CLASS_CHANGE = 0.55
@@ -120,6 +121,12 @@ class MLModel:
         precision, recall, f_score, _ = get_four_metrics(theoretical_states, predicted_states,
                                                          labels=[0, 1], average="macro")
         return accuracy, precision, recall, f_score
+
+    @staticmethod
+    def get_accuracy_precision(predicted_states, theoretical_states):
+        accuracy = accuracy_score(theoretical_states, predicted_states)
+        precision = precision_score(theoretical_states, predicted_states)
+        return accuracy, precision
 
     """
         @:param tensor: Contiene il tensore su cui avviare la previsione dei risultati utilizzando il modello precedentemente

@@ -232,6 +232,7 @@ class FileManager:
     """
     @staticmethod
     def filter_file(paths, min_dim):
+        min_dim += 1
         filtered_paths = []
         for path in paths:
             if FileManager.get_file_rows(path) >= min_dim:
