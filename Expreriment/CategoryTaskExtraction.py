@@ -57,7 +57,7 @@ class CategoryTaskExtraction:
             if not self.__is_already_do(healthy_task, disease_task):
                 accuracy, precision, recall, f_score = self.__leave_one_out(healthy_task, disease_task)
                 print("Model evaluated")
-                directory = os.path.join("experiment_results", "category_selection")
+                directory = os.path.join("experiment_result", "category_selection")
                 if not os.path.exists(directory):
                     os.mkdir(directory)
                 if self.__prev_file is None:

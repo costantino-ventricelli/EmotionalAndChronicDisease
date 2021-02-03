@@ -72,8 +72,10 @@ class LeaveOneOutExperiment:
                     predicted_results = np.concatenate((predicted_results, np.array(predicted_result)))
                     diagnosed_states = np.concatenate((diagnosed_states, np.array(states)))
                 file.close()
+                global_results = np.concatenate((global_results, predicted_results))
+                global_diagnosed_states = np.concatenate((global_diagnosed_states, diagnosed_states))
         with open(path.join(SAVING_PATHS, "log_file.txt"), 'w') as file:
-            accuracy, precision, recall, f_score = self.__ml_model.evaluate_results(predicted_results, diagnosed_states)
+            accuracy, precision, recall, f_score = self.__ml_model.evaluate_results(global_results, global_diagnosed_states)
             file.write("GLOBAL ACCURACY: " + str(accuracy * 100) + "%\n")
             file.write("GLOBAL PRECISION: " + str(precision * 100) + "%\n")
             file.write("GLOBAL RECALL: " + str(recall * 100) + "%\n")
