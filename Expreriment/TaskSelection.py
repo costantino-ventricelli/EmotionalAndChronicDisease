@@ -153,7 +153,7 @@ class TaskSelection:
         for task in tasks:
             paths += TaskManager.get_task_files(task, self.__file_manager.get_files_path())
         # Filtro i file in base alla dimensione degli stessi
-        paths = FileManager.filter_file(paths, min_dim=self.__minimum_samples + 1)
+        paths = FileManager.filter_file(paths, min_dim=self.__minimum_samples)
         test_paths = FileManager.get_all_file_of_id(test_id, paths)
         # Elimino i file del test da quelli usati per il training e la validazione.
         for i in range(len(test_paths)):

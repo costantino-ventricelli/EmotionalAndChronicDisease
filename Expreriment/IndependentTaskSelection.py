@@ -38,7 +38,7 @@ class IndependentTaskSelection:
         for healthy_task in self.__tasks:
             healthy_paths = FileManager.get_all_files_ids_tasks(healthy_ids, healthy_task,
                                                                 self.__file_manager.get_files_path())
-            healthy_paths = FileManager.filter_file(healthy_paths, self.__minimum_samples + 1)
+            healthy_paths = FileManager.filter_file(healthy_paths, self.__minimum_samples)
             # Calcolo in base al numero di file rimasti quelli sufficienti per la validazione che abbiamo fissato al 20%
             # del totale.
             healthy_validation = int(np.ceil(len(healthy_paths) * 0.20))
@@ -48,7 +48,7 @@ class IndependentTaskSelection:
                 if healthy_task != disease_task:
                     disease_paths = FileManager.get_all_files_ids_tasks(disease_ids, disease_task,
                                                                         self.__file_manager.get_files_path())
-                    disease_paths = FileManager.filter_file(disease_paths, self.__minimum_samples + 1)
+                    disease_paths = FileManager.filter_file(disease_paths, self.__minimum_samples)
                     # Qui vengono ottenuti tutti i healthy_task che non sono stati selezionati per l'addestramento così da
                     # utilizzarli per il test
                     test_tasks = TaskManager.get_tasks_difference(self.__tasks, healthy_task,
@@ -93,7 +93,7 @@ class IndependentTaskSelection:
         # Ottengo tutti i percorsi dei file che verranno utilizzati per il test
         test_paths = FileManager.get_all_files_ids_tasks(test_id, list(test_tasks),
                                                          file_manager.get_files_path())
-        test_paths = FileManager.filter_file(test_paths, minimum_samples + 1)
+        test_paths = FileManager.filter_file(test_paths, minimum_samples)
         # Se riesco a individuare file di test che rispettano i parametri necessari per la costruzone del
         # tensore di test avvio apprendimento, validazione e test.
         predicted_status_partial = np.zeros(0)

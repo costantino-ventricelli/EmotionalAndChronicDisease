@@ -76,8 +76,8 @@ class CategoryTaskExtraction:
         file_manager = FileManager("Dataset")
         healthy_file = FileManager.get_all_files_ids_tasks(healthy_ids, healthy_task, file_manager.get_files_path())
         disease_file = FileManager.get_all_files_ids_tasks(disease_ids, disease_task, file_manager.get_files_path())
-        healthy_file = FileManager.filter_file(healthy_file, self.__minimum_samples + 1)
-        disease_file = FileManager.filter_file(disease_file, self.__minimum_samples + 1)
+        healthy_file = FileManager.filter_file(healthy_file, self.__minimum_samples)
+        disease_file = FileManager.filter_file(disease_file, self.__minimum_samples)
         validation_number = FileManager.get_validation_number(len(healthy_file), len(disease_file))
         test_tasks = TaskManager.get_tasks_difference(TASKS, healthy_task, disease_task)
         predicted_states = np.zeros(0)
@@ -91,7 +91,7 @@ class CategoryTaskExtraction:
                 healthy_file_deleted[len(healthy_file_deleted) - validation_number: len(healthy_file_deleted)]
                 + disease_file_deleted[len(disease_file_deleted) - validation_number: len(disease_file_deleted)])
             test_file = FileManager.get_all_files_ids_tasks(test_id, test_tasks, file_manager.get_files_path())
-            test_file = FileManager.filter_file(test_file, self.__minimum_samples + 1)
+            test_file = FileManager.filter_file(test_file, self.__minimum_samples)
             test_tensor = np.zeros((0, self.__samples_len * 2, FEATURE))
             test_states = np.zeros(0)
             for file in test_file:
