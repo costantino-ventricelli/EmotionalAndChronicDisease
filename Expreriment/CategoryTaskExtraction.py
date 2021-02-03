@@ -3,13 +3,10 @@
 import numpy as np
 import os
 import csv
-import concurrent.futures as features
 
 from DatasetManager import FileManager
 from DatasetManager.Costants import *
 from DeepLearningClassifier import *
-from itertools import repeat
-from copy import deepcopy
 
 METRICS_KEY = 0
 HEALTHY_VALUE = 1
@@ -22,9 +19,15 @@ DISEASE_STRING = "DISEASE"
 
 class CategoryTaskExtraction:
 
+    """
+        @:param prev_file: contiene il percorso del file frutto di un esecuzione precedente, nel momento in cui viene
+                passato None il processo assume che è la prima volta che viene avviata l'analisi
+    """
     def __init__(self, prev_file, tasks, minimum_samples, samples_len, category):
         FileManager.set_root_directory()
         self.__tasks = tasks
+        # Il file contente i valori calcolati ci permette di ricominciare l'esecuzione del programma nel caso dovesse
+        # interrompersi per qualsiasi ragione.
         if prev_file is not None:
             self.__prev_file = prev_file
             self.__results = self.__set_previous_state()
@@ -38,17 +41,16 @@ class CategoryTaskExtraction:
 
     def star_selection(self):
         print("Starting selection on tasks: ", self.__tasks)
-        with features.ThreadPoolExecutor() as executor:
-            executions = executor.map(self.__start_healthy_tasks, self.__tasks)
-        if executions is not None:
-            for healthy_executions in executions:
-                for disease_executions in healthy_executions:
-                    print("Execution finished: ", disease_executions.items())
+        for healthy_task in self.__tasks:
+            self.__start_healthy_tasks(healthy_task)
 
     def __start_healthy_tasks(self, healthy_task):
-        with features.ThreadPoolExecutor() as executor:
-            executions = executor.map(self.__start_disease_tasks, repeat(healthy_task), self.__tasks)
-        return executions
+        for disease_task in self.__tasks:
+            result = self.__start_disease_tasks(healthy_task, disease_task)
+            if result is not None:
+                print("Execution ended: ", result.items())
+            else:
+                print("Combination already tried")
 
     def __start_disease_tasks(self, healthy_task, disease_task):
         if healthy_task != disease_task:
@@ -58,17 +60,15 @@ class CategoryTaskExtraction:
                 directory = os.path.join("experiment_results", "category_selection")
                 if not os.path.exists(directory):
                     os.mkdir(directory)
-                directory = os.path.join(directory, self.__category + ".txt")
                 if self.__prev_file is None:
-                    file = open(directory, 'w')
+                    file = open(os.path.join(directory, self.__category + ".txt"), 'w')
                 else:
-                    file = open(directory, 'a')
+                    file = open(self.__prev_file, 'a')
                 csv_file = csv.writer(file, delimiter=';')
                 csv_file.writerow([(accuracy, precision, recall, f_score), healthy_task, disease_task])
                 file.close()
                 return {(accuracy, precision, recall, f_score): [healthy_task, disease_task]}
-            else:
-                return None
+        return None
 
     def __leave_one_out(self, healthy_task, disease_task):
         healthy_ids, disease_ids = FileManager.get_healthy_disease_list()
