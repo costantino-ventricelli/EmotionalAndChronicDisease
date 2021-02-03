@@ -2,8 +2,11 @@
 
 import os
 import re
-
 import pandas
+
+from copy import deepcopy
+from numpy import ceil
+
 
 RESOURCE_DIRECTORY = "resource"
 
@@ -11,13 +14,17 @@ RESOURCE_DIRECTORY = "resource"
 class FileManager:
 
     def __init__(self, dataset_name):
-        working_dir = os.path.dirname(os.path.abspath('__file__'))
-        if os.path.basename(working_dir) == 'src':
-            os.chdir(os.path.dirname(working_dir))
+        FileManager.set_root_directory()
         self.__dataset = os.path.join(RESOURCE_DIRECTORY, dataset_name)
         self.__dataset_directory = FileManager.get_path_directories(self.__dataset)
         self.__patient_paths = FileManager.__get_patient_paths(self.__dataset_directory)
         self.__files_path = FileManager.__get_files_from_paths(self.__patient_paths)
+
+    @staticmethod
+    def set_root_directory():
+        working_dir = os.path.dirname(os.path.abspath('__file__'))
+        if os.path.basename(working_dir) == 'src':
+            os.chdir(os.path.dirname(working_dir))
 
     def get_dataset_directory(self): return self.__dataset_directory
 
@@ -231,6 +238,9 @@ class FileManager:
                 filtered_paths.append(path)
         return filtered_paths
 
+    """
+        Il metodo restituisce tutti i file appartenenti all'utente il cui id viene passato come paramentro del metodo.
+    """
     @staticmethod
     def get_all_file_of_id(id, paths):
         id_files = []
@@ -239,15 +249,47 @@ class FileManager:
                 id_files.append(path)
         return id_files
 
+    """
+        Questo metodo permette di ottenere una lista di file appartenenti ad una lista di id e ad una lista associata di 
+        task.
+        ex: passiamo ids = [2, 10, 11] e task = ['cdt', 'mom', 'm1'], il metodo restituirà tutti i file che appartengono
+        agli utenti specificati e rappresentanti quei file.
+    """
     @staticmethod
     def get_all_files_ids_tasks(ids, tasks, paths):
         files = []
+        if not isinstance(ids, list):
+            ids = [ids]
         if not isinstance(tasks, list):
             tasks = [tasks]
         for path in paths:
             if FileManager.get_id_from_path(path) in ids and ('_' + FileManager.get_task_from_path(path) + '.') in tasks:
                 files.append(path)
         return files
+
+    """
+        Questo metodo permette di eliminare tutti i file appartenenti ad un utente identificato attraverso l'id da una
+        lista di file passata come parametro
+        @:param id: è l'id dell'utente di cui eliminare i file.
+        @:param file_list: è la lista dei file da cui bisogna eliminare i file.
+    """
+    @staticmethod
+    def delete_files(id, file_list):
+        new_list = deepcopy(file_list)
+        to_delete = FileManager.get_all_file_of_id(id, file_list)
+        for file in to_delete:
+            del new_list[new_list.index(file)]
+        return new_list
+
+    """
+        Questo metodo calcola il 20% del numero dei file sia di quelli sani che di quelli malati e dopo di che restituisce 
+        il minore tra i due.
+    """
+    @staticmethod
+    def get_validation_number(len_healthy, len_disease):
+        healthy_validation = int(ceil(len_healthy * 0.20))
+        disease_validation = int(ceil(len_disease * 0.20))
+        return healthy_validation if healthy_validation < disease_validation else disease_validation
 
     @staticmethod
     def log_results(accuracy_file, evaluation_result, f1_score_file, precision_file, recall_file, save_file_path,

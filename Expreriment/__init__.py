@@ -1,2 +1,3 @@
 from .RHSExperimentModel import Experiment
 from .TaskSelection import TaskSelection
+from .CategoryTaskExtraction import CategoryTaskExtraction

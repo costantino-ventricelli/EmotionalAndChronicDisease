@@ -38,7 +38,7 @@ class TaskSelection:
             predicted_states = np.zeros(0)
             theoretical_states = np.zeros(0)
             for test_id in ids:
-                print("Creating model and testing for id: ", test_id, " with task: ", task)
+                print("Creating model and testing for id: ", test_id, " with healthy_task: ", task)
                 # Per il test vengono selezionati due utenti uno etichettato come sano e uno etichettato come malato, per ottenere
                 # misuarizioni sulle prestazioni del sistema più precise ed affidabili.
                 paths, test_paths, validation_number = self.__select_paths_from_tasks([task], test_id)
@@ -47,19 +47,19 @@ class TaskSelection:
                     test_states, test_tensor, training_states, training_tensor, validation_states, validation_tensor = self.__extract_rhs_segment(
                         paths, test_paths, validation_number)
                     try:
-                        """ml_model = MLModel(training_tensor, training_states, validation_tensor, validation_states)
+                        ml_model = MLModel(training_tensor, training_states, validation_tensor, validation_states)
                         predicted_states_partial, _, _ = ml_model.test_model(test_tensor, test_states)
                         predicted_states = np.concatenate(
                             (predicted_states, np.array(predicted_states_partial).astype(float)))
-                        theoretical_states = np.concatenate((theoretical_states, np.array(test_states).astype(float)))"""
+                        theoretical_states = np.concatenate((theoretical_states, np.array(test_states).astype(float)))
                     except ValueError as val:
                         print("Exception: ", val)
                 else:
-                    print("There are no test for user: ", test_id, " with task: ", task)
+                    print("There are no test for user: ", test_id, " with healthy_task: ", task)
             print("Predicted results: ", Counter(predicted_states).items())
             print("Theoretical states: ", Counter(theoretical_states).items())
-            """accuracy, precision, recall, f_score = MLModel.evaluate_results(predicted_states, theoretical_states)
-            TaskSelection.__fill_dictionary(self.__best_results, accuracy, f_score, precision, recall, task)"""
+            accuracy, precision, recall, f_score = MLModel.evaluate_results(predicted_states, theoretical_states)
+            TaskSelection.__fill_dictionary(self.__best_results, accuracy, f_score, precision, recall, task)
 
     """
         Questo metodo mi permette di avviare la selezione dei tasks partendo da quelli che hanno dato il miglior risultato
@@ -192,7 +192,7 @@ class TaskSelection:
             if isinstance(task, list):
                 try:
                     # Questo comando serve appositamente a scatenare l'eccezione nel caso in cui ci siano più liste di
-                    # task che restituiscano lo stesso risultato sulle 4 metriche.
+                    # healthy_task che restituiscano lo stesso risultato sulle 4 metriche.
                     np.shape(tasks)[1]
                 except IndexError:
                     tasks = [tasks]

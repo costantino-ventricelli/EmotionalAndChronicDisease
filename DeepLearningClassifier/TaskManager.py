@@ -93,7 +93,7 @@ class TaskManager:
         return task_paths
 
     """
-        Il metodo permette di scansionare una lista di percorsi e ottenere tutti i task necessari associati al loro 
+        Il metodo permette di scansionare una lista di percorsi e ottenere tutti i healthy_task necessari associati al loro 
         esecutore.
     """
     @staticmethod
@@ -172,3 +172,18 @@ class TaskManager:
         elif id in validation_list:
             diseased_path_list.append(path)
         return healthy_path_list, diseased_path_list
+
+    """
+            @:param healthy_task: contiene la lista dei healthy_task totali.
+            @:param healthy_tasks: contiene la lista dei healthy_task selezionati per gli utenti sani.
+            @:param disease_tasks: contiene la lista dei healthy_task selezionati per gli utenti malati.
+            @:return: il metodo restituisce i healthy_task che non sono presenti nei vettori healthy e disease.
+        """
+
+    @staticmethod
+    def get_tasks_difference(tasks, healthy_tasks, disease_tasks):
+        if not isinstance(healthy_tasks, list):
+            healthy_tasks = [healthy_tasks]
+        if not isinstance(disease_tasks, list):
+            disease_tasks = [disease_tasks]
+        return list(set(tasks).symmetric_difference(healthy_tasks + disease_tasks))

@@ -36,7 +36,7 @@ class EmothawExperiment:
         for id in ids_task:
             paths = ids_task.get(id)
             for task_path in paths:
-                tensor = rhs_extraction.extract_rhs_from_unknown(task_path)
+                tensor = rhs_extraction.extract_rhs_file(task_path)
                 result = self.__ml_model.predict_result(tensor)
                 counter_result = Counter(result)
                 print("Id: ", id, "file: ", task_path)

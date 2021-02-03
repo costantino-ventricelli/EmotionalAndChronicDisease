@@ -1,7 +1,5 @@
 # coding=utf-8
 
-from copy import deepcopy
-
 import numpy as np
 import os
 import csv
@@ -35,7 +33,7 @@ class IndependentTaskSelection:
             csv_file = csv.writer(file, delimiter=';', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
             csv_file.writerow(['METRICS', 'HEALTHY TASK', 'DISEASE TASK'])
             file.close()
-        # In questo ciclo verranno selezionati tutti i task che verranno ad uno ad uno valutati per addestrare il sistema
+        # In questo ciclo verranno selezionati tutti i healthy_task che verranno ad uno ad uno valutati per addestrare il sistema
         # attribuendoli agli utenti sani
         for healthy_task in self.__tasks:
             healthy_paths = FileManager.get_all_files_ids_tasks(healthy_ids, healthy_task,
@@ -44,17 +42,17 @@ class IndependentTaskSelection:
             # Calcolo in base al numero di file rimasti quelli sufficienti per la validazione che abbiamo fissato al 20%
             # del totale.
             healthy_validation = int(np.ceil(len(healthy_paths) * 0.20))
-            # Questo ciclo permette di selezionare e valutare ogni task per addestrare il modello attribuendoli agli
+            # Questo ciclo permette di selezionare e valutare ogni healthy_task per addestrare il modello attribuendoli agli
             # utenti etichettati come malati.
             for disease_task in self.__tasks:
                 if healthy_task != disease_task:
                     disease_paths = FileManager.get_all_files_ids_tasks(disease_ids, disease_task,
                                                                         self.__file_manager.get_files_path())
                     disease_paths = FileManager.filter_file(disease_paths, self.__minimum_samples + 1)
-                    # Qui vengono ottenuti tutti i task che non sono stati selezionati per l'addestramento così da
+                    # Qui vengono ottenuti tutti i healthy_task che non sono stati selezionati per l'addestramento così da
                     # utilizzarli per il test
-                    test_tasks = IndependentTaskSelection.__get_tasks_difference(self.__tasks, healthy_task,
-                                                                                 disease_task)
+                    test_tasks = TaskManager.get_tasks_difference(self.__tasks, healthy_task,
+                                                                  disease_task)
                     # Azzero i vettori che mi permetteranno di valutare i risultati del sistema.
                     predicted_status = np.zeros(0)
                     theoretical_status = np.zeros(0)
@@ -62,7 +60,7 @@ class IndependentTaskSelection:
                     # del totale.
                     disease_validation = int(np.ceil(len(disease_paths) * 0.20))
                     # Questo ciclo ci permette di effettuare il test su tutti gli utenti del dataset, in pratica per ogni
-                    # coppia di task viene effettuato un addestramento di tipo leave-one-out e il sistema è valutato sull'
+                    # coppia di healthy_task viene effettuato un addestramento di tipo leave-one-out e il sistema è valutato sull'
                     # interezza dei risultati.
                     # Qui individuo quale è il numero effettivo di file utili per la validazione e lo scelgo in
                     # base a quale è il minore tra le due categorie di utenti
@@ -90,10 +88,10 @@ class IndependentTaskSelection:
     def __execute_id_analysis(disease_paths, healthy_paths, validation, test_id, test_tasks,
                               file_manager, minimum_samples, features_extraction, samples_len):
         # Questo punto del codice ci permette di eliminare tutti i file dell'utente che andemo a testare.
-        healthy_paths_deleted = IndependentTaskSelection.__delete_files(test_id, deepcopy(healthy_paths))
-        disease_paths_deleted = IndependentTaskSelection.__delete_files(test_id, deepcopy(disease_paths))
+        healthy_paths_deleted = FileManager.delete_files(test_id, healthy_paths)
+        disease_paths_deleted = FileManager.delete_files(test_id, disease_paths)
         # Ottengo tutti i percorsi dei file che verranno utilizzati per il test
-        test_paths = FileManager.get_all_files_ids_tasks([test_id], list(test_tasks),
+        test_paths = FileManager.get_all_files_ids_tasks(test_id, list(test_tasks),
                                                          file_manager.get_files_path())
         test_paths = FileManager.filter_file(test_paths, minimum_samples + 1)
         # Se riesco a individuare file di test che rispettano i parametri necessari per la costruzone del
@@ -121,20 +119,6 @@ class IndependentTaskSelection:
         else:
             print("There are not test file for id: ", test_id)
         return predicted_status_partial, test_states
-
-    """
-        @:param task: contiene la lista dei task totali.
-        @:param healthy_tasks: contiene la lista dei task selezionati per gli utenti sani.
-        @:param disease_tasks: contiene la lista dei task selezionati per gli utenti malati.
-        @:return: il metodo restituisce i task che non sono presenti nei vettori healthy e disease.
-    """
-    @staticmethod
-    def __get_tasks_difference(tasks, healthy_tasks, disease_tasks):
-        if not isinstance(healthy_tasks, list):
-            healthy_tasks = [healthy_tasks]
-        if not isinstance(disease_tasks, list):
-            disease_tasks = [disease_tasks]
-        return list(set(tasks).symmetric_difference(healthy_tasks + disease_tasks))
 
     """
         Questo metodo permette di eliminare tutti i file appartenenti ad un utente identificato attraverso l'id da una
