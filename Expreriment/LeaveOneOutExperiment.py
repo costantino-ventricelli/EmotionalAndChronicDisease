@@ -47,8 +47,8 @@ class LeaveOneOutExperiment:
             print("Creating test tensor...")
             for file in test_file:
                 partial_tensor, partial_states = feature_extraction.extract_rhs_file(file)
-                partial_states = np.concatenate((test_tensor, partial_tensor))
-                test_states = np.concatenate((test_states, partial_states))
+                test_tensor = np.concatenate((test_tensor, partial_tensor))
+                test_states = np.concatenate((test_states, test_states))
             print("Creating model...")
             ml_model = MLModel(training_tensor, training_states, validation_tensor, validation_states)
             print("Testing model...")
