@@ -4,6 +4,7 @@ import csv
 import os
 
 from DeepLearningClassifier import LeaveOneOut
+from DatasetManager import FileManager
 
 METRICS_KEY = 0
 HEALTHY_INDEX = 1
@@ -18,6 +19,7 @@ DISEASE_STRING = "DISEASE"
 class SelectBestCombinationExperiment:
 
     def __init__(self, saving_path, path_dictionary, minimum_samples, samples_len):
+        FileManager.set_root_directory()
         self.__saving_path = saving_path
         self.__minimum_samples = minimum_samples
         self.__samples_len = samples_len
@@ -32,15 +34,18 @@ class SelectBestCombinationExperiment:
     def start_linear_selection(self):
         healthy = []
         disease = []
-        learning_method = LeaveOneOut(self.__minimum_samples, self.__samples_len, "Dataset")
+        learning_method = LeaveOneOut(self.__minimum_samples, self.__samples_len, FEATURES, "Dataset")
         file_path = os.path.join("experiment_result", "linear_selection.txt")
-        for key, values in self.__value_tasks.items():
+        for _, values in self.__value_tasks.items():
             for value in values:
                 healthy.append(value[HEALTHY_STRING])
                 disease.append(value[DISEASE_STRING])
                 accuracy, precision, recall, f_score = learning_method.leave_one_out(healthy, disease)
                 print("METRICS: ", accuracy, ", ", precision, ", ", recall, ", ", f_score)
-                mode = 'a' if os.path.exists(file_path) else mode = 'w'
+                if os.path.exists(file_path):
+                    mode = 'a'
+                else:
+                    mode = 'w'
                 with open(file_path, mode) as file:
                     csv_file = csv.writer(file, delimiter=';')
                     csv_file.writerow([(accuracy, precision, recall, f_score), healthy, disease])

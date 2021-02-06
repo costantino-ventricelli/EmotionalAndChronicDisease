@@ -41,7 +41,7 @@ class CategoryTaskExtraction:
         self.__samples_len = samples_len
         self.__category = category
         # Ottengo l'intero dataset da FileManager
-        self.__learning_method = LeaveOneOut(self.__minimum_samples, self.__samples_len, "Dataset")
+        self.__learning_method = LeaveOneOut(self.__minimum_samples, FEATURE, self.__samples_len, "Dataset")
 
     """
         Questo metodo avvia la selezione dei task per gli utenti etichettati come sani, per farlo richiama il metodo 

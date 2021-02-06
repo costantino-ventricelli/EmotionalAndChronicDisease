@@ -66,7 +66,7 @@ class TaskSelection:
         nell inizializzazione.
     """
     def execute_simple_task_selection(self):
-        file = open(os.path.join('experiment_result', 'log_file.txt'), 'w')
+        file = open(os.path.join('experiment_result', 'simple_task_selection.txt'), 'w')
         # Selezioni i tasks migliori con i rispettivi risultati.
         previous_max = max(self.__best_results.items())
         actual_tuple = max(self.__best_results.items())
@@ -86,7 +86,7 @@ class TaskSelection:
             actual_tuple = max(best_results.items())
             if previous_max[KEY_TUPLE] <= actual_tuple[KEY_TUPLE]:
                 previous_max = deepcopy(actual_tuple)
-            file = open(os.path.join('experiment_result', 'log_file.txt'), 'a')
+            file = open(os.path.join('experiment_result', 'simple_task_selection.txt'), 'a')
             file.write("Previous max: " + str(previous_max) + "\n")
             file.write("Actual max: " + str(actual_tuple) + "\n")
             file.write("Results for tasks: " + str(best_results.items()) + "\n\n")
@@ -109,7 +109,7 @@ class TaskSelection:
                 # Aggiungo il tasks alla lista di nuovi tasks da analizzare.
                 tasks.append(task)
                 print("Selected tasks: ", tasks)
-                file = open(os.path.join('experiment_result', 'log_file.txt'), 'a')
+                file = open(os.path.join('experiment_result', 'simple_task_selection.txt'), 'a')
                 file.write("Selected tasks: " + str(tasks) + "\n")
                 file.close()
                 ids = FileManager.get_all_ids()

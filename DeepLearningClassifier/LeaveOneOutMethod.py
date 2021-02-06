@@ -1,17 +1,21 @@
 # coding=utf-8
+
 from DatasetManager import FileManager
+from DatasetManager.Costants import *
 from .MachineLearningModel import MLModel
 from .RHSDistanceExtraction import RHSDistanceExtract
+from .TaskManager import TaskManager
 
 import numpy as np
 
 
 class LeaveOneOut:
 
-    def __init__(self, minimum_samples, samples_len, dataset):
+    def __init__(self, minimum_samples, samples_len, feature, dataset):
         self.__minimum_samples = minimum_samples
         self.__samples_len = samples_len
         self.__file_manager = FileManager(dataset)
+        self.__feature = feature
         self.__feature_extractor = RHSDistanceExtract(self.__minimum_samples, self.__samples_len)
 
     def leave_one_out(self, healthy_task, disease_task):
@@ -51,7 +55,7 @@ class LeaveOneOut:
             test_file = FileManager.get_all_files_ids_tasks(test_id, test_tasks, self.__file_manager.get_files_path())
             # Filtro i file per lunghezza.
             test_file = FileManager.filter_file(test_file, self.__minimum_samples)
-            test_tensor = np.zeros((0, self.__samples_len * 2, FEATURE))
+            test_tensor = np.zeros((0, self.__samples_len * 2, self.__feature))
             test_states = np.zeros(0)
             # In questo ciclo genero il tensore per i file di test e la lista degli stati.
             for file in test_file:
