@@ -1,3 +1,4 @@
 from .RHSExperimentModel import Experiment
 from .TaskSelection import TaskSelection
 from .CategoryTaskExtraction import CategoryTaskExtraction
+from .SelectBestCombinationExperiment import SelectBestCombinationExperiment

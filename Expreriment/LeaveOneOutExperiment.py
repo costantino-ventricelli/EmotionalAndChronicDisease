@@ -1,6 +1,5 @@
 # coding=utf-8
 
-from collections import Counter
 import os
 
 import numpy as np
@@ -58,7 +57,7 @@ class LeaveOneOutExperiment:
             print("Update results...")
             global_results = np.concatenate((global_results, partial_results))
             global_states = np.concatenate((global_states, test_states))
-        with open(os.path.join(EXPERIMENT_RESULT, "leave_one_out.txt", 'w')) as file:
+        with open(os.path.join(EXPERIMENT_RESULT, "leave_one_out.txt"), 'w') as file:
             accuracy, precision, recall, f_score = MLModel.evaluate_results(global_results, global_states)
             file.write("LEAVE ONE OUT EXPERIMENT:\n")
             file.write("ACCURACY: " + str(accuracy * 100) + "\n")
