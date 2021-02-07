@@ -174,12 +174,11 @@ class TaskManager:
         return healthy_path_list, diseased_path_list
 
     """
-            @:param healthy_task: contiene la lista dei healthy_task totali.
-            @:param healthy_tasks: contiene la lista dei healthy_task selezionati per gli utenti sani.
-            @:param disease_tasks: contiene la lista dei healthy_task selezionati per gli utenti malati.
-            @:return: il metodo restituisce i healthy_task che non sono presenti nei vettori healthy e disease.
-        """
-
+        @:param healthy_task: contiene la lista dei healthy_task totali.
+        @:param healthy_tasks: contiene la lista dei healthy_task selezionati per gli utenti sani.
+        @:param disease_tasks: contiene la lista dei healthy_task selezionati per gli utenti malati.
+        @:return: il metodo restituisce i healthy_task che non sono presenti nei vettori healthy e disease.
+    """
     @staticmethod
     def get_tasks_difference(tasks, healthy_tasks, disease_tasks):
         if not isinstance(healthy_tasks, list):

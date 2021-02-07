@@ -15,6 +15,8 @@ FEATURES = 3
 HEALTHY_STRING = "HEALTHY"
 DISEASE_STRING = "DISEASE"
 
+SQUARE_BRACKETS = '[]'
+
 
 class SelectBestCombinationExperiment:
 
@@ -38,18 +40,25 @@ class SelectBestCombinationExperiment:
         file_path = os.path.join("experiment_result", "linear_selection.txt")
         for _, values in self.__value_tasks.items():
             for value in values:
-                healthy.append(value[HEALTHY_STRING])
-                disease.append(value[DISEASE_STRING])
-                accuracy, precision, recall, f_score = learning_method.leave_one_out(healthy, disease)
-                print("METRICS: ", accuracy, ", ", precision, ", ", recall, ", ", f_score)
-                if os.path.exists(file_path):
-                    mode = 'a'
+                if not isinstance(value[HEALTHY_STRING], list):
+                    healthy.append(value[HEALTHY_STRING])
+                    disease.append(value[DISEASE_STRING])
                 else:
-                    mode = 'w'
-                with open(file_path, mode) as file:
-                    csv_file = csv.writer(file, delimiter=';')
-                    csv_file.writerow([(accuracy, precision, recall, f_score), healthy, disease])
-                    file.close()
+                    healthy += value[HEALTHY_STRING]
+                    disease += value[DISEASE_STRING]
+                if not self.__is_already_do(healthy, disease):
+                    accuracy, precision, recall, f_score = learning_method.leave_one_out(healthy, disease)
+                    print("METRICS: ", accuracy, ", ", precision, ", ", recall, ", ", f_score)
+                    if os.path.exists(file_path):
+                        mode = 'a'
+                    else:
+                        mode = 'w'
+                    with open(file_path, mode) as file:
+                        csv_file = csv.writer(file, delimiter=';')
+                        csv_file.writerow([(accuracy, precision, recall, f_score), healthy, disease])
+                        file.close()
+                else:
+                    print("Selection already do...")
 
     """
         Questo metodo ha il compito di reimpostare i valori del dizionaro sulla base del file passato al costruttore.
@@ -61,7 +70,8 @@ class SelectBestCombinationExperiment:
             result = {}
             for row in csv_file:
                 key = eval(row[METRICS_KEY])
-                value_dict = {HEALTHY_STRING: row[HEALTHY_INDEX], DISEASE_STRING: row[DISEASE_INDEX]}
+                value_dict = {HEALTHY_STRING: SelectBestCombinationExperiment.__cast_into_list(row[HEALTHY_INDEX]),
+                              DISEASE_STRING: SelectBestCombinationExperiment.__cast_into_list(row[DISEASE_INDEX])}
                 if key in result.keys():
                     list_of_dict = result.get(key)
                     list_of_dict.append(value_dict)
@@ -69,3 +79,23 @@ class SelectBestCombinationExperiment:
                     result[key] = [value_dict]
             file.close()
         return result
+
+    """
+        Questo metodo verifica se una combinazione di task è già stata provata, verificando la sua esistenza nel diziona-
+        rio di istanza contenente i risultati della valutazione.
+    """
+    def __is_already_do(self, healthy_task, disease_task):
+        for _, items in self.__results.items():
+            for item in items:
+                if item[HEALTHY_STRING] == healthy_task and item[DISEASE_STRING] == disease_task:
+                    return True
+        return False
+
+    @staticmethod
+    def __cast_into_list(string):
+        for character in SQUARE_BRACKETS:
+            string = string.replace(character, '')
+        strings = string.split(',')
+        for i in range(len(strings)):
+            strings[i] = strings[i].replace('\'', "").strip()
+        return strings

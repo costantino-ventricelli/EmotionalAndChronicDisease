@@ -10,8 +10,8 @@ def main():
                        'trial': 'experiment_result/category_selection/trial.txt',
                        'word_easy': 'experiment_result/category_selection/word_easy.txt',
                        'word_hard': 'experiment_result/category_selection/word_hard.txt'}
-    saving_path = 'experiment_result/category_selection/total_selection.txt'
-    experiment = SelectBestCombinationExperiment(None, path_dictionary, 2500, 50)
+    saving_path = 'experiment_result/linear_selection.txt'
+    experiment = SelectBestCombinationExperiment(saving_path, path_dictionary, 2500, 50)
     experiment.start_linear_selection()
 
 
