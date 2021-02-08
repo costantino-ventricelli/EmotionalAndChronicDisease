@@ -14,10 +14,10 @@ def main():
                        'word_easy': 'experiment_result/category_selection/word_easy.txt',
                        'word_hard': 'experiment_result/category_selection/word_hard.txt'}
     saving_path = 'resource/test_dictionary_file.csv'
-    combination = {'drawing': {HEALTHY_STRING: ['_cdt.'],
-                   DISEASE_STRING: ['_ipc.']}}
+    combination = {'matrix': {HEALTHY_STRING: ['_m1.'],
+                              DISEASE_STRING: ['_m2.']}}
     experiment = ShiftTaskSelection(saving_path, path_dictionary, 2500, 50)
-    experiment.start_shift_selection(combination, "shift_test")
+    experiment.start_shift_selection(combination, "matrix_test")
 
 
 if __name__ == '__main__':

@@ -33,11 +33,18 @@ class ShiftTaskSelection:
         for key, item in path_dictionary.items():
             self.__value_tasks[key] = max(ShiftTaskSelection.__set_previous_state(item).items())[TASK_INDEX]
 
+    """
+        Questo metodo permette di eseguire combinazioni tra tutte le categorie selezionandone una inizialmente.
+        Questa soluzione è stata adattata per parellizare al massimo l'esecuzione.
+    """
     def start_shift_selection(self, first_combination, file_name):
         leave_one_out = LeaveOneOut(self.__minimum_samples, self.__samples_len, FEATURES, "Dataset")
         file_path = os.path.join("experiment_result", os.path.join("shift_selection", file_name + ".txt"))
+        # Questo blocco di codice permette di ottenere la chiave e il valore della combinazione di task iniziale.
         for input_category, tasks in first_combination.items():
+            # La quale combinazione verrà testata con tutte le altre combinazioni di task.
             for category, item in self.__value_tasks.items():
+                # Ovviamente escudendo il confronto tra la stessa categoria.
                 if category != input_category:
                     for value in item:
                         if isinstance(value[HEALTHY_STRING], list):
@@ -91,6 +98,9 @@ class ShiftTaskSelection:
                     return True
         return False
 
+    """
+        Questo metodo mi permette di ottenere una lista di task dalla stringa salvata all'interno del file.
+    """
     @staticmethod
     def __cast_into_list(string):
         for character in SQUARE_BRACKETS:
