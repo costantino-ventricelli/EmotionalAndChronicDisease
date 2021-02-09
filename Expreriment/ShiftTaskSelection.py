@@ -48,25 +48,40 @@ class ShiftTaskSelection:
                 if category != input_category:
                     for value in item:
                         if isinstance(value[HEALTHY_STRING], list):
-                            healthy = tasks[HEALTHY_STRING] + value[HEALTHY_STRING]
-                            disease = tasks[DISEASE_STRING] + value[DISEASE_STRING]
+                            healthy_value = value[HEALTHY_STRING]
+                            disease_value = value[DISEASE_STRING]
                         else:
-                            healthy = tasks[HEALTHY_STRING] + [value[HEALTHY_STRING]]
-                            disease = tasks[DISEASE_STRING] + [value[DISEASE_STRING]]
-                        if not self.__is_already_do(healthy, disease):
-                            print("Healthy: ", healthy)
-                            print("Disease: ", disease)
-                            accuracy, precision, recall, f_score = leave_one_out.leave_one_out(healthy, disease)
-                            if os.path.exists(file_path):
-                                mode = 'a'
+                            healthy_value = [value[HEALTHY_STRING]]
+                            disease_value = [value[DISEASE_STRING]]
+                        if not ShiftTaskSelection.__is_in(tasks[HEALTHY_STRING], tasks[DISEASE_STRING],
+                                                          healthy_value, disease_value):
+                            healthy = tasks[HEALTHY_STRING] + healthy_value
+                            disease = tasks[DISEASE_STRING] + disease_value
+                            if not self.__is_already_do(healthy, disease):
+                                accuracy, precision, recall, f_score = leave_one_out.leave_one_out(healthy, disease)
+                                if os.path.exists(file_path):
+                                    mode = 'a'
+                                else:
+                                    mode = 'w'
+                                with open(file_path, mode) as file:
+                                    csv_file = csv.writer(file, delimiter=';')
+                                    csv_file.writerow([(accuracy, precision, recall, f_score), healthy, disease])
+                                    file.close()
                             else:
-                                mode = 'w'
-                            with open(file_path, mode) as file:
-                                csv_file = csv.writer(file, delimiter=';')
-                                csv_file.writerow([(accuracy, precision, recall, f_score), healthy, disease])
-                                file.close()
+                                print("Combination already do...")
                         else:
-                            print("Combination already do...")
+                            print("Task already present...")
+
+    @staticmethod
+    def __is_in(healthy, disease, healthy_value, disease_value):
+        for item in healthy_value:
+            if item in healthy:
+                return True
+        for item in disease_value:
+            if item in disease:
+                return True
+        return False
+
     """
         Questo metodo ha il compito di reimpostare i valori del dizionaro sulla base del file passato al costruttore.
     """
