@@ -3,3 +3,4 @@ from .TaskSelection import TaskSelection
 from .CategoryTaskExtraction import CategoryTaskExtraction
 from .SelectBestCombinationExperiment import SelectBestCombinationExperiment
 from .ShiftTaskSelection import ShiftTaskSelection
+from .SelectTask import SelectTask
