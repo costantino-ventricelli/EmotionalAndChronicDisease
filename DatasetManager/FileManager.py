@@ -54,7 +54,6 @@ class FileManager:
             state = 1
         return state
 
-
     """
         @:param main_directory_path: contiene il path per la directory generale del dataset
         @:return: restituisce tutte le directory presenti nel dataset
@@ -190,7 +189,7 @@ class FileManager:
         return ids
 
     """
-        @:param x_axis: è la lista dei punti campionati per l'asse x
+        @:param axis: è la lista dei punti campionati per l'asse x
         @:param y_axis: è la lista dei punti campionati per l'asse y
         @:param time_stamp: è la lista dei punti campionati per il timestamp
         @:param pen_status: è la lista dei punti campionati come bottom status nella scrittura dei tasks.
