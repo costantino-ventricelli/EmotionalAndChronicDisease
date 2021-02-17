@@ -4,12 +4,13 @@ import os
 import csv
 
 from DatasetManager import FileManager
+from .FeatureExtraction import FeatureExtraction
 from DatasetManager.Costants import *
 
 RESOURCE_DIR = os.path.join("resource", "features")
 
-PATHOLOGICAL_FILE_STRUCTURE = {
-    'axis': 0,
+TASK_STRUCTURE = {
+    'x_axis': 0,
     'y_axis': 1,
     'pressure': 2,
     'timestamp': 3,
@@ -37,7 +38,24 @@ class FeaturesManager:
             task_files = FileManager.get_files_from_path(self.__patients_path[i], files=None)
             for file in task_files:
                 task = FileManager.get_task_from_path(file)
-                row_data = FeaturesManager.__read_row_data(file)
+                rows_data = FeaturesManager.__read_row_data(file)
+                x_point = []
+                y_point = []
+                pressure_point = []
+                time_stamps = []
+                azimuth_point = []
+                altitude_point = []
+                pen_status = []
+                for row in rows_data:
+                    x_point.append(row[TASK_STRUCTURE.get('x_axis')])
+                    y_point.append(row[TASK_STRUCTURE.get('y_axis')])
+                    pressure_point.append(row[TASK_STRUCTURE.get('pressure')])
+                    time_stamps.append(row[TASK_STRUCTURE.get('timestamp')])
+                    azimuth_point.append(row[TASK_STRUCTURE.get('azimuth')])
+                    altitude_point.append(row[TASK_STRUCTURE.get('altitude')])
+                    pen_status.append(row[TASK_STRUCTURE.get('pen_status')])
+                dataset = [x_point, y_point, pressure_point, time_stamps, altitude_point, altitude_point, pen_status]
+                FeatureExtraction.get_features_for_task(dataset)
 
     @staticmethod
     def __read_row_data(file):
@@ -48,7 +66,3 @@ class FeaturesManager:
                 row_data.append(row)
             file.close()
         return row_data
-
-    @staticmethod
-    def get_other_status(status):
-        return 0 if status == 1 else 1

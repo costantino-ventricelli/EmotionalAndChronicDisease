@@ -1,11 +1,11 @@
 # coding=utf-8
 
-from SupportVectorMachineClassifier import FeaturesManager
+from SupportVectorMachineClassifier.FeaturesManager import FeaturesManager
 
 
 def main():
-    features = FeaturesManager()
-    features.create_features_file()
+    feature = FeaturesManager()
+    feature.create_features_file()
 
 
 if __name__ == '__main__':
