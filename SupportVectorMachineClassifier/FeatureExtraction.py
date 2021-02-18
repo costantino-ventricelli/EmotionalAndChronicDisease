@@ -363,19 +363,73 @@ class FeatureExtraction:
 
     @staticmethod
     def __get_shannon_entropy(feature, command, data):
-        print(command)
+        other_parameters = command[PARAMETER_KEY]
+        axis = command[AXIS_KEY]
+        if len(other_parameters) > 0:
+            if other_parameters[0] == 'os' or other_parameters[0] == 'ia':
+                finding_status = FeatureExtraction.__get_finding_status(other_parameters[0])
+                shannon_entropy = Features.get_shannon_entropy(data[TASK_STRUCTURE[axis]], finding_status, data[TASK_STRUCTURE['pen_status']])
+            elif other_parameters[0] == '1Imf' or other_parameters[0] == '2Imf':
+                shannon_entropy = Features.get_imf_shannon_entropy(Features.get_imf(data[TASK_STRUCTURE[axis]]))
+            else:
+                shannon_entropy = None
+                print("Error in Shannon Entropy")
+        else:
+            shannon_entropy = Features.get_shannon_entropy(data[TASK_STRUCTURE[axis]])
+        return {feature: shannon_entropy}
 
     @staticmethod
     def __get_renyi_entropy(feature, command, data):
-        print(command)
+        axis = command[AXIS_KEY]
+        if len(command[PARAMETER_KEY]) > 1:
+            status = command[PARAMETER_KEY][0]
+            order = int(command[PARAMETER_KEY][1].replace('o', ''))
+        else:
+            status = None
+            order = int(command[PARAMETER_KEY][0].replace('o', ''))
+        if status is not None and status == 'ia' or status == 'os':
+            finding_status = FeatureExtraction.__get_finding_status(status)
+            renyi_entropy = Features.get_renyi_entropy(data[TASK_STRUCTURE[axis]], order, finding_status,
+                                                       data[TASK_STRUCTURE['pen_status']])
+        elif status is not None and status == '1Imf' or status == '1Imf':
+            renyi_entropy = Features.get_imf_renyi_entropy(Features.get_imf(data[TASK_STRUCTURE[axis]]), order)
+        else:
+            renyi_entropy = Features.get_renyi_entropy(data[TASK_STRUCTURE[axis]], order)
+        return {feature: renyi_entropy}
 
     @staticmethod
     def __get_signal_to_noise_ratio(feature, command, data):
-        print(command)
+        axis = command[AXIS_KEY]
+        if len(command[PARAMETER_KEY]) > 0:
+            if command[PARAMETER_KEY][0] == 'ia' or command[PARAMETER_KEY][0] == 'os':
+                finding_status = FeatureExtraction.__get_finding_status(command[PARAMETER_KEY][0])
+                snr = Features.get_snr(data[TASK_STRUCTURE[axis]], finding_status, data[TASK_STRUCTURE['pen_status']])
+            else:
+                snr = Features.get_imf_snr(Features.get_imf(data[TASK_STRUCTURE[axis]]))
+        else:
+            snr = Features.get_snr(data[TASK_STRUCTURE[axis]])
+        return {feature: snr}
 
     @staticmethod
     def __get_discrete_cosine_transform(feature, command, data):
-        print(command)
+        other_parameter = command[PARAMETER_KEY]
+        group_search = re.search(r'x$|y$', other_parameter[0])
+        if group_search:
+            axis = group_search.group(0)
+            other_parameter[0] = other_parameter[0].replace(axis, '')
+            point = {'axis': data[TASK_STRUCTURE[axis]]}
+        else:
+            point = {'x_axis': data[TASK_STRUCTURE['x_axis']],
+                     'y_axis': data[TASK_STRUCTURE['y_axis']]}
+        (function, parameter) = FeatureExtraction.__function_switch(other_parameter[0], data, other_parameter)
+        # FIXME: quando vengono chiamati accelerzione, velocità e jerk se è specificato in aria o in superfice bisogna
+        # selezionare solo il time stamp corrispondente.
+        if len(other_parameter) > 1:
+            finding_status = FeatureExtraction.__get_finding_status(other_parameter[1])
+            function(point, parameter, finding_status)
+        else:
+            function(point, parameter)
+        return FeatureExtraction.__generate_result_dictionary(Features.get_discrete_cosine_transform(function_result), feature)
 
     @staticmethod
     def __get_discrete_fourier_transform(feature, command, data):
@@ -388,6 +442,45 @@ class FeatureExtraction:
     @staticmethod
     def __get_fractional_derivative(feature, command, data):
         print(command)
+
+    @staticmethod
+    def __function_switch(function_name, data):
+        switcher = {
+            'DIS': (FeatureExtraction.__get_function_displacement, data[TASK_STRUCTURE['pen_status']]),
+            'VEL': (FeatureExtraction.__get_function_velocity, data[TASK_STRUCTURE['timestamp']]),
+            'ACC': (FeatureExtraction.__get_function_acceleration, data[TASK_STRUCTURE['timestamp']]),
+            'JERK': (FeatureExtraction.__get_function_jerk, data[TASK_STRUCTURE['timestamp']]),
+        }
+        return switcher.get(function_name)
+
+    @staticmethod
+    def __get_function_displacement(point, pen_status, finding_status=None):
+        if len(point.keys) > 1:
+            if finding_status is not None:
+                function = Features.get_displacement_pen_status(point['x_axis'], point['y_axis'], pen_status, finding_status)
+            else:
+                function = Features.get_displacement(point['x_axis'], point['y_axis'])
+        else:
+            if finding_status is not None:
+                function = Features.get_displacement_axis_pen_status(point['axis'], pen_status, finding_status)
+            else:
+                function = Features.get_displacement_axis(point['axis'])
+        return function
+
+    @staticmethod
+    def __get_function_velocity(point, time_stamp, on_surface=None):
+        space = FeatureExtraction.__get_function_displacement(point)
+        return Features.get_displacement_velocity(space, time_stamp, bool(on_surface))
+
+    @staticmethod
+    def __get_function_acceleration(point, time_stamp, on_surface=None):
+        velocity = FeatureExtraction.__get_function_velocity(point, time_stamp, bool(on_surface))
+        return Features.get_displacement_acceleration(velocity, time_stamp, on_surface)
+
+    @staticmethod
+    def __get_function_jerk(point, time_stamp, on_surface=None):
+        acceleration = FeatureExtraction.__get_function_acceleration(point, time_stamp, bool(on_surface))
+        return Features.get_jerk(acceleration, time_stamp, on_surface)
 
     @staticmethod
     def __generate_result_dictionary(data, feature):

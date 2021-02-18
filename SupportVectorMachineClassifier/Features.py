@@ -344,7 +344,7 @@ class Features:
         return result
 
     @staticmethod
-    def get_renyi_entropy(x_probability, alpha):
+    def __get_renyi_entropy(x_probability, alpha):
         sum = 0.00
         result = 0.00
         for i in range(len(x_probability)):
@@ -355,7 +355,8 @@ class Features:
 
     @staticmethod
     def get_der_snr(flux):
-        flux = np.array(flux[np.where(np.array(flux) != 0.0)])
+        flux = np.array(flux)
+        flux = np.array(flux[np.where(flux != 0.0)])
         n = len(flux)
         result = 0.00
         if n > 4:
@@ -376,48 +377,52 @@ class Features:
         return result
 
     @staticmethod
-    def get_calculate_imf(point):
+    def get_imf(point):
         point = list(map(float, point))
         return EMD().emd(np.array(point), max_imf=2)
 
     @staticmethod
-    def get_shannon_entropy(point, finding_status, pen_status):
+    def get_shannon_entropy(point, finding_status=None, pen_status=None):
         if finding_status is not None:
             point = Features.get_point_on(point, pen_status, finding_status)
-        samples = np.array(point).reshape(-1, 1)
-        kernel_density = KernelDensity(kernel='gaussian', bandwidth=0.2).fit(samples)
-        log_probability = kernel_density.score_sampes(samples)
+        samples = np.array(point).reshape((-1, 1))
+        kernel_density = KernelDensity(kernel='gaussian', bandwidth=0.2)
+        kernel_density.fit(samples)
+        log_probability = kernel_density.score_samples(samples)
         probability = np.exp(log_probability)
         return entropy(probability)
 
     @staticmethod
     def get_imf_shannon_entropy(imf):
         samples = np.array(imf[0]).reshape(-1, 1)
-        kernel_density = KernelDensity(kernel='gaussian', bandwidth=0.2).fit(samples)
+        kernel_density = KernelDensity(kernel='gaussian', bandwidth=0.2)
+        kernel_density.fit(samples)
         log_probability = kernel_density.score_samples(samples)
         probability = np.exp(log_probability)
         return entropy(probability)
 
     @staticmethod
-    def get_renyi_entropy(point, finding_status, pen_status, order):
+    def get_renyi_entropy(point, order, finding_status=None, pen_status=None):
         if finding_status is not None:
             point = Features.get_point_on(point, pen_status, finding_status)
         samples = np.array(point).reshape(-1, 1)
-        kernel_density = KernelDensity(kernel='gaussian', bandwidth=0.2).fit(samples)
+        kernel_density = KernelDensity(kernel='gaussian', bandwidth=0.2)
+        kernel_density.fit(samples)
         log_probability = kernel_density.score_samples(samples)
         probability = np.exp(log_probability)
-        return Features.get_renyi_entropy(probability, order)
+        return Features.__get_renyi_entropy(probability, order)
 
     @staticmethod
     def get_imf_renyi_entropy(imf, order):
         samples = np.array(imf[0]).reshape(-1, 1)
-        kernel_density = KernelDensity(kernel='gaussian', bandwidth=0.2).fit(samples)
+        kernel_density = KernelDensity(kernel='gaussian', bandwidth=0.2)
+        kernel_density.fit(samples)
         log_probability = kernel_density.score_samples(samples)
         probability = np.exp(log_probability)
-        return Features.get_renyi_entropy(probability, order)
+        return Features.__get_renyi_entropy(probability, order)
 
     @staticmethod
-    def get_snr(point, finding_status, pen_status):
+    def get_snr(point, finding_status=None, pen_status=None):
         if finding_status is not None:
             point = Features.get_point_on(point, pen_status, finding_status)
         return Features.get_der_snr(point)
