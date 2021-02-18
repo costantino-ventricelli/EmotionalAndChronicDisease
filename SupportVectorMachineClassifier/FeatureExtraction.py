@@ -21,17 +21,39 @@ TASK_STRUCTURE = {
 
 HEADER_FILE = 'header_file.csv'
 FEATURE_FILE_LIST = 'feature_list.csv'
+RESOURCE_FOLDER = 'resource'
+
+MAIN_FEATURE_KEY = 'MAIN_FEATURE'
+PARAMETER_KEY = 'OTHER_PARAMETERS'
+AXIS_KEY = 'AXIS'
 
 
-#TODO: Adesso bisogna si finire di mettere l'estrazione di tutte le feature, ma disogna individuare un modo per generare
-# i file, probabilmente conviene invertire l'ordine di scansione, quindi i task che formano un file con tutti gli utenti.
 class FeatureExtraction:
 
     @staticmethod
     def get_features_for_task(dataset):
+        task_file = FeatureExtraction.__get_header_file()
         features = FeatureExtraction.__get_feature_list()
         for feature in features:
             result = FeatureExtraction.__get_feature_command(feature, dataset)
+            for key, item in result.items():
+                try:
+                    task_file = FeatureExtraction.__update_dictionary(task_file, key, item)
+                except KeyError as error:
+                    print(error)
+        return task_file
+
+    @staticmethod
+    def __update_dictionary(dictionary, key, item):
+        if key in dictionary.keys():
+            value = dictionary[key]
+            if value is None:
+                dictionary[key] = [item]
+            else:
+                value.append(item)
+        else:
+            raise KeyError("The key: " + key + " doesn't exist")
+        return dictionary
 
     @staticmethod
     def __get_statistic_value(data):
@@ -47,12 +69,22 @@ class FeatureExtraction:
     @staticmethod
     def __get_feature_list():
         feature = []
-        with open(os.path.join("resource", FEATURE_FILE_LIST), 'r') as file:
+        with open(os.path.join(RESOURCE_FOLDER, FEATURE_FILE_LIST), 'r') as file:
             csv_file = csv.reader(file, delimiter=',', quotechar="'", quoting=csv.QUOTE_ALL)
             for row in csv_file:
                 feature = row
             file.close()
         return feature
+
+    @staticmethod
+    def __get_header_file():
+        with open(os.path.join(RESOURCE_FOLDER, HEADER_FILE), 'r') as file:
+            csv_file = csv.reader(file, delimiter=',', quotechar="'", quoting=csv.QUOTE_ALL)
+            for row in csv_file:
+                header_list = row
+            file.close()
+        header = dict.fromkeys(header_list, None)
+        return header
 
     @staticmethod
     def __get_feature_command(feature, dataset):
@@ -66,12 +98,12 @@ class FeatureExtraction:
         else:
             axis = None
         command = {
-            'MAIN_FEATURE': feature_command[0],
-            'AXIS': axis,
-            'OTHER_PARAMETERS': feature_command[1: len(feature_command)]
+            MAIN_FEATURE_KEY: feature_command[0],
+            AXIS_KEY: axis,
+            PARAMETER_KEY: feature_command[1: len(feature_command)]
         }
         function = FeatureExtraction.__command_switch(feature_command)
-        return function(command, dataset)
+        return function(feature, command, dataset)
 
     @staticmethod
     def __name_analyser(split):
@@ -146,9 +178,9 @@ class FeatureExtraction:
         return ON_AIR if status == 'ia' else ON_SURFACE
 
     @staticmethod
-    def __get_displacement(command, data):
-        other_parameters = command['OTHER_PARAMETERS']
-        axis = command['AXIS']
+    def __get_displacement(feature, command, data):
+        other_parameters = command[PARAMETER_KEY]
+        axis = command[AXIS_KEY]
         if len(other_parameters) > 0:
             finding_status = FeatureExtraction.__get_finding_status(other_parameters[0])
             if axis is None:
@@ -162,116 +194,204 @@ class FeatureExtraction:
                 displacement = Features.get_displacement(data[TASK_STRUCTURE['x_axis']], data[TASK_STRUCTURE['y_axis']])
             else:
                 displacement = Features.get_displacement_axis(data[TASK_STRUCTURE[axis]])
-        return FeatureExtraction.__get_statistic_value(displacement)
+        return FeatureExtraction.__generate_result_dictionary(displacement, feature)
 
     @staticmethod
-    def __get_velocity(command, data):
+    def __get_velocity(feature, command, data):
+        other_parameters = command[PARAMETER_KEY]
+        axis = command[AXIS_KEY]
+        if axis is None:
+            displacement = Features.get_displacement(data[TASK_STRUCTURE['x_axis']], data[TASK_STRUCTURE['y_axis']])
+        else:
+            displacement = Features.get_displacement_axis(data[TASK_STRUCTURE[axis]])
+        if len(other_parameters) > 0:
+            finding_status = FeatureExtraction.__get_finding_status(other_parameters[0])
+            velocity = Features.get_displacement_velocity(displacement, data[TASK_STRUCTURE['pen_status']], bool(finding_status))
+        else:
+            velocity = Features.get_displacement_velocity(displacement, data[TASK_STRUCTURE['pen_status']])
+        return FeatureExtraction.__generate_result_dictionary(velocity, feature)
+
+    @staticmethod
+    def __get_acceleration(feature, command, data):
+        other_parameters = command[PARAMETER_KEY]
+        axis = command[AXIS_KEY]
+        if axis is None:
+            displacement = Features.get_displacement(data[TASK_STRUCTURE['x_axis']], data[TASK_STRUCTURE['y_axis']])
+        else:
+            displacement = Features.get_displacement_axis(data[TASK_STRUCTURE[axis]])
+        velocity = Features.get_displacement_velocity(displacement, data[TASK_STRUCTURE['pen_status']])
+        if len(other_parameters) > 0:
+            finding_status = FeatureExtraction.__get_finding_status(other_parameters[0])
+            acceleration = Features.get_displacement_acceleration(velocity, data[TASK_STRUCTURE['timestamp']], bool(finding_status))
+        else:
+            acceleration = Features.get_displacement_acceleration(velocity, data[TASK_STRUCTURE['timestamp']])
+        return FeatureExtraction.__generate_result_dictionary(acceleration, feature)
+
+    @staticmethod
+    def __get_jerk(feature, command, data):
+        other_parameters = command[PARAMETER_KEY]
+        axis = command[AXIS_KEY]
+        if axis is None:
+            displacement = Features.get_displacement(data[TASK_STRUCTURE['x_axis']], data[TASK_STRUCTURE['y_axis']])
+        else:
+            displacement = Features.get_displacement_axis(data[TASK_STRUCTURE[axis]])
+        acceleration = Features.get_displacement_acceleration(Features.get_displacement_velocity(displacement, data[TASK_STRUCTURE['timestamp']]),
+                                                              data[TASK_STRUCTURE['timestamp']])
+        if len(other_parameters) > 0:
+            finding_status = FeatureExtraction.__get_finding_status(other_parameters[0])
+            jerk = Features.get_jerk(acceleration, data[TASK_STRUCTURE['timestamp']], bool(finding_status))
+        else:
+            jerk = Features.get_jerk(acceleration, data[TASK_STRUCTURE['timestamp']])
+        return FeatureExtraction.__generate_result_dictionary(jerk, feature)
+
+    @staticmethod
+    def __get_stroke_size(feature, command, data):
+        other_parameters = command[PARAMETER_KEY]
+        axis = command[AXIS_KEY]
+        if len(other_parameters) > 0:
+            finding_status = FeatureExtraction.__get_finding_status(other_parameters[0])
+            if axis is None:
+                strokes_size = Features.get_mean_stroke_size(data[TASK_STRUCTURE['x_axis']], data[TASK_STRUCTURE['y_axis']],
+                                                             data[TASK_STRUCTURE['pen_status']], finding_status)
+            else:
+                strokes_size = Features.get_mean_axis_stroke_size(data[TASK_STRUCTURE[axis]], data[TASK_STRUCTURE['pen_status']],
+                                                                  finding_status)
+        else:
+            strokes_size = None
+            print("Stroke size error")
+        return {feature + "[mean]": [strokes_size]}
+
+    @staticmethod
+    def __get_stroke_duration(feature, command, data):
+        finding_status = FeatureExtraction.__get_finding_status(command[PARAMETER_KEY][0])
+        return {feature + "[mean]": Features.get_mean_stroke_duration(data[TASK_STRUCTURE['timestamp']], data[TASK_STRUCTURE['pen_status']],
+                                                           finding_status)}
+
+    @staticmethod
+    def __get_stroke_speed(feature, command, data):
+        finding_status = FeatureExtraction.__get_finding_status(command[PARAMETER_KEY][0])
+        return {feature + "[mean]": Features.get_mean_stroke_velocity(data[TASK_STRUCTURE['x_axis']], data[TASK_STRUCTURE['y_axis']],
+                                                           data[TASK_STRUCTURE['pen_status']], data[TASK_STRUCTURE['timestamp']],
+                                                           finding_status)}
+
+    @staticmethod
+    def __get_time(feature, command, data):
+        finding_status = FeatureExtraction.__get_finding_status(command[PARAMETER_KEY][0])
+        return {feature: Features.get_time(data[TASK_STRUCTURE['pen_status']], data[TASK_STRUCTURE['timestamp']],
+                                           finding_status)}
+
+    @staticmethod
+    def __get_total_time(feature, command, data):
+        return {feature: Features.get_total_time(data[TASK_STRUCTURE['timestamp']])}
+
+    @staticmethod
+    def __get_number_of_stroke(feature, command, data):
+        other_parameters = command[PARAMETER_KEY]
+        if len(other_parameters) > 0:
+            finding_status = FeatureExtraction.__get_finding_status(other_parameters[0])
+        else:
+            finding_status = None
+        return {feature: Features.get_stroke(data[TASK_STRUCTURE['pen_status']], finding_status)}
+
+    @staticmethod
+    def __get_normalized_time(feature, command, data):
+        finding_status = FeatureExtraction.__get_finding_status(command[PARAMETER_KEY][0])
+        time = Features.get_time(data[TASK_STRUCTURE['pen_status']], data[TASK_STRUCTURE['timestamp']], finding_status)
+        total_time = Features.get_total_time(data[TASK_STRUCTURE['timestamp']])
+        return {feature: Features.get_total_time_norm(time, total_time)}
+
+    @staticmethod
+    def __get_ratio_time(feature, command, data):
+        time_on_surface = Features.get_time(data[TASK_STRUCTURE['pen_status']], data[TASK_STRUCTURE['timestamp']], ON_SURFACE)
+        time_in_air = Features.get_time(data[TASK_STRUCTURE['pen_status']], data[TASK_STRUCTURE['timestamp']], ON_AIR)
+        return {feature: Features.get_ratio_time(time_on_surface, time_in_air)}
+
+    @staticmethod
+    def __get_ration_pupd(feature, command, data):
+        return {feature: Features.get_pen_status_ratio(data[TASK_STRUCTURE['pen_status']])}
+
+    @staticmethod
+    def __get_peak_velocity(feature, command, data):
+        velocity = Features.get_displacement_velocity(Features.get_displacement(data[TASK_STRUCTURE['x_axis']], data[TASK_STRUCTURE['y_axis']]),
+                                                      data[TASK_STRUCTURE['timestamp']])
+        return {feature + "[mean]": Features.get_mean_function_peak(data[TASK_STRUCTURE['pen_status']], velocity)}
+
+    @staticmethod
+    def __get_peak_acceleration(feature, command, data):
+        acceleration = Features.get_displacement_acceleration(Features.get_displacement_velocity(Features.get_displacement(data[TASK_STRUCTURE['x_axis']],
+                                                            data[TASK_STRUCTURE['y_axis']]), data[TASK_STRUCTURE['timestamp']]), data[TASK_STRUCTURE['timestamp']])
+        return {feature + "[mean]": Features.get_mean_function_peak(data[TASK_STRUCTURE['pen_status']], acceleration)}
+
+    @staticmethod
+    def __get_number_velocity_change(feature, command, data):
+        velocity = Features.get_displacement_velocity(Features.get_displacement(data[TASK_STRUCTURE['x_axis']], data[TASK_STRUCTURE['y_axis']]),
+                                                      data[TASK_STRUCTURE['timestamp']])
+        return {feature: Features.get_changes(velocity, data[TASK_STRUCTURE['pen_status']])}
+
+    @staticmethod
+    def __get_number_acceleration_change(feature, command, data):
+        acceleration = Features.get_displacement_acceleration(Features.get_displacement_velocity(Features.get_displacement(data[TASK_STRUCTURE['x_axis']],
+                                                              data[TASK_STRUCTURE['y_axis']]), data[TASK_STRUCTURE['timestamp']]), data[TASK_STRUCTURE['timestamp']])
+        return {feature: Features.get_changes(acceleration, data[TASK_STRUCTURE['pen_status']])}
+
+    @staticmethod
+    def __get_ratio_number_velocity_change(feature, command, data):
+        velocity = FeatureExtraction.__get_number_velocity_change(feature, None, data)
+        time = FeatureExtraction.__get_total_time(feature, None, data)
+        return {feature: Features.get_relative_changes(velocity[feature], time[feature])}
+
+    @staticmethod
+    def __get_ratio_number_acceleration_change(feature, command, data):
+        acceleration = FeatureExtraction.__get_number_acceleration_change(feature, None, data)
+        time = FeatureExtraction.__get_total_time(feature, None, data)
+        return {feature: Features.get_relative_changes(acceleration[feature], time[feature])}
+
+    @staticmethod
+    def __get_pressure(feature, command, data):
+        return {feature + "[mean]": Features.get_mean_pressure(data[TASK_STRUCTURE['pressure']], data[TASK_STRUCTURE['pen_status']])}
+
+    @staticmethod
+    def __get_number_change_pressure(feature, command, data):
+        return {feature: Features.get_pressure_changes(data[TASK_STRUCTURE['pressure']], data[TASK_STRUCTURE['pen_status']])}
+
+    @staticmethod
+    def __get_normalized_velocity_variability(feature, command, data):
+        velocity = Features.get_displacement_velocity(Features.get_displacement(data[TASK_STRUCTURE['x_axis']], data[TASK_STRUCTURE['y_axis']]),
+                                                      data[TASK_STRUCTURE['timestamp']])
+        time = Features.get_total_time(data[TASK_STRUCTURE['timestamp']])
+        return {feature: Features.get_normalized_velocity_variability(velocity, time)}
+
+    @staticmethod
+    def __get_shannon_entropy(feature, command, data):
         print(command)
 
     @staticmethod
-    def __get_acceleration(command, data):
+    def __get_renyi_entropy(feature, command, data):
         print(command)
 
     @staticmethod
-    def __get_jerk(command, data):
+    def __get_signal_to_noise_ratio(feature, command, data):
         print(command)
 
     @staticmethod
-    def __get_stroke_size(command, data):
+    def __get_discrete_cosine_transform(feature, command, data):
         print(command)
 
     @staticmethod
-    def __get_stroke_duration(command, data):
+    def __get_discrete_fourier_transform(feature, command, data):
         print(command)
 
     @staticmethod
-    def __get_stroke_speed(command, data):
+    def __get_real_cepstrum(feature, command, data):
         print(command)
 
     @staticmethod
-    def __get_time(command, data):
+    def __get_fractional_derivative(feature, command, data):
         print(command)
 
     @staticmethod
-    def __get_total_time(command, data):
-        print(command)
-
-    @staticmethod
-    def __get_number_of_stroke(command, data):
-        print(command)
-
-    @staticmethod
-    def __get_normalized_time(command, data):
-        print(command)
-
-    @staticmethod
-    def __get_ratio_time(command, data):
-        print(command)
-
-    @staticmethod
-    def __get_ration_pupd(command, data):
-        print(command)
-
-    @staticmethod
-    def __get_peak_velocity(command, data):
-        print(command)
-
-    @staticmethod
-    def __get_peak_acceleration(command, data):
-        print(command)
-
-    @staticmethod
-    def __get_number_velocity_change(command, data):
-        print(command)
-
-    @staticmethod
-    def __get_number_acceleration_change(command, data):
-        print(command)
-
-    @staticmethod
-    def __get_ratio_number_velocity_change(command, data):
-        print(command)
-
-    @staticmethod
-    def __get_ratio_number_acceleration_change(command, data):
-        print(command)
-
-    @staticmethod
-    def __get_pressure(command, data):
-        print(command)
-
-    @staticmethod
-    def __get_number_change_pressure(command, data):
-        print(command)
-
-    @staticmethod
-    def __get_normalized_velocity_variability(command, data):
-        print(command)
-
-    @staticmethod
-    def __get_shannon_entropy(command, data):
-        print(command)
-
-    @staticmethod
-    def __get_renyi_entropy(command, data):
-        print(command)
-
-    @staticmethod
-    def __get_signal_to_noise_ratio(command, data):
-        print(command)
-
-    @staticmethod
-    def __get_discrete_cosine_transform(command, data):
-        print(command)
-
-    @staticmethod
-    def __get_discrete_fourier_transform(command, data):
-        print(command)
-
-    @staticmethod
-    def __get_real_cepstrum(command, data):
-        print(command)
-
-    @staticmethod
-    def __get_fractional_derivative(command, data):
-        print(command)
+    def __generate_result_dictionary(data, feature):
+        result = {}
+        for key, item in FeatureExtraction.__get_statistic_value(data).items():
+            result[feature + key] = item
+        return result

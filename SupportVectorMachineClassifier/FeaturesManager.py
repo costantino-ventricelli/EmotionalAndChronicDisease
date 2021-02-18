@@ -31,14 +31,13 @@ class FeaturesManager:
         self.__patients = FileManager.get_ids_from_dir(self.__patients_path)
 
     def create_features_file(self):
-        for i in range(len(self.__patients)):
-            save_dir = os.path.join(RESOURCE_DIR, str(self.__patients[i]))
-            if not os.path.exists(save_dir):
-                os.mkdir(save_dir)
-            task_files = FileManager.get_files_from_path(self.__patients_path[i], files=None)
-            for file in task_files:
-                task = FileManager.get_task_from_path(file)
-                rows_data = FeaturesManager.__read_row_data(file)
+        paths = self.__file_manager.get_files_path()
+        for task in TASKS:
+            print("Extracting feature for task: ", TASKS_MAME.get(task))
+            for id in self.__patients:
+                task_file = FileManager.get_all_files_ids_tasks(id, task, paths)[0]
+                print(task_file)
+                rows_data = FeaturesManager.__read_row_data(task_file)
                 x_point = []
                 y_point = []
                 pressure_point = []
@@ -55,7 +54,8 @@ class FeaturesManager:
                     altitude_point.append(row[TASK_STRUCTURE.get('altitude')])
                     pen_status.append(row[TASK_STRUCTURE.get('pen_status')])
                 dataset = [x_point, y_point, pressure_point, time_stamps, altitude_point, altitude_point, pen_status]
-                FeatureExtraction.get_features_for_task(dataset)
+                user_dict = FeatureExtraction.get_features_for_task(dataset)
+                # TODO aggiornare il dizionario
 
     @staticmethod
     def __read_row_data(file):

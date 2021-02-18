@@ -70,19 +70,9 @@ class Features:
         return np.array(result)
 
     @staticmethod
-    def get_displacement_velocity(displacements, time_stamps):
+    def get_displacement_velocity(displacements, time_stamps, on_surface=None):
         result = []
-        for i in range(len(displacements)):
-            velocity = 0.00
-            if time_stamps[i] > 0:
-                velocity = displacements[i] / time_stamps[i]
-            result.append(velocity)
-        return np.array(result)
-
-    @staticmethod
-    def get_displacement_velocity(displacements, time_stamps, on_surface):
-        result = []
-        if on_surface:
+        if on_surface is not None and on_surface:
             time_stamps[time_stamps == 0] = 1
         for i in range(len(displacements)):
             velocity = 0.00
@@ -92,19 +82,9 @@ class Features:
         return np.array(result)
 
     @staticmethod
-    def get_displacement_acceleration(velocities, time_stamps):
-        result = []
-        for i in range(len(velocities)):
-            acceleration = 0.00
-            if time_stamps[i] > 0:
-                acceleration = velocities[i] / time_stamps[i]
-            result.append(acceleration)
-        return np.array(result)
-
-    @staticmethod
-    def get_displacement_acceleration(velocities, time_stamps, on_surface):
+    def get_displacement_acceleration(velocities, time_stamps, on_surface=None):
         results = []
-        if on_surface:
+        if on_surface is not None and on_surface:
             time_stamps[time_stamps == 0] = 1
         for i in range(len(velocities)):
             acceleration = 0.00
@@ -114,19 +94,9 @@ class Features:
         return np.array(results)
 
     @staticmethod
-    def get_jerk(accelerations, time_stamps):
+    def get_jerk(accelerations, time_stamp, on_surface=None):
         result = []
-        for i in range(len(accelerations)):
-            jerk = 0.00
-            if time_stamps[i] > 0:
-                jerk = accelerations[i] / time_stamps[i]
-            result.append(jerk)
-        return np.array(result)
-
-    @staticmethod
-    def get_jerk(accelerations, time_stamp, on_surface):
-        result = []
-        if on_surface:
+        if on_surface is not None and on_surface:
             time_stamp[time_stamp == 0] = 1
         for i in range(len(accelerations)):
             jerk = 0.00
@@ -196,7 +166,8 @@ class Features:
         if Features.get_stroke(pen_status, finding_status) != 0:
             strokes = Features.get_displacement_pen_status(x_axis, y_axis, pen_status, finding_status)
             total = np.sum(strokes)
-            result = total / len(strokes)
+            if len(strokes) != 0:
+                result = total / len(strokes)
         return result
 
     @staticmethod
@@ -205,13 +176,16 @@ class Features:
         if Features.get_stroke(pen_status, finding_status) != 0:
             strokes = Features.get_displacement_axis_pen_status(axis, pen_status, finding_status)
             total = np.sum(strokes)
-            result = total / len(strokes)
+            if len(strokes) != 0:
+                result = total / len(strokes)
         return result
 
     @staticmethod
     def get_mean_stroke_duration(time_stamps, pen_status, finding_status):
-        result = Features.get_time(pen_status, time_stamps, finding_status) / Features.get_stroke(
-            pen_status, finding_status)
+        result = 0.00
+        stroke_number = Features.get_stroke(pen_status, finding_status)
+        if stroke_number != 0:
+            result = Features.get_time(pen_status, time_stamps, finding_status) / stroke_number
         return result
 
     @staticmethod
@@ -261,15 +235,26 @@ class Features:
 
     @staticmethod
     def get_total_time_norm(time, total_time):
-        return time / total_time
+        result = 0.00
+        if total_time != 0:
+            result = time / total_time
+        return result
 
     @staticmethod
     def get_ratio_time(time_on_surface, time_on_air):
-        return time_on_surface / time_on_air
+        result = 0.00
+        if time_on_air != 0:
+            result = time_on_surface / time_on_air
+        return result
 
     @staticmethod
     def get_pen_status_ratio(pen_status):
-        return Features.get_stroke(pen_status, ON_SURFACE) / Features.get_stroke(pen_status, ON_AIR)
+        result = 0.00
+        stroke_on_surface = Features.get_stroke(pen_status, ON_SURFACE)
+        stroke_in_air = Features.get_stroke(pen_status, ON_AIR)
+        if stroke_in_air != 0:
+            result = stroke_on_surface / stroke_in_air
+        return result
 
     @staticmethod
     def get_mean_function_peak(pen_status, function):
@@ -306,8 +291,11 @@ class Features:
         return result
 
     @staticmethod
-    def get_relative_changes(changes, total_changes):
-        return changes / total_changes
+    def get_relative_changes(changes, total_time):
+        result = 0.00
+        if total_time != 0:
+            result = changes / total_time
+        return result
 
     @staticmethod
     def get_mean_pressure(pressure, pen_status):
@@ -358,9 +346,12 @@ class Features:
     @staticmethod
     def get_renyi_entropy(x_probability, alpha):
         sum = 0.00
+        result = 0.00
         for i in range(len(x_probability)):
             sum += np.power(x_probability[i], alpha)
-        return 1 / (1 - alpha) * np.log2(sum)
+        if (1 - alpha) * np.log2(sum) != 0:
+            result = 1 / (1 - alpha) * np.log2(sum)
+        return result
 
     @staticmethod
     def get_der_snr(flux):
@@ -370,7 +361,8 @@ class Features:
         if n > 4:
             signal = np.median(flux)
             noise = 0.6052697 * np.median(np.abs(2.0 * flux[2: n - 2] - flux[0: n - 4] - flux[4: n]))
-            result = float(signal / noise)
+            if noise != 0:
+                result = float(signal / noise)
         return result
 
     @staticmethod
@@ -443,7 +435,7 @@ class Features:
         return result
 
     @staticmethod
-    def get_stroke(pen_status, finding_status):
+    def get_stroke(pen_status, finding_status=None):
         result = 0
         total = False
         if finding_status is None:
