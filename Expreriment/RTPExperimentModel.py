@@ -50,5 +50,4 @@ class Experiment:
         self.__ml_model = MLModel(tensor_training, states_training, tensor_validation, states_validation)
         self.__ml_model.show_summary_graph()
         print("Testing model...")
-        # Testo il modello e valuto i risultati
-        # Per testare l'esperimento bisogna riscrivere il test del modello.
+

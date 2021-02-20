@@ -11,9 +11,19 @@ from scipy.stats import entropy
 from scipy.signal import argrelmin, argrelmax
 from PyEMD import EMD
 from DatasetManager.Costants import ON_SURFACE, ON_AIR
+from copy import deepcopy
 
 
 class Features:
+
+    @staticmethod
+    def get_point(point, pen_status, finding_status):
+        new_point = deepcopy(point)
+        for i in range(len(pen_status)):
+            if pen_status[i] != finding_status:
+                for key, item in point.items():
+                    del new_point[key][new_point[key].index(item[i])]
+        return new_point
 
     @staticmethod
     def get_displacement(x_axis, y_axis):
@@ -74,9 +84,9 @@ class Features:
         result = []
         if on_surface is not None and on_surface:
             time_stamps[time_stamps == 0] = 1
-        for i in range(len(displacements)):
+        for i in range(len(displacements) - 1):
             velocity = 0.00
-            if time_stamps[i] > 0:
+            if time_stamps[i] > 0.00:
                 velocity = displacements[i] / time_stamps[i]
             result.append(velocity)
         return np.array(result)
@@ -86,9 +96,9 @@ class Features:
         results = []
         if on_surface is not None and on_surface:
             time_stamps[time_stamps == 0] = 1
-        for i in range(len(velocities)):
+        for i in range(len(velocities) - 1):
             acceleration = 0.00
-            if time_stamps[i] > 0:
+            if time_stamps[i] > 0.00:
                 acceleration = velocities[i] / time_stamps[i]
             results.append(acceleration)
         return np.array(results)
@@ -196,18 +206,24 @@ class Features:
             displacement = 0.00
             total = 0.00
             for i in range(len(pen_status) - 1):
-                if time_stamps[i] == finding_status:
+                if pen_status[i] == finding_status:
                     square_difference_x = np.square(x_axis[i + 1] - x_axis[i])
                     square_difference_y = np.square(y_axis[i + 1] - y_axis[i])
-                    displacement += np.sqrt(square_difference_x - square_difference_y)
+                    displacement += np.sqrt(np.abs(square_difference_x - square_difference_y))
                     stroke.append(time_stamps[i])
                 else:
-                    delta_time = stroke[-1] - stroke[0]
+                    if stroke:
+                        delta_time = stroke[-1] - stroke[0]
+                    else:
+                        delta_time = 0.00
                     if delta_time > 0.00:
                         total += displacement / delta_time
                     displacement = 0.00
                     total = 0.00
-            delta_time = stroke[-1] - stroke[0]
+            if stroke:
+                delta_time = stroke[-1] - stroke[0]
+            else:
+                delta_time = 0.00
             if delta_time > 0.00:
                 total += displacement / delta_time
             result = total / Features.get_stroke(pen_status, finding_status)
@@ -219,7 +235,7 @@ class Features:
         if Features.get_stroke(pen_status, finding_status) != 0:
             stroke = []
             for i in range(len(time_stamps)):
-                if time_stamps[i] == finding_status:
+                if pen_status[i] == finding_status:
                     stroke.append(time_stamps[i])
                 else:
                     if len(stroke) > 0:
@@ -228,6 +244,14 @@ class Features:
             if len(stroke) > 0:
                 total_time += stroke[-1] - stroke[0]
         return total_time
+
+    @staticmethod
+    def get_time_function(time_stamp, pen_status, finding_status):
+        result = []
+        for i in range(len(time_stamp)):
+            if pen_status[i] == finding_status:
+                result.append(time_stamp[i])
+        return result
 
     @staticmethod
     def get_total_time(time_stamps):
@@ -266,9 +290,11 @@ class Features:
                 function_strokes.append(function[i])
                 if pen_status[i + 1] == ON_SURFACE and pen_status[i] == ON_AIR or \
                         pen_status[i + 1] == ON_AIR and pen_status[i] == ON_SURFACE:
-                    total += max(function_strokes)
+                    if function_strokes:
+                        total += max(function_strokes)
                     function_strokes = []
-            total += max(function_strokes)
+            if function_strokes:
+                total += max(function_strokes)
             result = total / Features.get_stroke(pen_status, None)
         return result
 
@@ -282,11 +308,13 @@ class Features:
                 function_strokes.append(function[i])
                 if pen_status[i + 1] == ON_SURFACE and pen_status[i] == ON_AIR or \
                         pen_status[i + 1] == ON_AIR and pen_status[i] == ON_SURFACE:
-                    total += len(argrelmin(np.array(function_strokes))[0])
-                    total += len(argrelmax(np.array(function_strokes))[0])
+                    if function_strokes:
+                        total += len(argrelmin(np.array(function_strokes))[0])
+                        total += len(argrelmax(np.array(function_strokes))[0])
                     function_strokes = []
-            total += len(argrelmin(np.array(function_strokes))[0])
-            total += len(argrelmax(np.array(function_strokes))[0])
+            if function_strokes:
+                total += len(argrelmin(np.array(function_strokes))[0])
+                total += len(argrelmax(np.array(function_strokes))[0])
             result = total / Features.get_stroke(pen_status, None)
         return result
 
@@ -307,9 +335,11 @@ class Features:
                 if pen_status[i] == ON_SURFACE:
                     pressure_on_surface.append(pressure[i])
                 else:
-                    total += np.mean(pressure_on_surface)
+                    if pressure_on_surface:
+                        total += np.mean(pressure_on_surface)
                     pressure_on_surface = []
-            total += np.mean(pressure_on_surface)
+            if pressure_on_surface:
+                total += np.mean(pressure_on_surface)
             result = total / Features.get_stroke(pen_status, ON_SURFACE)
         return result
 
@@ -323,11 +353,13 @@ class Features:
                 if pressure[i] == ON_SURFACE:
                     pressure_on_surface.append(pressure[i])
                 else:
-                    total += len(argrelmin(np.array(pressure_on_surface))[0])
-                    total += len(argrelmax(np.array(pressure_on_surface))[0])
+                    if pressure_on_surface:
+                        total += len(argrelmin(np.array(pressure_on_surface))[0])
+                        total += len(argrelmax(np.array(pressure_on_surface))[0])
                     pressure_on_surface = []
-            total += len(argrelmax(np.array(pressure_on_surface))[0])
-            total += len(argrelmax(np.array(pressure_on_surface))[0])
+            if pressure_on_surface:
+                total += len(argrelmax(np.array(pressure_on_surface))[0])
+                total += len(argrelmax(np.array(pressure_on_surface))[0])
             result = total / Features.get_stroke(pen_status, None)
         return result
 

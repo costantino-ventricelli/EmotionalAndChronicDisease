@@ -3,7 +3,6 @@
 from DatasetManager import FileManager
 from DatasetManager.Costants import *
 from .MachineLearningModel import MLModel
-from .RHSDistanceExtraction import RHSDistanceExtract
 from .TaskManager import TaskManager
 
 import numpy as np
@@ -11,12 +10,12 @@ import numpy as np
 
 class LeaveOneOut:
 
-    def __init__(self, minimum_samples, samples_len, feature, dataset):
+    def __init__(self, minimum_samples, samples_len, feature_extractor, feature, dataset):
         self.__minimum_samples = minimum_samples
         self.__samples_len = samples_len
         self.__file_manager = FileManager(dataset)
         self.__feature = feature
-        self.__feature_extractor = RHSDistanceExtract(self.__minimum_samples, self.__samples_len)
+        self.__feature_extractor = feature_extractor
 
     def leave_one_out(self, healthy_task, disease_task):
         # Seleziono inizialmente tutti gli utenti distinguendoli tra sani e malati.
@@ -44,11 +43,11 @@ class LeaveOneOut:
             healthy_file_deleted = FileManager.delete_files(test_id, healthy_file)
             disease_file_deleted = FileManager.delete_files(test_id, disease_file)
             # Genero il tensorre di training assieme alla lista degli stati.
-            training_tensor, training_states, _ = self.__feature_extractor.extract_rhs_known_state(
+            training_tensor, training_states, _ = self.__feature_extractor.extract_rtp_known_state(
                 healthy_file_deleted[0: len(healthy_file_deleted) - validation_number] + disease_file_deleted[
                                                                                          0: len(disease_file_deleted)])
             # Genero il tensore di validazione assiame alla lista degli stati.
-            validation_tensor, validation_states, _ = self.__feature_extractor.extract_rhs_known_state(
+            validation_tensor, validation_states, _ = self.__feature_extractor.extract_rtp_known_state(
                 healthy_file_deleted[len(healthy_file_deleted) - validation_number: len(healthy_file_deleted)]
                 + disease_file_deleted[len(disease_file_deleted) - validation_number: len(disease_file_deleted)])
             # Ottengo la lista dei file con cui eseguirò i test.
@@ -59,7 +58,7 @@ class LeaveOneOut:
             test_states = np.zeros(0)
             # In questo ciclo genero il tensore per i file di test e la lista degli stati.
             for file in test_file:
-                partial_tensor, partial_states = self.__feature_extractor.extract_rhs_file(file)
+                partial_tensor, partial_states = self.__feature_extractor.rtp(file)
                 test_tensor = np.concatenate((test_tensor, partial_tensor))
                 test_states = np.concatenate((test_states, partial_states))
             try:

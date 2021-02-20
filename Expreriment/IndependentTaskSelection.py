@@ -140,12 +140,12 @@ class IndependentTaskSelection:
     def __extract_rhs_segment(validation, healthy_paths, disease_paths, test_paths, feature_extraction, samples_len):
         training_paths = healthy_paths[0: validation] + disease_paths[0: validation]
         validation_paths = healthy_paths[validation: len(healthy_paths)] + disease_paths[validation: len(disease_paths)]
-        training_tensor, training_states, _ = feature_extraction.extract_rhs_known_state(training_paths)
-        validation_tensor, validation_states, _ = feature_extraction.extract_rhs_known_state(validation_paths)
+        training_tensor, training_states, _ = feature_extraction.extract_rtp_known_state(training_paths)
+        validation_tensor, validation_states, _ = feature_extraction.extract_rtp_known_state(validation_paths)
         test_tensor = np.zeros((0, samples_len * 2, FEATURES))
         test_states = np.zeros(0)
         for path in test_paths:
-            partial_tensor, partial_states = feature_extraction.extract_rhs_file(path)
+            partial_tensor, partial_states = feature_extraction.rtp(path)
             test_tensor = np.concatenate((test_tensor, partial_tensor))
             test_states = np.concatenate((test_states, partial_states))
         return training_tensor, training_states, validation_tensor, validation_states, test_tensor, test_states

@@ -1,6 +1,5 @@
 # coding=utf-8
 
-from copy import deepcopy
 from .Features import Features
 from DatasetManager.Costants import *
 
@@ -28,21 +27,53 @@ PARAMETER_KEY = 'OTHER_PARAMETERS'
 AXIS_KEY = 'AXIS'
 
 
+"""
+    Questa classe permette di estrarre tutte le feature, funzionali e parametriche da ogni dataset.
+"""
+
+
 class FeatureExtraction:
 
+    """
+        Questo metodo restituisce l'header del file che contiene i vaoli estratti per le feature.
+    """
+    @staticmethod
+    def get_file_dictionary():
+        return FeatureExtraction.__get_header_file()
+
+    """
+        Questo metodo permette scansiona un vettorre composto da tutte le feature che verranno estratte dai dataset.
+    """
     @staticmethod
     def get_features_for_task(dataset):
+        # Questo dizionario conterrà i risultati di tutta l'estrazione
         task_file = FeatureExtraction.__get_header_file()
+        # Questa lista la lista di tutte le feature che verranno estratte dal dataset
         features = FeatureExtraction.__get_feature_list()
+        # Quindi per ogni feature presente nella lista verranno richiamati metodi necessari all'estrazione di quella
+        # feature.
         for feature in features:
-            result = FeatureExtraction.__get_feature_command(feature, dataset)
-            for key, item in result.items():
-                try:
-                    task_file = FeatureExtraction.__update_dictionary(task_file, key, item)
-                except KeyError as error:
-                    print(error)
+            print("Computing: ", feature)
+            # Qui si verifica che il file non sia vuoto.
+            if len(dataset) > 0:
+                # In result viene restituito un dizionario che contiene le features estratte che potrebbero essere più
+                # di una quando si estraggono feature funzionali di cui vengono calcolate varie funzioni statistiche.
+                result = FeatureExtraction.__get_feature_command(feature, dataset)
+                # Questo for ispeziona tutti i dati ottenuti e li appone nel dizionario che conterrà tutte le feature
+                # estratte per il task.
+                for key, item in result.items():
+                    try:
+                        task_file = FeatureExtraction.__update_dictionary(task_file, key, item)
+                    except KeyError as error:
+                        print(error)
+            else:
+                print("Empty file, skipping...")
         return task_file
 
+    """
+        Questa funzione permette semplicemente di aggiornare i valori del dizionario dei task utilizzando il nome delle 
+        feature come chiave.
+    """
     @staticmethod
     def __update_dictionary(dictionary, key, item):
         if key in dictionary.keys():
@@ -55,9 +86,12 @@ class FeatureExtraction:
             raise KeyError("The key: " + key + " doesn't exist")
         return dictionary
 
+    """
+        Questo metodo permette di salare le funzioni statistiche in maniera ordinata all'interno di un disionario
+    """
     @staticmethod
     def __get_statistic_value(data):
-        return {
+        result = {
             '[mean]': np.mean(data),
             '[median]': np.median(data),
             '[stan. dev.]': np.std(data),
@@ -65,7 +99,11 @@ class FeatureExtraction:
             '[99 per]': np.percentile(data, 99),
             '[1-99 per]': np.percentile(data, 99) - np.percentile(data, 10)
         }
+        return result
 
+    """
+        Questo metodo legge il file che contiene tutti i nomi delle feature per crere la lista da scorrere per calcolarle.
+    """
     @staticmethod
     def __get_feature_list():
         feature = []
@@ -76,6 +114,9 @@ class FeatureExtraction:
             file.close()
         return feature
 
+    """
+        Questo metodo genera il dizionario che conterrà i valori calcolati per ogni feature.
+    """
     @staticmethod
     def __get_header_file():
         with open(os.path.join(RESOURCE_FOLDER, HEADER_FILE), 'r') as file:
@@ -86,6 +127,10 @@ class FeatureExtraction:
         header = dict.fromkeys(header_list, None)
         return header
 
+    """
+        Questo metodo permette di individuare quale feature si sta calando e quali sono i parametri passati per il calcolo
+        di tale feature
+    """
     @staticmethod
     def __get_feature_command(feature, dataset):
         feature_command = str.split(feature, '_')
@@ -200,30 +245,46 @@ class FeatureExtraction:
     def __get_velocity(feature, command, data):
         other_parameters = command[PARAMETER_KEY]
         axis = command[AXIS_KEY]
-        if axis is None:
-            displacement = Features.get_displacement(data[TASK_STRUCTURE['x_axis']], data[TASK_STRUCTURE['y_axis']])
-        else:
-            displacement = Features.get_displacement_axis(data[TASK_STRUCTURE[axis]])
         if len(other_parameters) > 0:
             finding_status = FeatureExtraction.__get_finding_status(other_parameters[0])
-            velocity = Features.get_displacement_velocity(displacement, data[TASK_STRUCTURE['pen_status']], bool(finding_status))
+            if axis is None:
+                displacement = Features.get_displacement_pen_status(data[TASK_STRUCTURE['x_axis']], data[TASK_STRUCTURE['y_axis']],
+                                                                    data[TASK_STRUCTURE['pen_status']], finding_status)
+            else:
+                displacement = Features.get_displacement_axis_pen_status(data[TASK_STRUCTURE[axis]], data[TASK_STRUCTURE['pen_status']],
+                                                                         finding_status)
+            time_stamps = Features.get_time_function(data[TASK_STRUCTURE['timestamp']], data[TASK_STRUCTURE['pen_status']], finding_status)
+            velocity = Features.get_displacement_velocity(displacement, time_stamps, bool(finding_status))
         else:
-            velocity = Features.get_displacement_velocity(displacement, data[TASK_STRUCTURE['pen_status']])
+            if axis is None:
+                displacement = Features.get_displacement(data[TASK_STRUCTURE['x_axis']], data[TASK_STRUCTURE['y_axis']])
+            else:
+                displacement = Features.get_displacement_axis(data[TASK_STRUCTURE[axis]])
+            velocity = Features.get_displacement_velocity(displacement, data[TASK_STRUCTURE['timestamp']])
         return FeatureExtraction.__generate_result_dictionary(velocity, feature)
 
     @staticmethod
     def __get_acceleration(feature, command, data):
         other_parameters = command[PARAMETER_KEY]
         axis = command[AXIS_KEY]
-        if axis is None:
-            displacement = Features.get_displacement(data[TASK_STRUCTURE['x_axis']], data[TASK_STRUCTURE['y_axis']])
-        else:
-            displacement = Features.get_displacement_axis(data[TASK_STRUCTURE[axis]])
-        velocity = Features.get_displacement_velocity(displacement, data[TASK_STRUCTURE['pen_status']])
         if len(other_parameters) > 0:
             finding_status = FeatureExtraction.__get_finding_status(other_parameters[0])
-            acceleration = Features.get_displacement_acceleration(velocity, data[TASK_STRUCTURE['timestamp']], bool(finding_status))
+            if axis is None:
+                displacement = Features.get_displacement_pen_status(data[TASK_STRUCTURE['x_axis']], data[TASK_STRUCTURE['y_axis']],
+                                                                    data[TASK_STRUCTURE['pen_status']], finding_status)
+            else:
+                displacement = Features.get_displacement_axis_pen_status(data[TASK_STRUCTURE[axis]], data[TASK_STRUCTURE['pen_status']],
+                                                                         finding_status)
+            time_stamps = Features.get_time_function(data[TASK_STRUCTURE['timestamp']],
+                                                     data[TASK_STRUCTURE['pen_status']], finding_status)
+            velocity = Features.get_displacement_velocity(displacement, time_stamps)
+            acceleration = Features.get_displacement_acceleration(velocity, time_stamps, bool(finding_status))
         else:
+            if axis is None:
+                displacement = Features.get_displacement(data[TASK_STRUCTURE['x_axis']], data[TASK_STRUCTURE['y_axis']])
+            else:
+                displacement = Features.get_displacement_axis(data[TASK_STRUCTURE[axis]])
+            velocity = Features.get_displacement_velocity(displacement, data[TASK_STRUCTURE['timestamp']])
             acceleration = Features.get_displacement_acceleration(velocity, data[TASK_STRUCTURE['timestamp']])
         return FeatureExtraction.__generate_result_dictionary(acceleration, feature)
 
@@ -231,16 +292,28 @@ class FeatureExtraction:
     def __get_jerk(feature, command, data):
         other_parameters = command[PARAMETER_KEY]
         axis = command[AXIS_KEY]
-        if axis is None:
-            displacement = Features.get_displacement(data[TASK_STRUCTURE['x_axis']], data[TASK_STRUCTURE['y_axis']])
-        else:
-            displacement = Features.get_displacement_axis(data[TASK_STRUCTURE[axis]])
-        acceleration = Features.get_displacement_acceleration(Features.get_displacement_velocity(displacement, data[TASK_STRUCTURE['timestamp']]),
-                                                              data[TASK_STRUCTURE['timestamp']])
         if len(other_parameters) > 0:
             finding_status = FeatureExtraction.__get_finding_status(other_parameters[0])
-            jerk = Features.get_jerk(acceleration, data[TASK_STRUCTURE['timestamp']], bool(finding_status))
+            if axis is None:
+                displacement = Features.get_displacement_pen_status(data[TASK_STRUCTURE['x_axis']], data[TASK_STRUCTURE['y_axis']],
+                                                                    data[TASK_STRUCTURE['pen_status']], finding_status)
+            else:
+                displacement = Features.get_displacement_axis_pen_status(data[TASK_STRUCTURE[axis]], data[TASK_STRUCTURE['pen_status']],
+                                                                         finding_status)
+            time_stamps = Features.get_time_function(data[TASK_STRUCTURE['timestamp']],
+                                                     data[TASK_STRUCTURE['pen_status']], finding_status)
+            acceleration = Features.get_displacement_acceleration(
+                Features.get_displacement_velocity(displacement, time_stamps),
+                time_stamps)
+            jerk = Features.get_jerk(acceleration, time_stamps, bool(finding_status))
         else:
+            if axis is None:
+                displacement = Features.get_displacement(data[TASK_STRUCTURE['x_axis']], data[TASK_STRUCTURE['y_axis']])
+            else:
+                displacement = Features.get_displacement_axis(data[TASK_STRUCTURE[axis]])
+            acceleration = Features.get_displacement_acceleration(
+                Features.get_displacement_velocity(displacement, data[TASK_STRUCTURE['timestamp']]),
+                data[TASK_STRUCTURE['timestamp']])
             jerk = Features.get_jerk(acceleration, data[TASK_STRUCTURE['timestamp']])
         return FeatureExtraction.__generate_result_dictionary(jerk, feature)
 
@@ -259,7 +332,7 @@ class FeatureExtraction:
         else:
             strokes_size = None
             print("Stroke size error")
-        return {feature + "[mean]": [strokes_size]}
+        return {feature + "[mean]": strokes_size}
 
     @staticmethod
     def __get_stroke_duration(feature, command, data):
@@ -412,50 +485,94 @@ class FeatureExtraction:
 
     @staticmethod
     def __get_discrete_cosine_transform(feature, command, data):
+        function_result = FeatureExtraction.__get_all_function_combination(command, data)
+        return FeatureExtraction.__generate_result_dictionary(Features.get_discrete_cosine_transform(function_result), feature)
+
+    @staticmethod
+    def __get_discrete_fourier_transform(feature, command, data):
+        function_result = FeatureExtraction.__get_all_function_combination(command, data)
+        return FeatureExtraction.__generate_result_dictionary(Features.get_real_fast_fourier_transform(function_result),
+                                                              feature)
+
+    @staticmethod
+    def __get_real_cepstrum(feature, command, data):
+        function_result = FeatureExtraction.__get_all_function_combination(command, data)
+        return FeatureExtraction.__generate_result_dictionary(Features.get_cepstrum(function_result), feature)
+
+    @staticmethod
+    def __get_all_function_combination(command, data):
         other_parameter = command[PARAMETER_KEY]
         group_search = re.search(r'x$|y$', other_parameter[0])
         if group_search:
             axis = group_search.group(0)
             other_parameter[0] = other_parameter[0].replace(axis, '')
-            point = {'axis': data[TASK_STRUCTURE[axis]]}
+            point = {'axis': data[TASK_STRUCTURE[axis + '_axis']]}
         else:
             point = {'x_axis': data[TASK_STRUCTURE['x_axis']],
                      'y_axis': data[TASK_STRUCTURE['y_axis']]}
-        (function, parameter) = FeatureExtraction.__function_switch(other_parameter[0], data, other_parameter)
-        # FIXME: quando vengono chiamati accelerzione, velocità e jerk se è specificato in aria o in superfice bisogna
-        # selezionare solo il time stamp corrispondente.
+        function, domain = FeatureExtraction.__function_switch(other_parameter[0])
         if len(other_parameter) > 1:
             finding_status = FeatureExtraction.__get_finding_status(other_parameter[1])
-            function(point, parameter, finding_status)
         else:
-            function(point, parameter)
-        return FeatureExtraction.__generate_result_dictionary(Features.get_discrete_cosine_transform(function_result), feature)
-
-    @staticmethod
-    def __get_discrete_fourier_transform(feature, command, data):
-        print(command)
-
-    @staticmethod
-    def __get_real_cepstrum(feature, command, data):
-        print(command)
+            finding_status = None
+        if domain == 'timestamp':
+            if finding_status is not None:
+                domain = Features.get_time_function(data[TASK_STRUCTURE['timestamp']],
+                                                    data[TASK_STRUCTURE['pen_status']],
+                                                    finding_status)
+                point = Features.get_point(point, data[TASK_STRUCTURE['pen_status']], finding_status)
+            else:
+                domain = data[TASK_STRUCTURE['timestamp']]
+        else:
+            domain = data[TASK_STRUCTURE['pen_status']]
+        function_result = function(point, domain, finding_status)
+        return function_result
 
     @staticmethod
     def __get_fractional_derivative(feature, command, data):
-        print(command)
+        function = command[PARAMETER_KEY][0]
+        grade = command[PARAMETER_KEY][1]
+        if len(command[PARAMETER_KEY]) > 2:
+            status = command[PARAMETER_KEY][2]
+            other_parameter = [function, status]
+        else:
+            other_parameter = [function]
+        function = FeatureExtraction.__get_all_function_combination({
+            AXIS_KEY: command[AXIS_KEY],
+            PARAMETER_KEY: other_parameter
+        }, data)
+        fractional_derivative = Features.get_fractional_derivative(function, FeatureExtraction.__switch_grade(grade))
+        return FeatureExtraction.__generate_result_dictionary(fractional_derivative, feature)
 
     @staticmethod
-    def __function_switch(function_name, data):
+    def __switch_grade(grade_value):
         switcher = {
-            'DIS': (FeatureExtraction.__get_function_displacement, data[TASK_STRUCTURE['pen_status']]),
-            'VEL': (FeatureExtraction.__get_function_velocity, data[TASK_STRUCTURE['timestamp']]),
-            'ACC': (FeatureExtraction.__get_function_acceleration, data[TASK_STRUCTURE['timestamp']]),
-            'JERK': (FeatureExtraction.__get_function_jerk, data[TASK_STRUCTURE['timestamp']]),
+            'first': 1,
+            'second': 2,
+            'third': 3,
+            'fourth': 4,
+            'fifth': 5,
+            'sixth': 6,
+            'seventh': 7,
+            'eighth': 8,
+            'ninth': 9,
+            'tenth': 10
+        }
+        return switcher.get(grade_value)
+
+    @staticmethod
+    def __function_switch(function_name):
+        switcher = {
+            'DIS': (FeatureExtraction.__get_function_displacement, 'pen_status'),
+            'VEL': (FeatureExtraction.__get_function_velocity, 'timestamp'),
+            'ACC': (FeatureExtraction.__get_function_acceleration, 'timestamp'),
+            'JERK': (FeatureExtraction.__get_function_jerk, 'timestamp')
         }
         return switcher.get(function_name)
 
     @staticmethod
-    def __get_function_displacement(point, pen_status, finding_status=None):
-        if len(point.keys) > 1:
+    def __get_function_displacement(point, pen_status=None, finding_status=None):
+        if len(point.keys()) > 1:
             if finding_status is not None:
                 function = Features.get_displacement_pen_status(point['x_axis'], point['y_axis'], pen_status, finding_status)
             else:

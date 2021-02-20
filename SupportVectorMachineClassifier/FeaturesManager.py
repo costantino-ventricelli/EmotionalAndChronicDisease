@@ -2,6 +2,7 @@
 
 import os
 import csv
+import numpy as np
 
 from DatasetManager import FileManager
 from .FeatureExtraction import FeatureExtraction
@@ -20,6 +21,12 @@ TASK_STRUCTURE = {
 }
 
 
+"""
+    Questa classe permette di ottenere tutte le feature dal dataset scansionando prima tutti i task di cui il dataset è
+    composto, quindi basta utilizzare la classe di lettura del dataset corretto per ottenere le feature.
+"""
+
+
 class FeaturesManager:
 
     def __init__(self):
@@ -31,12 +38,21 @@ class FeaturesManager:
         self.__patients = FileManager.get_ids_from_dir(self.__patients_path)
 
     def create_features_file(self):
+        with open(os.path.join(RESOURCE_DIR, "patients.txt"), 'w') as file:
+            file.write(str(self.__patients))
+            file.close()
         paths = self.__file_manager.get_files_path()
         for task in TASKS:
             print("Extracting feature for task: ", TASKS_MAME.get(task))
+            task_dict = FeatureExtraction.get_file_dictionary()
+            with open(os.path.join(RESOURCE_DIR, (TASKS_MAME.get(task) + '.csv')), 'w') as file:
+                csv_file = csv.DictWriter(file, fieldnames=task_dict.keys())
+                csv_file.writeheader()
+                file.close()
             for id in self.__patients:
+                # Per ogni paziente si legge il file di task generando 6 array differenti ognuno dei quali comporrà il
+                # dataset che verrà analizzato per estrarre le feature.
                 task_file = FileManager.get_all_files_ids_tasks(id, task, paths)[0]
-                print(task_file)
                 rows_data = FeaturesManager.__read_row_data(task_file)
                 x_point = []
                 y_point = []
@@ -54,8 +70,29 @@ class FeaturesManager:
                     altitude_point.append(row[TASK_STRUCTURE.get('altitude')])
                     pen_status.append(row[TASK_STRUCTURE.get('pen_status')])
                 dataset = [x_point, y_point, pressure_point, time_stamps, altitude_point, altitude_point, pen_status]
-                user_dict = FeatureExtraction.get_features_for_task(dataset)
-                # TODO aggiornare il dizionario
+                # I risultati di estrazione vengono salvati in un dizionario che viene scritto all'interno del file che
+                # contiene le feature estratte per tutti gli utenti.
+                user_dict = FeatureExtraction.get_file_dictionary()
+                try:
+                    user_dict = FeatureExtraction.get_features_for_task(dataset)
+                    for key, item in user_dict.items():
+                        if isinstance(item, list):
+                            item = item[0]
+                        user_dict[key] = item
+                except RuntimeError or RuntimeError as error:
+                    if os.path.exists(os.path.join(RESOURCE_DIR, "error_log.log")):
+                        mode = 'a'
+                    else:
+                        mode = 'w'
+                    with open(os.path.join(RESOURCE_DIR, "error_log.log"), mode) as file:
+                        file.write("DATASET LEN: " + str(np.shape(dataset)))
+                        file.write("ID: " + str(id))
+                        file.write("File: " + task_file)
+                        file.close()
+                with open(os.path.join(RESOURCE_DIR, (TASKS_MAME.get(task) + '.csv')), 'a') as file:
+                    csv_file = csv.DictWriter(file, fieldnames=task_dict.keys())
+                    csv_file.writerow(user_dict)
+                    file.close()
 
     @staticmethod
     def __read_row_data(file):
