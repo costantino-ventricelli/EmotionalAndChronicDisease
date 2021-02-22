@@ -79,12 +79,13 @@ class FeaturesManager:
                         if isinstance(item, list):
                             item = item[0]
                         user_dict[key] = item
-                except RuntimeError or RuntimeError as error:
+                except IndexError as error:
                     if os.path.exists(os.path.join(RESOURCE_DIR, "error_log.log")):
                         mode = 'a'
                     else:
                         mode = 'w'
                     with open(os.path.join(RESOURCE_DIR, "error_log.log"), mode) as file:
+                        file.write(str(error))
                         file.write("DATASET LEN: " + str(np.shape(dataset)))
                         file.write("ID: " + str(id))
                         file.write("File: " + task_file)
