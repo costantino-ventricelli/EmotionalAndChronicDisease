@@ -134,3 +134,4 @@ dmypy.json
 # Unapdable folder
 /resource/*
 /experiment_result/
+sonar-project.properties
