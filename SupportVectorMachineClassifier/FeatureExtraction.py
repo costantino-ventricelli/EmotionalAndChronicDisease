@@ -29,6 +29,15 @@ AXIS_KEY = 'AXIS'
 
 """
     Questa classe permette di estrarre tutte le feature, funzionali e parametriche da ogni dataset.
+    Il parametro di input alla classe è il dataset memorizzato sotto forma di lista ogni riga del dataset contiene
+    il punto campionato letto dal file con la struttura descritta dal dizionario TASK_STRUCTURE.
+        1)  Il primo passaggio del ciclo di estrazione consiste nel generare la lista contenente il nome di tutte le feature 
+        che verranno estratte.
+        2)  Successivamente in base alla feature verrà richiamato il metodo corretto per estrarre tali valori dal dataset.
+            2.1)    Nel caso in cui la feature è di tipo funzionale i valori calcolati per la funzione pemetteranno di calcolare una 
+                    serie di statistiche desctitte da __get_statistic_value.
+        3)  Dopo di che i valori vengono salvati all'interno di un dizionario che verrà restituito al metodo chiamante e 
+            conterrà tutte le feature calcolate per il dataset passato come valore iniziale.
 """
 
 
@@ -124,34 +133,55 @@ class FeatureExtraction:
             for row in csv_file:
                 header_list = row
             file.close()
+        # Utilizzo i nome delle features da estrarre per generare un dizionario il quale sarà inizialmente vuoto
         header = dict.fromkeys(header_list, None)
         return header
 
     """
-        Questo metodo permette di individuare quale feature si sta calando e quali sono i parametri passati per il calcolo
+        Questo metodo permette di individuare quale feature si sta calcolando e quali sono i parametri passati per il calcolo
         di tale feature
     """
     @staticmethod
     def __get_feature_command(feature, dataset):
+        # Qui viene divisio il nome della feature per individuare quale feature calcolare, su che asse eventualmente va
+        # calcolate e come bisogna selezionare i punti.
         feature_command = str.split(feature, '_')
+        # Qui viene restituito il nome della feature da calcolare.
         feature_command = FeatureExtraction.__name_analyser(feature_command)
+        # A questo punto si individuano eventuai assi specificati nel nome della feature.
         group_search = re.search(r'x$|y$', feature_command[0])
+        # Se sono stati individuati assi nella specifica del nome questo valore viene salvato per puoi essere utilizzato
+        # nel momento in cui si richiamerà la funzione per calcolare la feature
         if group_search:
             axis = group_search.group(0)
+            # Si rimuove il nome dell'asse dal nome della feature per poter effettuare la selezione sul tipo di feature.
             feature_command[0] = feature_command[0].replace(axis, '')
             axis += '_axis'
         else:
             axis = None
+        # Questo dizionario costituisce l'insieme dei parametri necessari per il calcolo della feature
         command = {
+            # Il tipo di feature da calcolare
             MAIN_FEATURE_KEY: feature_command[0],
+            # L'eventuale asse su cui calcolare la feature.
             AXIS_KEY: axis,
+            # I parametri necessari per calcolare la feature
             PARAMETER_KEY: feature_command[1: len(feature_command)]
         }
+        # Quindi la funzione selezionata viene richiamata secono questo modello standard in cui viene passato il nome
+        # completo della feature la lista dei parametri che costituiscono il comando per calcolare correttamente la feature
+        # e il riferimento dal dataset passato come parametro iniziale.
         function = FeatureExtraction.__command_switch(feature_command)
         return function(feature, command, dataset)
 
+    """
+        Questo metodo di switch permette di ricostruire i nomi di quelle feature che si compongono di più parti,
+        come ad esempio STROKE_SIZE, STROKE_DURATION, etc...
+    """
     @staticmethod
     def __name_analyser(split):
+        # Lo switcher restituisce la funzione corretta per riscostruire il nome della feature con il numero di componenti
+        # che compongono il nome stesso.
         switcher = {
             'STROKE': (FeatureExtraction.__join_command_name, 2),
             'TOTAL': (FeatureExtraction.__join_command_name, 2),
@@ -164,6 +194,8 @@ class FeatureExtraction:
             'RENYI': (FeatureExtraction.__join_command_name, 2),
             'GL': (FeatureExtraction.__join_command_name, 2),
         }
+        # Questo pezzo di codice verifica prima di tutto che la selezione sia andata a buon fine, dopo di che ricompone il
+        # nome.
         function, slices_number = switcher.get(split[0], (None, 0))
         if function is not None:
             name = [function(split, slices_number)]
@@ -173,6 +205,9 @@ class FeatureExtraction:
             name = split
         return name
 
+    """
+        Questo metodo ricompone il nome della feature.
+    """
     @staticmethod
     def __join_command_name(slices, slices_number):
         name = ""
@@ -182,6 +217,9 @@ class FeatureExtraction:
                 name += "_"
         return name
 
+    """
+        Questo switcher permette di selezionare il metodo che ci permetterà di estrarre le feature.
+    """
     @staticmethod
     def __command_switch(argument):
         switcher = {
@@ -218,16 +256,32 @@ class FeatureExtraction:
         function = switcher.get(argument[0], lambda: 'Invalid argument')
         return function
 
+    """
+        Questo metodo permette di ottenere un flag che identifica se la feature si riferisce ai dati campionati in aria
+        'ia": 0 o sulla superficie 'os': 1.
+    """
     @staticmethod
     def __get_finding_status(status):
         return ON_AIR if status == 'ia' else ON_SURFACE
 
+    """
+        Questo metodo permette di ottenere il displacement dei punti campionati nel dataset distinguendo tra i punti 
+        on air, on surface o non specificati.
+        Da qui in poi i metodi si comportano tutti alla stessa maniera più o meno, quindi verranno spiegati solo quei 
+        metodi che utilizzano un approccio diverso per calcolare le feature.
+    """
     @staticmethod
     def __get_displacement(feature, command, data):
+        # Qui vengono ottenuti i parametri supplementari per il calcolo dei valori.
         other_parameters = command[PARAMETER_KEY]
+        # Qui invece viene prelevato l'eventuale asse su cui avviare i calcoli.
         axis = command[AXIS_KEY]
+        # Se sono presenti dei parametri supplementari significa che la feature specifica quali punti considerare per il
+        # calcolo: in air o on surface.
         if len(other_parameters) > 0:
+            # Ottengo il flag discriminativo per il tipo di punti da considerare.
             finding_status = FeatureExtraction.__get_finding_status(other_parameters[0])
+            # Verifico se è satato specificato un asse per il calcolo.
             if axis is None:
                 displacement = Features.get_displacement_pen_status(data[TASK_STRUCTURE['x_axis']], data[TASK_STRUCTURE['y_axis']],
                                                                     data[TASK_STRUCTURE['pen_status']], finding_status)
@@ -235,12 +289,18 @@ class FeatureExtraction:
                 displacement = Features.get_displacement_axis_pen_status(data[TASK_STRUCTURE[axis]], data[TASK_STRUCTURE['pen_status']],
                                                                          finding_status)
         else:
+            # Qui vine avviato il calcolo della feature se non sono stati indicati punti specifici, ovviamente verificando
+            # l'eventuale asse richiesto dal calcolo.
             if axis is None:
                 displacement = Features.get_displacement(data[TASK_STRUCTURE['x_axis']], data[TASK_STRUCTURE['y_axis']])
             else:
                 displacement = Features.get_displacement_axis(data[TASK_STRUCTURE[axis]])
         return FeatureExtraction.__generate_result_dictionary(displacement, feature)
 
+    """
+        Per il calolo della velocità ovviamente serve lo spazio ed il tempo, quindi prima di procedere al calcolo effetti
+        vo della velocità viene prima di tutto ottenuto il displacement dell dataset.
+    """
     @staticmethod
     def __get_velocity(feature, command, data):
         other_parameters = command[PARAMETER_KEY]
@@ -263,6 +323,10 @@ class FeatureExtraction:
             velocity = Features.get_displacement_velocity(displacement, data[TASK_STRUCTURE['timestamp']])
         return FeatureExtraction.__generate_result_dictionary(velocity, feature)
 
+    """
+        Per il calcolo dell'accellerazione necessitiamo della velocità e per la velocità necessitiamo dello spazio, quindi
+        prima del calcolo dell'accellerazione vengono calcolati spazio e velocità.
+    """
     @staticmethod
     def __get_acceleration(feature, command, data):
         other_parameters = command[PARAMETER_KEY]
@@ -288,6 +352,10 @@ class FeatureExtraction:
             acceleration = Features.get_displacement_acceleration(velocity, data[TASK_STRUCTURE['timestamp']])
         return FeatureExtraction.__generate_result_dictionary(acceleration, feature)
 
+    """
+        Come per il metodo precedente anche il jerk richiede il calcolo dell'accellerazione, quindi verranno calcolate
+        tutte le funzioni necessarie ad ottenere l'accellerazione prima di calcolare il jerk vero e proprio.
+    """
     @staticmethod
     def __get_jerk(feature, command, data):
         other_parameters = command[PARAMETER_KEY]
@@ -317,6 +385,11 @@ class FeatureExtraction:
             jerk = Features.get_jerk(acceleration, data[TASK_STRUCTURE['timestamp']])
         return FeatureExtraction.__generate_result_dictionary(jerk, feature)
 
+    """
+        Da qui fino alla trasformazione coseno sono tutte features parametriche, comunque lo sviluppo dei metodi segue la 
+        linea guida dei precedenti, in qualche caso però il nome stesso della feature è più che sufficiente al calcolo
+        quindi il parametro command potrebbe non essere utilizzato proprio.
+    """
     @staticmethod
     def __get_stroke_size(feature, command, data):
         other_parameters = command[PARAMETER_KEY]
@@ -499,10 +572,21 @@ class FeatureExtraction:
         function_result = FeatureExtraction.__get_all_function_combination(command, data)
         return FeatureExtraction.__generate_result_dictionary(Features.get_cepstrum(function_result), feature)
 
+    """
+        Questo metodo permette di richimare il calcolo di cepstrum, cosine transform, fft su tutte le combinazioni possibili
+        di funzioni:
+            - displacement;
+            - velocità:
+            - accellerazione;
+            - jerk. 
+    """
     @staticmethod
     def __get_all_function_combination(command, data):
+        # In other parameter è contenuto il nome della funzione di cui si vuole calcolare la trasformata, il prodotto di
+        # convoluzione omomorfa o le derivate frazionarie.
         other_parameter = command[PARAMETER_KEY]
         group_search = re.search(r'x$|y$', other_parameter[0])
+        # Acora si individua un eventuale asse.
         if group_search:
             axis = group_search.group(0)
             other_parameter[0] = other_parameter[0].replace(axis, '')
@@ -510,13 +594,19 @@ class FeatureExtraction:
         else:
             point = {'x_axis': data[TASK_STRUCTURE['x_axis']],
                      'y_axis': data[TASK_STRUCTURE['y_axis']]}
+        # Qui lo switcher ci permette di capire la funzione e il dominio della funzione stessa: spazio; tempo.
         function, domain = FeatureExtraction.__function_switch(other_parameter[0])
+        # Verifichiamo che siano anche specificati i punti di cui calcolare le funzioni.
         if len(other_parameter) > 1:
             finding_status = FeatureExtraction.__get_finding_status(other_parameter[1])
         else:
             finding_status = None
+        # Dal nome del dominio si passa ai sui valori funzionali calcolati, quindi se si tratta di tempo vengono ottenuti
+        # i time stamp necessari per ottenere la sequenza temporale necessaria.
         if domain == 'timestamp':
             if finding_status is not None:
+                # Nel caso in cui sia specificato quali punti considerare verrà fatta ovviamente una selezione sui dati
+                # per ottenere solo quelli necessari.
                 domain = Features.get_time_function(data[TASK_STRUCTURE['timestamp']],
                                                     data[TASK_STRUCTURE['pen_status']],
                                                     finding_status)
@@ -525,9 +615,15 @@ class FeatureExtraction:
                 domain = data[TASK_STRUCTURE['timestamp']]
         else:
             domain = data[TASK_STRUCTURE['pen_status']]
+        # Dopo di che la il metodo calcolerà i valori della funzione richiesta i quali poi verranno usati per calcolare
+        # traformate, cepstrum o derivate frazionarie
         function_result = function(point, domain, finding_status)
         return function_result
 
+    """
+        In questo metodo si calcolano le derivate frazionarie tenendo presnte ogni evetuale combianzione di funzione necessaria,
+        asse, punti da considerare e grado di derivazione.
+    """
     @staticmethod
     def __get_fractional_derivative(feature, command, data):
         function = command[PARAMETER_KEY][0]
