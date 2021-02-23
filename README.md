@@ -39,3 +39,5 @@ approcci: LeaveOneOut, decisione iniziale prestabilita del numero dei file da us
 
 Ogni esperimento viene richiamato dagli script semplici contenuti nella cartella src.
 
+Il package SupportVectorMachineClassifier è attualmente in fase di sviluppo, il codice è già commentato e verranno aggiunte le 
+informazioni nel README al termine dello sviluppo.
