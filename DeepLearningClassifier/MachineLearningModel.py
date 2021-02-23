@@ -115,6 +115,14 @@ class MLModel:
         predicted_state_average = (1 if predicted_state_average / len(states_predicted) > CLASS_CHANGE else 0)
         return states_predicted, evaluation_result, predicted_state_average
 
+    """
+        Questi metodo permettono di ottenere le metriche di misurazione delle performance, nel primo abbiamo una tupla a
+        quattro elementi:
+            - (accuracy, precision, recall, f_score);
+            - (accuracy, precision).
+        Il secondo metodo non viene mai utilizzato, ma potrebbe essere utile in caso di necessità quando le altre due 
+        metriche non possono essere calcolate per mancanza di dati.
+    """
     @staticmethod
     def evaluate_results(predicted_states, theoretical_states):
         accuracy = accuracy_score(theoretical_states, predicted_states)

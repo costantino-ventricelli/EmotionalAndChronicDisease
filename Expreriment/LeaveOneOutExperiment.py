@@ -1,7 +1,12 @@
 # coding=utf-8
 
-import os
+"""
+    Da questa classe è nata la classe contenuta nel package DeepLearningClassifier, quindi per i commenti del codice
+    si veda quella classe.
+"""
 
+
+import os
 import numpy as np
 
 from DatasetManager.FileManager import FileManager
