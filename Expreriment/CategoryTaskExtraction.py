@@ -48,18 +48,18 @@ class CategoryTaskExtraction:
         che permetterà di selezionare i task per gli utenti etichettati come non sani tante volte quanti sono i task 
         che si è deciso di analizzare.
     """
-    def start_selection(self):
+    def start_healthy_selection(self):
         print("Starting selection on tasks: ", self.__tasks)
         for healthy_task in self.__tasks:
-            self.__start_healthy_tasks(healthy_task)
+            self.__start_disease_selection(healthy_task)
 
     """
         In questo metodo ogni task selezionato per gli utenti sani viene combianto con tutti i task rimanenti.
         I quali vengono utilizzati per selezionare campioni rappresententanti gli utenti malati.
     """
-    def __start_healthy_tasks(self, healthy_task):
+    def __start_disease_selection(self, healthy_task):
         for disease_task in self.__tasks:
-            result = self.__start_disease_tasks(healthy_task, disease_task)
+            result = self.__start_selection(healthy_task, disease_task)
             if result is not None:
                 print("Execution ended: ", result.items())
             else:
@@ -70,7 +70,7 @@ class CategoryTaskExtraction:
         risultati idonei alla modellazione, in caso di successo il metodo restituisce un dizionario contentente come chiave
         le metriche calcolate per la modellazione e come valore la lista dei task che hanno generato quei valori.
     """
-    def __start_disease_tasks(self, healthy_task, disease_task):
+    def __start_selection(self, healthy_task, disease_task):
         # Prima di tutto verifico che i task selezionati siano differenti.
         if healthy_task != disease_task:
             # A questo punto con l'ausilio del file passato al costruttore escudo tutte le combinazioni che sono già
