@@ -33,7 +33,7 @@ class IndependentTaskSelection:
             csv_file = csv.writer(file, delimiter=';', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
             csv_file.writerow(['METRICS', 'HEALTHY TASK', 'DISEASE TASK'])
             file.close()
-        # In questo ciclo verranno selezionati tutti i healthy_task che verranno ad uno ad uno valutati per addestrare il sistema
+        # In questo ciclo verranno selezionati tutti i task che verranno ad uno ad uno valutati per addestrare il sistema
         # attribuendoli agli utenti sani
         for healthy_task in self.__tasks:
             healthy_paths = FileManager.get_all_files_ids_tasks(healthy_ids, healthy_task,
@@ -42,14 +42,14 @@ class IndependentTaskSelection:
             # Calcolo in base al numero di file rimasti quelli sufficienti per la validazione che abbiamo fissato al 20%
             # del totale.
             healthy_validation = int(np.ceil(len(healthy_paths) * 0.20))
-            # Questo ciclo permette di selezionare e valutare ogni healthy_task per addestrare il modello attribuendoli agli
+            # Questo ciclo permette di selezionare e valutare ogni task per addestrare il modello attribuendoli agli
             # utenti etichettati come malati.
             for disease_task in self.__tasks:
                 if healthy_task != disease_task:
                     disease_paths = FileManager.get_all_files_ids_tasks(disease_ids, disease_task,
                                                                         self.__file_manager.get_files_path())
                     disease_paths = FileManager.filter_file(disease_paths, self.__minimum_samples)
-                    # Qui vengono ottenuti tutti i healthy_task che non sono stati selezionati per l'addestramento così da
+                    # Qui vengono ottenuti tutti i task che non sono stati selezionati per l'addestramento così da
                     # utilizzarli per il test
                     test_tasks = TaskManager.get_tasks_difference(self.__tasks, healthy_task,
                                                                   disease_task)
