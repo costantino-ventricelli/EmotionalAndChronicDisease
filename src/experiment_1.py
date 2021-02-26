@@ -3,9 +3,12 @@
 import sys
 sys.path.append("..")
 
-from DatasetManager import *
+from DatasetManager.Costants import *
 from Expreriment import Experiment
 from os import path
+
+# Avviare questo script significa effettuare vari test su varie combinazioni di task, la selezione di task non prevede
+# uno schema preciso, è stato effettuato per verificare la variabilità dei risultati a seconda dei task selezionati.
 
 
 def main():

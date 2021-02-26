@@ -4,7 +4,7 @@ import csv
 
 import numpy as np
 
-from DatasetManager.FileManager import FileManager
+from DatasetManager.HandManager import HandManager
 
 X_COORDINATE = 0
 Y_COORDINATE = 1
@@ -50,9 +50,9 @@ class RHSDistanceExtract:
         states = []
         for path in path_list:
             # Acuqisisco l'id del paziente
-            id = FileManager.get_id_from_path(path)
+            id = HandManager.get_id_from_path(path)
             # Acquisisco lo stato del paziente
-            state = FileManager.get_state_from_id(id)
+            state = HandManager.get_state_from_id(id)
             # Leggo i punti campionati nel file
             partial_x, partial_y, partial_bs = RHSDistanceExtract.__read_samples_from_file(path)
             # Trasformo i punti in segmenti RHS.
@@ -74,7 +74,7 @@ class RHSDistanceExtract:
         else:
             end_point = len(disease_tensor)
         # Il tensore con meno campioni verrà utilizzato per generare il tensore finale, il quale verrà composto inserendo
-        # prima tutti gli utenti sani e poi tutti gli utenti sani, si è già provato un approccio alternato, ma ha dato
+        # prima tutti gli utenti sani e poi tutti gli utenti malati, si è già provato un approccio alternato, ma ha dato
         # scarsi risultati.
         final_tensor = np.concatenate((healthy_tensor[0: end_point], disease_tensor[0: end_point]))
         # Genero infine il vettore gli stati
@@ -90,8 +90,8 @@ class RHSDistanceExtract:
         x_samples = []
         y_samples = []
         bs_samples = []
-        id = FileManager.get_id_from_path(path)
-        state = FileManager.get_state_from_id(id)
+        id = HandManager.get_id_from_path(path)
+        state = HandManager.get_state_from_id(id)
         partial_x, partial_y, partial_bs = RHSDistanceExtract.__read_samples_from_file(path)
         partial_x, partial_y, partial_bs = self.__transform_point_in_rhs(partial_x, partial_y, partial_bs)
         partial_x, partial_y, partial_bs = self.__extract_subs_from_samples(partial_x, partial_y, partial_bs)
@@ -143,7 +143,7 @@ class RHSDistanceExtract:
                 timestamp.append(float(row[TIMESTAMP]))
             csv_file.close()
         # Elimino i duplicati dalle lista.
-        partial_x, partial_y, timestamp, partial_bs = FileManager.delete_duplicates(partial_x,
+        partial_x, partial_y, timestamp, partial_bs = HandManager.delete_duplicates(partial_x,
                                                                                     partial_y, timestamp, partial_bs)
         return np.array(partial_x).astype(float), np.array(partial_y).astype(float), np.array(partial_bs).astype(float)
 

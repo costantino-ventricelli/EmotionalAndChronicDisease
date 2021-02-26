@@ -4,7 +4,7 @@ import os
 import csv
 import numpy as np
 
-from DatasetManager import FileManager
+from DatasetManager import HandManager
 from .FeatureExtraction import FeatureExtraction
 from DatasetManager.Costants import *
 
@@ -30,12 +30,12 @@ TASK_STRUCTURE = {
 class FeaturesManager:
 
     def __init__(self):
-        FileManager.set_root_directory()
+        HandManager.set_root_directory()
         if not os.path.exists(RESOURCE_DIR):
             os.mkdir(RESOURCE_DIR)
-        self.__file_manager = FileManager("Dataset")
+        self.__file_manager = HandManager("Dataset")
         self.__patients_path = self.__file_manager.get_patient_paths()
-        self.__patients = FileManager.get_ids_from_dir(self.__patients_path)
+        self.__patients = HandManager.get_ids_from_dir(self.__patients_path)
 
     def create_features_file(self):
         with open(os.path.join(RESOURCE_DIR, "patients.txt"), 'w') as file:
@@ -52,7 +52,7 @@ class FeaturesManager:
             for id in self.__patients:
                 # Per ogni paziente si legge il file di task generando 6 array differenti ognuno dei quali comporrà il
                 # dataset che verrà analizzato per estrarre le feature.
-                task_file = FileManager.get_all_files_ids_tasks(id, task, paths)[0]
+                task_file = HandManager.get_all_files_ids_tasks(id, task, paths)[0]
                 rows_data = FeaturesManager.__read_row_data(task_file)
                 x_point = []
                 y_point = []
@@ -85,10 +85,10 @@ class FeaturesManager:
                     else:
                         mode = 'w'
                     with open(os.path.join(RESOURCE_DIR, "error_log.log"), mode) as file:
-                        file.write(str(error))
-                        file.write("DATASET LEN: " + str(np.shape(dataset)))
-                        file.write("ID: " + str(id))
-                        file.write("File: " + task_file)
+                        file.write(str(error) + "\n")
+                        file.write("ID: " + str(id) + "\n")
+                        file.write("File: " + task_file + "\n")
+                        file.write("DATASET LEN: " + str(np.shape(dataset)) + "\n\n")
                         file.close()
                 with open(os.path.join(RESOURCE_DIR, (TASKS_MAME.get(task) + '.csv')), 'a') as file:
                     csv_file = csv.DictWriter(file, fieldnames=task_dict.keys())

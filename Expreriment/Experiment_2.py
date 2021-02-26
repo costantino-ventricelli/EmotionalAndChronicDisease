@@ -3,7 +3,7 @@
 import os
 import csv
 
-from DatasetManager import FileManager
+from DatasetManager import HandManager
 from DeepLearningClassifier import *
 
 METRICS_KEY = 0
@@ -27,7 +27,7 @@ class CategoryTaskExtraction:
                             diverrà il nome del file di salvataggio.
     """
     def __init__(self, prev_file, tasks, minimum_samples, samples_len, category):
-        FileManager.set_root_directory()
+        HandManager.set_root_directory()
         self.__tasks = tasks
         # Il file contente i valori calcolati ci permette di ricominciare l'esecuzione del programma nel caso dovesse
         # interrompersi per qualsiasi ragione.
@@ -40,8 +40,8 @@ class CategoryTaskExtraction:
         self.__minimum_samples = minimum_samples
         self.__samples_len = samples_len
         self.__category = category
-        # Ottengo l'intero dataset da FileManager
-        self.__learning_method = LeaveOneOut(self.__minimum_samples, FEATURE, self.__samples_len, "Dataset")
+        # Ottengo l'intero dataset da HandManager
+        self.__learning_method = LeaveOneOut(self.__minimum_samples, FEATURE, RHSDistanceExtract(minimum_samples, samples_len), self.__samples_len, "Dataset")
 
     """
         Questo metodo avvia la selezione dei task per gli utenti etichettati come sani, per farlo richiama il metodo 
@@ -83,7 +83,7 @@ class CategoryTaskExtraction:
                 # A questo punto vengono eseguiti i passaggi necessari alla creazione della directory di salvataggio e
                 # viene generato un nuovo file nel caso di prima esecuzione del codice, oppure vine aggiornato il file
                 # esisitente.
-                directory = os.path.join("experiment_result", "category_selection")
+                directory = os.path.join("experiment_result", "experiment_2")
                 if not os.path.exists(directory):
                     os.mkdir(directory)
                 if self.__prev_file is None:

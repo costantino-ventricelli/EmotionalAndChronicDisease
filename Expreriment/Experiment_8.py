@@ -6,7 +6,7 @@ from copy import deepcopy
 import numpy as np
 import os
 
-from DatasetManager import FileManager
+from DatasetManager import HandManager
 from DatasetManager.Costants import *
 from DeepLearningClassifier import *
 
@@ -29,12 +29,12 @@ class TaskSelection:
         self.__samples_len = samples_len
         self.__minimum_samples = minimum_samples
         self.__best_results = {}
-        self.__file_manager = FileManager("Dataset")
+        self.__file_manager = HandManager("Dataset")
         self.__feature_extraction = RHSDistanceExtract(minimum_samples, samples_len)
         # Con questo loop posso avviare apprendimenti su ogni tasks del dataset, ciò mi permetterà di individiare il tasks
         # migliore da cui iniziare la selezione.
         for task in self.__tasks:
-            ids = FileManager.get_all_ids()
+            ids = HandManager.get_all_ids()
             predicted_states = np.zeros(0)
             theoretical_states = np.zeros(0)
             for test_id in ids:
@@ -86,7 +86,7 @@ class TaskSelection:
             actual_tuple = max(best_results.items())
             if previous_max[KEY_TUPLE] <= actual_tuple[KEY_TUPLE]:
                 previous_max = deepcopy(actual_tuple)
-            file = open(os.path.join('experiment_result', 'simple_task_selection.txt'), 'a')
+            file = open(os.path.join('experiment_result', 'experiment_8.txt'), 'a')
             file.write("Previous max: " + str(previous_max) + "\n")
             file.write("Actual max: " + str(actual_tuple) + "\n")
             file.write("Results for tasks: " + str(best_results.items()) + "\n\n")
@@ -112,7 +112,7 @@ class TaskSelection:
                 file = open(os.path.join('experiment_result', 'simple_task_selection.txt'), 'a')
                 file.write("Selected tasks: " + str(tasks) + "\n")
                 file.close()
-                ids = FileManager.get_all_ids()
+                ids = HandManager.get_all_ids()
                 theoretical_states = np.zeros(0)
                 predicted_states = np.zeros(0)
                 for test_id in ids:
@@ -153,8 +153,8 @@ class TaskSelection:
         for task in tasks:
             paths += TaskManager.get_task_files(task, self.__file_manager.get_files_path())
         # Filtro i file in base alla dimensione degli stessi
-        paths = FileManager.filter_file(paths, min_dim=self.__minimum_samples)
-        test_paths = FileManager.get_all_file_of_id(test_id, paths)
+        paths = HandManager.filter_file(paths, min_dim=self.__minimum_samples)
+        test_paths = HandManager.get_all_file_of_id(test_id, paths)
         # Elimino i file del test da quelli usati per il training e la validazione.
         for i in range(len(test_paths)):
             if test_paths[i] in paths:

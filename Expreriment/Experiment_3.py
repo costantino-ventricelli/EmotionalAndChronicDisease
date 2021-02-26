@@ -5,7 +5,7 @@ import os
 import csv
 import concurrent.futures as features
 
-from DatasetManager import FileManager
+from DatasetManager import HandManager
 from DatasetManager.Costants import *
 from DeepLearningClassifier import *
 
@@ -21,11 +21,11 @@ class IndependentTaskSelection:
         self.__samples_len = samples_len
         self.__minimum_samples = minimum_samples
         self.__best_results = {}
-        self.__file_manager = FileManager("Dataset")
+        self.__file_manager = HandManager("Dataset")
         self.__feature_extraction = RHSDistanceExtract(minimum_samples, samples_len)
-        self.__ids = FileManager.get_all_ids()
-        healthy_ids, disease_ids = FileManager.get_healthy_disease_list()
-        directory = os.path.join('experiment_result', 'independent_task_selection')
+        self.__ids = HandManager.get_all_ids()
+        healthy_ids, disease_ids = HandManager.get_healthy_disease_list()
+        directory = os.path.join('experiment_result', 'experiment_3')
         # Saveremo i risultati delle misurazioni in un file così sarà pià facile recuperarli in futuro
         if not os.path.exists(directory):
             os.mkdir(directory)
@@ -36,9 +36,9 @@ class IndependentTaskSelection:
         # In questo ciclo verranno selezionati tutti i task che verranno ad uno ad uno valutati per addestrare il sistema
         # attribuendoli agli utenti sani
         for healthy_task in self.__tasks:
-            healthy_paths = FileManager.get_all_files_ids_tasks(healthy_ids, healthy_task,
+            healthy_paths = HandManager.get_all_files_ids_tasks(healthy_ids, healthy_task,
                                                                 self.__file_manager.get_files_path())
-            healthy_paths = FileManager.filter_file(healthy_paths, self.__minimum_samples)
+            healthy_paths = HandManager.filter_file(healthy_paths, self.__minimum_samples)
             # Calcolo in base al numero di file rimasti quelli sufficienti per la validazione che abbiamo fissato al 20%
             # del totale.
             healthy_validation = int(np.ceil(len(healthy_paths) * 0.20))
@@ -46,9 +46,9 @@ class IndependentTaskSelection:
             # utenti etichettati come malati.
             for disease_task in self.__tasks:
                 if healthy_task != disease_task:
-                    disease_paths = FileManager.get_all_files_ids_tasks(disease_ids, disease_task,
+                    disease_paths = HandManager.get_all_files_ids_tasks(disease_ids, disease_task,
                                                                         self.__file_manager.get_files_path())
-                    disease_paths = FileManager.filter_file(disease_paths, self.__minimum_samples)
+                    disease_paths = HandManager.filter_file(disease_paths, self.__minimum_samples)
                     # Qui vengono ottenuti tutti i task che non sono stati selezionati per l'addestramento così da
                     # utilizzarli per il test
                     test_tasks = TaskManager.get_tasks_difference(self.__tasks, healthy_task,
@@ -88,12 +88,12 @@ class IndependentTaskSelection:
     def __execute_id_analysis(disease_paths, healthy_paths, validation, test_id, test_tasks,
                               file_manager, minimum_samples, features_extraction, samples_len):
         # Questo punto del codice ci permette di eliminare tutti i file dell'utente che andemo a testare.
-        healthy_paths_deleted = FileManager.delete_files(test_id, healthy_paths)
-        disease_paths_deleted = FileManager.delete_files(test_id, disease_paths)
+        healthy_paths_deleted = HandManager.delete_files(test_id, healthy_paths)
+        disease_paths_deleted = HandManager.delete_files(test_id, disease_paths)
         # Ottengo tutti i percorsi dei file che verranno utilizzati per il test
-        test_paths = FileManager.get_all_files_ids_tasks(test_id, list(test_tasks),
+        test_paths = HandManager.get_all_files_ids_tasks(test_id, list(test_tasks),
                                                          file_manager.get_files_path())
-        test_paths = FileManager.filter_file(test_paths, minimum_samples)
+        test_paths = HandManager.filter_file(test_paths, minimum_samples)
         # Se riesco a individuare file di test che rispettano i parametri necessari per la costruzone del
         # tensore di test avvio apprendimento, validazione e test.
         predicted_status_partial = np.zeros(0)
@@ -128,7 +128,7 @@ class IndependentTaskSelection:
     """
     @staticmethod
     def __delete_files(id, file_list):
-        to_delete = FileManager.get_all_file_of_id(id, file_list)
+        to_delete = HandManager.get_all_file_of_id(id, file_list)
         for file in to_delete:
             del file_list[file_list.index(file)]
         return file_list

@@ -11,14 +11,14 @@ from numpy import ceil
 RESOURCE_DIRECTORY = "resource"
 
 
-class FileManager:
+class HandManager:
 
     def __init__(self, dataset_name):
-        FileManager.set_root_directory()
+        HandManager.set_root_directory()
         self.__dataset = os.path.join(RESOURCE_DIRECTORY, dataset_name)
-        self.__dataset_directory = FileManager.get_path_directories(self.__dataset)
-        self.__patient_paths = FileManager.__get_patient_paths(self.__dataset_directory)
-        self.__files_path = FileManager.__get_files_from_paths(self.__patient_paths)
+        self.__dataset_directory = HandManager.get_path_directories(self.__dataset)
+        self.__patient_paths = HandManager.__get_patient_paths(self.__dataset_directory)
+        self.__files_path = HandManager.__get_files_from_paths(self.__patient_paths)
 
     @staticmethod
     def set_root_directory():
@@ -47,7 +47,7 @@ class FileManager:
     """
     @staticmethod
     def get_state_from_id(id):
-        healthy, disease = FileManager.get_healthy_disease_list()
+        healthy, disease = HandManager.get_healthy_disease_list()
         if id in healthy:
             state = 0
         else:
@@ -99,7 +99,7 @@ class FileManager:
         try:
             # Itero su tutte le directory del dataset prelevando tutti i file di tasks con estensione txt.
             for patient in patients_directory:
-                files = FileManager.get_files_from_path(patient, files)
+                files = HandManager.get_files_from_path(patient, files)
         except OSError as er:
             raise er
         return files
@@ -135,7 +135,7 @@ class FileManager:
     def get_ids_from_paths(paths):
         ids = []
         for path in paths:
-            ids.append(FileManager.get_id_from_path(path))
+            ids.append(HandManager.get_id_from_path(path))
         return ids
 
     @staticmethod
@@ -234,7 +234,7 @@ class FileManager:
         min_dim += 1
         filtered_paths = []
         for path in paths:
-            if FileManager.get_file_rows(path) >= min_dim:
+            if HandManager.get_file_rows(path) >= min_dim:
                 filtered_paths.append(path)
         return filtered_paths
 
@@ -245,7 +245,7 @@ class FileManager:
     def get_all_file_of_id(id, paths):
         id_files = []
         for path in paths:
-            if id == FileManager.get_id_from_path(path):
+            if id == HandManager.get_id_from_path(path):
                 id_files.append(path)
         return id_files
 
@@ -263,7 +263,7 @@ class FileManager:
         if not isinstance(tasks, list):
             tasks = [tasks]
         for path in paths:
-            if FileManager.get_id_from_path(path) in ids and ('_' + FileManager.get_task_from_path(path) + '.') in tasks:
+            if HandManager.get_id_from_path(path) in ids and ('_' + HandManager.get_task_from_path(path) + '.') in tasks:
                 files.append(path)
         return files
 
@@ -276,7 +276,7 @@ class FileManager:
     @staticmethod
     def delete_files(id, file_list):
         new_list = deepcopy(file_list)
-        to_delete = FileManager.get_all_file_of_id(id, file_list)
+        to_delete = HandManager.get_all_file_of_id(id, file_list)
         for file in to_delete:
             del new_list[new_list.index(file)]
         return new_list

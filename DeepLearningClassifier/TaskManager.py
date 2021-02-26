@@ -4,7 +4,7 @@ import csv
 from os import path as pt
 
 from DatasetManager import Costants
-from DatasetManager.FileManager import FileManager
+from DatasetManager.HandManager import HandManager
 
 RESOURCE_DIRECTORY = "resource"
 
@@ -14,7 +14,7 @@ class TaskManager:
     @staticmethod
     def __split(training_numbers, validation_numbers):
         # Ottengo le liste degli id dei pazienti sani e malati.
-        healthy_id, diseased_id = FileManager.get_healthy_disease_list()
+        healthy_id, diseased_id = HandManager.get_healthy_disease_list()
         # h => healthy, d => diseased
         # Separo il dataset tra training src e validazione a seconda della condizione dei pazienti.
         h_ids_training = healthy_id[0: training_numbers]
@@ -54,8 +54,8 @@ class TaskManager:
         # se il tasks si identifica come uno dei tasks richiesti allora si verifica l'id a cui il tasks appartiene per essere
         # correttamente smistato nella lista di appartenenza corretta.
         for path in paths:
-            id = FileManager.get_id_from_path(path)
-            task = "_" + FileManager.get_task_from_path(path) + "."
+            id = HandManager.get_id_from_path(path)
+            task = "_" + HandManager.get_task_from_path(path) + "."
             # Verifico se il tasks nel path è uno di quelli selezionati per i pazienti con malattia.
             if task in diseased_task:
                 # Verifico se l'id del paziente è presente nella lista dei pazienti con malattia.
@@ -85,7 +85,7 @@ class TaskManager:
                 tasks = [tasks]
             for task in tasks:
                 for path in paths:
-                    if task in '_' + FileManager.get_task_from_path(path) + '.':
+                    if task in '_' + HandManager.get_task_from_path(path) + '.':
                         task_paths.append(path)
         except TypeError as error:
             print("Error: ", error)
@@ -93,15 +93,15 @@ class TaskManager:
         return task_paths
 
     """
-        Il metodo permette di scansionare una lista di percorsi e ottenere tutti i healthy_task necessari associati al loro 
+        Il metodo permette di scansionare una lista di percorsi e ottenere tutti i task necessari associati al loro 
         esecutore.
     """
     @staticmethod
     def get_task_from_paths(paths, tasks):
         ids_task = {}
         for path in paths:
-            id = FileManager.get_id_from_path(path)
-            task = "_" + FileManager.get_task_from_path(path) + "."
+            id = HandManager.get_id_from_path(path)
+            task = "_" + HandManager.get_task_from_path(path) + "."
             if task in tasks:
                 if id in ids_task:
                     temp_path = ids_task[id]

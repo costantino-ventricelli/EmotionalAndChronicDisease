@@ -5,7 +5,7 @@ import csv
 
 from DeepLearningClassifier import LeaveOneOut
 from DatasetManager.Costants import *
-from DatasetManager import FileManager
+from DatasetManager import HandManager
 from DeepLearningClassifier import TaskManager
 
 METRICS_KEY = 0
@@ -15,7 +15,7 @@ TASKS_KEY = 1
 class SelectTask:
 
     def __init__(self, saving_path, minimum_samples, samples_len, feature_extraction, feature):
-        FileManager.set_root_directory()
+        HandManager.set_root_directory()
         self.__minimum_samples = minimum_samples
         self.__samples_len = samples_len
         self.__feature_extraction = feature_extraction
@@ -24,7 +24,7 @@ class SelectTask:
             self.__saving_path = os.path.join("experiment_result", saving_path)
             self.__task_to_do = self.__set_task_to_do()
         else:
-            self.__saving_path = os.path.join("experiment_result", "best_task.txt")
+            self.__saving_path = os.path.join("experiment_result", "experiment_4.txt")
             self.__task_to_do = TASKS
 
     def select_task(self):

@@ -2,10 +2,10 @@
 
 from collections import Counter
 
-from DatasetManager.FileManager import FileManager
+from DatasetManager.HandManager import HandManager
 from DeepLearningClassifier.RHSDistanceExtraction import RHSDistanceExtract
 from DeepLearningClassifier.TaskManager import TaskManager
-from Expreriment.RHSExperimentModel import Experiment
+from Expreriment.Experiment_1 import Experiment
 
 NUM_FILE_SAMPLES = 50
 
@@ -30,7 +30,7 @@ class EmothawExperiment:
         Questo metodo avvia il src del modello con i nuovi dati ottenuti dal dataset di emothaw.
     """
     def execute_emothaw_experiment(self):
-        file_manager = FileManager("ConvertedEmothaw")
+        file_manager = HandManager("ConvertedEmothaw")
         rhs_extraction = RHSDistanceExtract(self.__file_samples, NUM_FILE_SAMPLES)
         ids_task = TaskManager.get_task_from_paths(file_manager.get_files_path(), self.__test_task)
         for id in ids_task:

@@ -8,6 +8,7 @@
    mento dello stato di salute attraverso biometria. Ovvero un modello di Machine Learning adattato nell'anno accademico
    2020 per poter eseguire src su altri dataset.
 """
+
 import csv
 import os
 import pathlib

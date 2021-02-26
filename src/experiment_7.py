@@ -6,6 +6,10 @@ from Expreriment import SelectTask
 from DeepLearningClassifier import RTPExtraction
 
 
+# Questo esperimento seleziona il migliore dei task tra tutti usando come feature l'RTP invece degli RHS, utilizzando
+# Experiment_4 come modello.
+
+
 def main():
     select_task = SelectTask('best_task.txt', 2500, 50, RTPExtraction(2500, 50), feature=4)
     select_task.select_task()

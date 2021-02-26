@@ -4,7 +4,8 @@ import csv
 import os
 
 from DeepLearningClassifier import LeaveOneOut
-from DatasetManager import FileManager
+from DatasetManager import HandManager
+from DeepLearningClassifier import RHSDistanceExtract
 
 METRICS_KEY = 0
 HEALTHY_INDEX = 1
@@ -21,7 +22,7 @@ SQUARE_BRACKETS = '[]'
 class ShiftTaskSelection:
 
     def __init__(self, saving_path, path_dictionary, minimum_samples, samples_len):
-        FileManager.set_root_directory()
+        HandManager.set_root_directory()
         self.__saving_path = saving_path
         self.__minimum_samples = minimum_samples
         self.__samples_len = samples_len
@@ -38,8 +39,9 @@ class ShiftTaskSelection:
         Questa soluzione è stata adattata per parellizare al massimo l'esecuzione.
     """
     def start_shift_selection(self, first_combination, file_name):
-        leave_one_out = LeaveOneOut(self.__minimum_samples, self.__samples_len, FEATURES, "Dataset")
-        file_path = os.path.join("experiment_result", os.path.join("shift_selection", file_name + ".txt"))
+        leave_one_out = LeaveOneOut(self.__minimum_samples, self.__samples_len, RHSDistanceExtract(self.__minimum_samples,
+                                                                                                   self.__samples_len), FEATURES, "Dataset")
+        file_path = os.path.join("experiment_result", os.path.join("experiment_6", file_name + ".txt"))
         # Questo blocco di codice permette di ottenere la chiave e il valore della combinazione di task iniziale.
         for input_category, tasks in first_combination.items():
             # La quale combinazione verrà testata con tutte le altre combinazioni di task.
@@ -47,9 +49,11 @@ class ShiftTaskSelection:
                 # Ovviamente escudendo il confronto tra la stessa categoria.
                 if category != input_category:
                     for value in item:
+                        # Verifico il tipo se è di tipo lista allora assegno semplicemente il valore
                         if isinstance(value[HEALTHY_STRING], list):
                             healthy_value = value[HEALTHY_STRING]
                             disease_value = value[DISEASE_STRING]
+                        # Se non dovesse essere di tipo lista faccio in modo che il valore assegnato sia di tipo lista
                         else:
                             healthy_value = [value[HEALTHY_STRING]]
                             disease_value = [value[DISEASE_STRING]]
