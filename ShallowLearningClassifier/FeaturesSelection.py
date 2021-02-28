@@ -3,17 +3,14 @@
 import pandas as pd
 import os
 import numpy as np
-import csv
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_selection import SelectFromModel
 from sklearn.model_selection import RandomizedSearchCV
-from sklearn.model_selection import train_test_split
-from itertools import repeat
 from copy import deepcopy
 from DatasetManager.Costants import *
 from DatasetManager import HandManager
-from .FeatureExtraction import FeatureExtraction
+from .FeaturesExtraction import FeatureExtraction
 
 
 FEATURES_DIRECTORY = os.path.join("resource", "features")
@@ -30,6 +27,9 @@ class FeatureSelection:
             disease_task = TASKS
         self.__dataset, self.__ground_thought = self.__set_dataset(healthy_task, disease_task)
         self.__dataset = np.array(self.__dataset).astype(np.float32)
+        self.__dataframe = None
+        self.__feature_selected = None
+        self.__best_params = None
         self.__random_gird = {
                     'n_estimators': [int(item) for item in np.linspace(start=200, stop=2000, num=10)],
                     'max_features': ['auto', 'sqrt'],
@@ -46,18 +46,31 @@ class FeatureSelection:
         hyperparameters.fit(self.__dataset, self.__ground_thought)
         print("Finish optimization")
         print("Selected hyperparameters: ", hyperparameters.best_params_)
-        best_params = hyperparameters.best_params_
+        self.__best_params = hyperparameters.best_params_
         print("Start features selection")
-        model_selection = SelectFromModel(RandomForestClassifier(n_estimators=best_params.get('n_estimators'),
-                                                                 max_features=best_params.get('max_features'),
-                                                                 max_depth=best_params.get('max_depth'),
-                                                                 min_samples_split=best_params.get('min_samples_split'),
-                                                                 min_samples_leaf=best_params.get('min_samples_leaf'),
-                                                                 bootstrap=best_params.get('bootstrap')))
+        model_selection = SelectFromModel(RandomForestClassifier(n_estimators=self.__best_params.get('n_estimators'),
+                                                                 max_features=self.__best_params.get('max_features'),
+                                                                 max_depth=self.__best_params.get('max_depth'),
+                                                                 min_samples_split=self.__best_params.get('min_samples_split'),
+                                                                 min_samples_leaf=self.__best_params.get('min_samples_leaf'),
+                                                                 bootstrap=self.__best_params.get('bootstrap')))
         model_selection.fit(self.__dataset, self.__ground_thought)
-        dataframe = pd.DataFrame(data=self.__dataset, columns=list(FeatureExtraction.get_file_dictionary()))
+        self.__dataframe = pd.DataFrame(data=self.__dataset, columns=list(FeatureExtraction.get_file_dictionary()))
         print("Finish features selection")
-        return dataframe.columns[model_selection.get_support()]
+        self.__feature_selected = self.__dataframe.columns[model_selection.get_support()]
+        return self.__best_params, self.__feature_selected
+
+    def get_best_params(self):
+        return self.__best_params
+
+    def get_feature_selected(self):
+        return self.__feature_selected
+
+    def get_dataframe(self):
+        return self.__dataframe
+
+    def get_ground_thought(self):
+        return self.__ground_thought
 
     def __set_dataset(self, healthy_task, disease_task):
         healthy_data_frame = []

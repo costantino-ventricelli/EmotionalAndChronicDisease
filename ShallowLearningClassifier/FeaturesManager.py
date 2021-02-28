@@ -5,7 +5,7 @@ import csv
 import numpy as np
 
 from DatasetManager import HandManager
-from .FeatureExtraction import FeatureExtraction
+from .FeaturesExtraction import FeatureExtraction
 from DatasetManager.Costants import *
 
 RESOURCE_DIR = os.path.join("resource", "features")

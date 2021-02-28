@@ -290,23 +290,3 @@ class HandManager:
         healthy_validation = int(ceil(len_healthy * 0.20))
         disease_validation = int(ceil(len_disease * 0.20))
         return healthy_validation if healthy_validation < disease_validation else disease_validation
-
-    @staticmethod
-    def log_results(accuracy_file, evaluation_result, f1_score_file, precision_file, recall_file, save_file_path,
-                    test_accuracy, test_f_score, test_precision, test_recall, wrong_classified, wrong_paths):
-        with open(save_file_path, 'w') as file:
-            file.write("loss_value: " + str(evaluation_result[0]) + "\n")
-            file.write("accuracy_value: " + str(evaluation_result[1]) + "\n")
-            file.write("Test accuracy: " + str(test_accuracy) + "\n")
-            file.write("Test precision: " + str(test_precision) + "\n")
-            file.write("Test recall: " + str(test_recall) + "\n")
-            file.write("Test f1_score: " + str(test_f_score) + "\n")
-            file.write("Wrong file classified total: " + str(wrong_classified) + "\n")
-            file.write("Accuracy file classified: " + str(accuracy_file) + "\n")
-            file.write("Precision file classified: " + str(precision_file) + "\n")
-            file.write("Recall file classified: " + str(recall_file) + "\n")
-            file.write("F1 score file classified: " + str(f1_score_file) + "\n")
-            file.write("Wrong file classified: \n")
-            for path in wrong_paths:
-                file.write("\t" + path + "\n")
-            file.close()

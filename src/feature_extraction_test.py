@@ -2,7 +2,7 @@
 import sys
 sys.path.append("..")
 
-from SupportVectorMachineClassifier.FeaturesManager import FeaturesManager
+from ShallowLearningClassifier.FeaturesManager import FeaturesManager
 
 
 def main():
