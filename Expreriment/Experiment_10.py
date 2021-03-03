@@ -8,8 +8,6 @@ from ShallowLearningClassifier import SVCModel
 
 class CompleteTaskTest:
 
-    # FIXME: adeguare al nuovo SVC
-
     @staticmethod
     def start_experiment(healthy_task=None, disease_task=None):
         svm_model = SVCModel(healthy_task, disease_task)

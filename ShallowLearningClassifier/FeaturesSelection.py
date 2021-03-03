@@ -98,14 +98,12 @@ class FeatureSelection:
                         elif HandManager.get_state_from_id(self.__patients[i]) == DISEASE and task in disease_task:
                             disease_data_frame_task.append(row)
                             disease_ids_task.append(self.__patients[i])
-                if len(healthy_data_frame_task) < len(disease_data_frame_task):
-                    end_point = len(healthy_data_frame_task)
-                else:
-                    end_point = len(disease_data_frame_task)
-                healthy_data_frame += healthy_data_frame_task[0: end_point]
-                healthy_ids += healthy_ids_task[0: end_point]
-                disease_data_frame += disease_data_frame_task[0: end_point]
-                disease_ids += disease_ids_task[0: end_point]
+
+                healthy_data_frame_task, disease_data_frame_task = HandManager.balance_dataset(healthy_data_frame_task, disease_data_frame_task)
+                healthy_data_frame += healthy_data_frame_task
+                healthy_ids += healthy_ids_task[0: len(healthy_data_frame_task)]
+                disease_data_frame += disease_data_frame_task
+                disease_ids += disease_ids_task[0: len(disease_data_frame_task)]
         dataset = np.array(healthy_data_frame + disease_data_frame)
         # Questi tre punti sono importanti in quanto permettono di rimuovere i dati nocivi dal dataset.
         dataset = np.where(dataset == np.inf, np.finfo(np.float32).max, dataset)

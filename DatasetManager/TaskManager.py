@@ -185,4 +185,5 @@ class TaskManager:
             healthy_tasks = [healthy_tasks]
         if not isinstance(disease_tasks, list):
             disease_tasks = [disease_tasks]
-        return list(set(tasks).symmetric_difference(healthy_tasks + disease_tasks))
+        result_list = list(set(tasks).symmetric_difference(healthy_tasks + disease_tasks))
+        return result_list if len(result_list) > 0 else tasks

@@ -290,3 +290,11 @@ class HandManager:
         healthy_validation = int(ceil(len_healthy * 0.20))
         disease_validation = int(ceil(len_disease * 0.20))
         return healthy_validation if healthy_validation < disease_validation else disease_validation
+
+    @staticmethod
+    def balance_dataset(healthy_dataset, disease_dataset):
+        if len(healthy_dataset) < len(disease_dataset):
+            end_point = len(healthy_dataset)
+        else:
+            end_point = len(disease_dataset)
+        return healthy_dataset[0: end_point], disease_dataset[0: end_point]

@@ -4,7 +4,7 @@ from collections import Counter
 
 from DatasetManager.HandManager import HandManager
 from DeepLearningClassifier.RHSDistanceExtraction import RHSDistanceExtract
-from DeepLearningClassifier.TaskManager import TaskManager
+from DatasetManager.TaskManager import TaskManager
 from Expreriment.Experiment_1 import Experiment
 
 NUM_FILE_SAMPLES = 50

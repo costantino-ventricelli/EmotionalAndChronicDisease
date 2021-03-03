@@ -3,7 +3,7 @@
 from DatasetManager import HandManager
 from DatasetManager.Costants import *
 from .MachineLearningModel import MLModel
-from .TaskManager import TaskManager
+from DatasetManager.TaskManager import TaskManager
 
 import numpy as np
 

@@ -81,16 +81,13 @@ class RTPExtraction:
         disease_tensor = np.reshape(np.array(disease_x + disease_y + disease_bs + disease_new_stroke),
                                     (len(disease_x), self.__num_samples, FEATURES))
         # A questo punto per ottenere un dataset bilanciato in ogni situazione valuto quale dei due tensori possiede meno.
-        if len(healthy_tensor) < len(disease_tensor):
-            end_point = len(healthy_tensor)
-        else:
-            end_point = len(disease_tensor)
+        healthy_tensor, disease_tensor = HandManager.balance_dataset(healthy_tensor, disease_tensor)
         # Il tensore con meno campioni verrà utilizzato per generare il tensore finale, il quale verrà composto inserendo
         # prima tutti gli utenti sani e poi tutti gli utenti sani, si è già provato un approccio alternato, ma ha dato
         # scarsi risultati.
-        final_tensor = np.concatenate((healthy_tensor[0: end_point], disease_tensor[0: end_point]))
+        final_tensor = np.concatenate((healthy_tensor, disease_tensor))
         # Genero infine il vettore gli stati
-        states += [HEALTHY_STATE for _ in range(end_point)] + [DISEASE_STATE for _ in range(end_point)]
+        states += [HEALTHY_STATE for _ in range(len(healthy_tensor))] + [DISEASE_STATE for _ in range(len(disease_tensor))]
         return np.array(final_tensor), np.array(states), len(final_tensor)
 
     """
