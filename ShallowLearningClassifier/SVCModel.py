@@ -32,22 +32,16 @@ class SVCModel:
         hyperparameters.fit(self.__dataset, self.__ground_thought)
         self.__best_hyperparameters = hyperparameters.best_params_
 
-    def get_dataset(self):
-        return self.__dataset
+    def get_feature_selected(self):
+        return self.__feature_selected
 
-    def get_ground_thought(self):
-        return self.__ground_thought
-
-    def train_test_svc(self, train_index, test_index):
-        print("Split dataset")
-        train_dataset, train_label = self.__dataset[train_index], self.__ground_thought[train_index]
-        test_dataset = self.__dataset[test_index]
+    def train_test_svc(self, train_dataset, train_ground_thought, test_dataset):
         support_vector_classifier = SVC(C=self.__best_hyperparameters.get('C'), kernel=self.__best_hyperparameters.get('kernel'),
                                         gamma=self.__best_hyperparameters.get('gamma'), verbose=True, max_iter=-1)
         print("Training model")
-        support_vector_classifier.fit(train_dataset, train_label)
-        print("Testing model")
-        return support_vector_classifier.predict(test_dataset)
+        support_vector_classifier.fit(train_dataset, train_ground_thought)
+        print("Testing model shape: ", np.shape(test_dataset))
+        return np.array(support_vector_classifier.predict(test_dataset))
 
     @staticmethod
     def evaluate_results(predicted_values, ground_thought):

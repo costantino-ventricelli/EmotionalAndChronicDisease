@@ -13,7 +13,7 @@ FEATURES_DIRECTORY = os.path.join("resource", "features")
 
 class CreateDictDataset:
 
-    def __init__(self, features_selected):
+    def __init__(self, features_selected, healthy_task, disease_task):
         self.__patients_list = CreateDictDataset.__read_patient_list()
         self.__dataset_dict = {}
         self.__features_selected = features_selected
@@ -22,8 +22,15 @@ class CreateDictDataset:
                 'ground_thought': HandManager.get_state_from_id(id),
                 'user_tasks': dict.fromkeys(TASKS, np.ndarray)
             }
-        for task in TASKS:
-            print("Opening file: ", TASKS_MAME.get(task), '.csv')
+        if healthy_task is None:
+            healthy_task = TASKS
+        if disease_task is None:
+            disease_task = TASKS
+        self.__healthy_task = healthy_task
+        self.__disease_task = disease_task
+        tasks = set(self.__healthy_task + self.__disease_task)
+        for task in tasks:
+            print("Opening file: ", TASKS_MAME.get(task) + '.csv')
             with open(os.path.join(FEATURES_DIRECTORY, TASKS_MAME.get(task) + '.csv'), 'r') as file:
                 dataframe = pd.read_csv(file)
                 features = dataframe.columns.to_list()
@@ -43,34 +50,40 @@ class CreateDictDataset:
                     user_tasks[task] = row
                 file.close()
 
-    def get_dataset(self, test_id, healthy_task=None, disease_task=None):
-        if healthy_task is None:
-            healthy_task = TASKS
-        if disease_task is None:
-            disease_task = TASKS
-        test_task = TaskManager.get_tasks_difference(TASKS, healthy_task, disease_task)
+    def get_dataset(self, test_id, test_task=None):
+        if test_task is None:
+            test_task = TaskManager.get_tasks_difference(TASKS, self.__healthy_task, self.__disease_task)
         healthy_dataset = []
         disease_dataset = []
         test_dataset = []
+        test_ground_thought = []
         for key, value in self.__dataset_dict.items():
             user_tasks = value.get('user_tasks')
             if key == test_id:
                 test_dataset = CreateDictDataset.__get_task_from_patient(test_task, test_dataset, user_tasks)
+                test_ground_thought = [value.get('ground_thought') for _ in range(len(test_dataset))]
             else:
                 ground_thought = value.get('ground_thought')
                 if ground_thought == HEALTHY:
-                    healthy_dataset = CreateDictDataset.__get_task_from_patient(healthy_task, healthy_dataset, user_tasks)
+                    healthy_dataset = CreateDictDataset.__get_task_from_patient(self.__healthy_task, healthy_dataset, user_tasks)
                 else:
-                    disease_dataset = CreateDictDataset.__get_task_from_patient(disease_task, disease_dataset, user_tasks)
-        if len(healthy_dataset) < len(disease_dataset):
-            end_point
+                    disease_dataset = CreateDictDataset.__get_task_from_patient(self.__disease_task, disease_dataset, user_tasks)
+        healthy_dataset, disease_dataset = HandManager.balance_dataset(healthy_dataset, disease_dataset)
+        train_ground_thought = [HEALTHY for _ in range(len(healthy_dataset))] + [DISEASE for _ in range(len(disease_dataset))]
+        return healthy_dataset + disease_dataset, test_dataset, train_ground_thought, test_ground_thought
+
+    def get_patient_list(self):
+        return self.__patients_list
 
     @staticmethod
     def __get_task_from_patient(tasks, dataset, user_tasks):
-        for task in tasks:
-            row = user_tasks.get(task)
-            if np.any(row):
-                dataset.append(row)
+        for sub_task in tasks:
+            if not isinstance(sub_task, list):
+                sub_task = [sub_task]
+                for task in sub_task:
+                    row = user_tasks.get(task)
+                    if np.any(row):
+                        dataset.append(row)
         return dataset
 
     @staticmethod

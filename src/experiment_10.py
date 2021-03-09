@@ -9,9 +9,11 @@ from Expreriment import CompleteTaskTest
 
 EXPERIMENT_RESULT = os.path.join("experiment_result", "experiment_10.txt")
 
+# In questo esperimento si avvia il modello di test LeaveOneOut per la SVM.
+
 
 def main():
-    accuracy, precision, recall, f_score = CompleteTaskTest.start_experiment(EXPERIMENT_RESULT)
+    accuracy, precision, recall, f_score = CompleteTaskTest.start_experiment()
     with open(EXPERIMENT_RESULT, 'w') as file:
         file.write("Leave One Out Results\n")
         file.write("ACCURACY: " + str(accuracy * 100) + "\n")

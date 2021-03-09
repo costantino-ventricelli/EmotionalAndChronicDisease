@@ -1,4 +1,5 @@
 # coding=utf-8
+
 import sys
 sys.path.append("..")
 
@@ -6,20 +7,18 @@ import os
 import csv
 
 from Expreriment import CompleteTaskTest
-from DatasetManager import HandManager
 from DatasetManager.Costants import *
 
 EXPERIMENT_RESULT = os.path.join("experiment_result", "experiment_11.txt")
 
+# Questo esperimento verifica il modello selezionando sigolarmente ogni task del dataset e valutando il modello su di
+# essi.
+
 
 def main():
     results = {}
-    HandManager.set_root_directory()
-    if not os.path.exists(EXPERIMENT_RESULT):
-        os.mkdir(EXPERIMENT_RESULT)
     for task in TASKS:
-        file = os.path.join(EXPERIMENT_RESULT, TASKS_MAME.get(task) + ".txt")
-        accuracy, precision, recall, f_score = CompleteTaskTest.start_experiment(healthy_task=[task], disease_task=[task])
+        accuracy, precision, recall, f_score = CompleteTaskTest.start_experiment(healthy_task=[task], disease_task=[task], test_task=[task])
         results = append_dictionary((accuracy, precision, recall, f_score), task, results)
     with open(EXPERIMENT_RESULT, 'w') as file:
         csv_file = csv.writer(file, delimiter=';', quotechar="'", quoting=csv.QUOTE_NONE)

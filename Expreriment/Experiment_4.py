@@ -6,7 +6,7 @@ import csv
 from DeepLearningClassifier import LeaveOneOut
 from DatasetManager.Costants import *
 from DatasetManager import HandManager
-from DeepLearningClassifier import TaskManager
+from DatasetManager import TaskManager
 
 METRICS_KEY = 0
 TASKS_KEY = 1
