@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from Expreriment import ShiftTaskSelection
+from Expreriment import DeepShiftSelection
 
 HEALTHY_STRING = "HEALTHY"
 DISEASE_STRING = "DISEASE"
@@ -9,11 +9,11 @@ DISEASE_STRING = "DISEASE"
 # Il pratica utilizzando i risultati ottenuti dall'esperimento 4 inizialmente, incrementando man mano i task selezionati
 # come combinazione inizale è possibile selezionare la miglior combinazione, ad esempio:
 # selezioniamo le matrici come task iniziale:
-# 1) combination = {'matrix': {HEALTHY_STRING: ['_m1.'],
+# 1) combination = {'matrix': {HEALTHY_STRING:  ['_m1.'],
 #                               DISEASE_STRING: ['_m2.']}}
-# 2) combination = {'matrix': {HEALTHY_STRING: ['_m1.', '_cs.'],
+# 2) combination = {'matrix': {HEALTHY_STRING:  ['_m1.', '_cs.'],
 #                               DISEASE_STRING: ['_m2.', '_ts.']}}
-# 3) combination = {'matrix': {HEALTHY_STRING: ['_m1.', '_cs.', '_s2.'],
+# 3) combination = {'matrix': {HEALTHY_STRING:  ['_m1.', '_cs.', '_s2.'],
 #                               DISEASE_STRING: ['_m2.', '_ts.', '_w.']}}
 # etc... alla fine si otterranno tutte le combinazioni di tutti i task migliori per ogni categoria con i rispettivi risultati.
 # Ovviamente bisogna avere l'accortezza di modificare il file di salvataggio ad ogni test, così da mantenere i risultati
@@ -30,7 +30,7 @@ def main():
     saving_path = 'resource/test_dictionary_file.csv'
     combination = {'matrix': {HEALTHY_STRING: ['_s2.', '_m1.'],
                               DISEASE_STRING: ['_w.', '_m2.']}}
-    experiment = ShiftTaskSelection(None, path_dictionary, 2500, 50)
+    experiment = DeepShiftSelection(None, path_dictionary, 2500, 50)
     experiment.start_shift_selection(combination, "matrix_test")
 
 

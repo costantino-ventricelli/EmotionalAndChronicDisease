@@ -6,7 +6,7 @@ sys.path.append("..")
 import os
 import csv
 
-from Expreriment import CompleteTaskTest
+from Expreriment import ShallowLeaveOneOut
 from DatasetManager.Costants import *
 
 EXPERIMENT_RESULT = os.path.join("experiment_result", "experiment_11.txt")
@@ -18,7 +18,7 @@ EXPERIMENT_RESULT = os.path.join("experiment_result", "experiment_11.txt")
 def main():
     results = {}
     for task in TASKS:
-        accuracy, precision, recall, f_score = CompleteTaskTest.start_experiment(healthy_task=[task], disease_task=[task], test_task=[task])
+        accuracy, precision, recall, f_score = ShallowLeaveOneOut.start_experiment(healthy_task=[task], disease_task=[task], test_task=[task])
         results = append_dictionary((accuracy, precision, recall, f_score), task, results)
     with open(EXPERIMENT_RESULT, 'w') as file:
         csv_file = csv.writer(file, delimiter=';', quotechar="'", quoting=csv.QUOTE_NONE)

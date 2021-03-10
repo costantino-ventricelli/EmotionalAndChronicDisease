@@ -3,7 +3,7 @@
 import os
 import csv
 
-from DeepLearningClassifier import LeaveOneOut
+from DeepLearningClassifier import DeepLeaveOneOut
 from DatasetManager.Costants import *
 from DatasetManager import HandManager
 from DatasetManager import TaskManager
@@ -28,7 +28,7 @@ class SelectTask:
             self.__task_to_do = TASKS
 
     def select_task(self):
-        leave_one_out = LeaveOneOut(self.__minimum_samples, self.__samples_len, self.__feature_extraction, self.__feature, "Dataset")
+        leave_one_out = DeepLeaveOneOut(self.__minimum_samples, self.__samples_len, self.__feature_extraction, self.__feature, "Dataset")
         for task in self.__task_to_do:
             accuracy, precision, recall, f_score = leave_one_out.leave_one_out(task, task)
             if os.path.exists(self.__saving_path):

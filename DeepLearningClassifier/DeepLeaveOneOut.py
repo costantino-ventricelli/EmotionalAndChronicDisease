@@ -8,7 +8,7 @@ from DatasetManager.TaskManager import TaskManager
 import numpy as np
 
 
-class LeaveOneOut:
+class DeepLeaveOneOut:
 
     def __init__(self, minimum_samples, samples_len, feature_extractor, feature, dataset):
         self.__minimum_samples = minimum_samples

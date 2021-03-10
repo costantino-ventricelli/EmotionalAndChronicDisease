@@ -3,7 +3,7 @@
 import csv
 import os
 
-from DeepLearningClassifier import LeaveOneOut
+from DeepLearningClassifier import DeepLeaveOneOut
 from DatasetManager import HandManager
 from DeepLearningClassifier import RHSDistanceExtract
 
@@ -19,7 +19,7 @@ DISEASE_STRING = "DISEASE"
 SQUARE_BRACKETS = '[]'
 
 
-class ShiftTaskSelection:
+class DeepShiftSelection:
 
     def __init__(self, saving_path, path_dictionary, minimum_samples, samples_len):
         HandManager.set_root_directory()
@@ -32,15 +32,15 @@ class ShiftTaskSelection:
             self.__results = {}
         self.__value_tasks = {}
         for key, item in path_dictionary.items():
-            self.__value_tasks[key] = max(ShiftTaskSelection.__set_previous_state(item).items())[TASK_INDEX]
+            self.__value_tasks[key] = max(DeepShiftSelection.__set_previous_state(item).items())[TASK_INDEX]
 
     """
         Questo metodo permette di eseguire combinazioni tra tutte le categorie selezionandone una inizialmente.
         Questa soluzione è stata adattata per parellizare al massimo l'esecuzione.
     """
     def start_shift_selection(self, first_combination, file_name):
-        leave_one_out = LeaveOneOut(self.__minimum_samples, self.__samples_len, RHSDistanceExtract(self.__minimum_samples,
-                                                                                                   self.__samples_len), FEATURES, "Dataset")
+        leave_one_out = DeepLeaveOneOut(self.__minimum_samples, self.__samples_len, RHSDistanceExtract(self.__minimum_samples,
+                                                                                                       self.__samples_len), FEATURES, "Dataset")
         file_path = os.path.join("experiment_result", os.path.join("experiment_6", file_name + ".txt"))
         # Questo blocco di codice permette di ottenere la chiave e il valore della combinazione di task iniziale.
         for input_category, tasks in first_combination.items():
@@ -57,7 +57,7 @@ class ShiftTaskSelection:
                         else:
                             healthy_value = [value[HEALTHY_STRING]]
                             disease_value = [value[DISEASE_STRING]]
-                        if not ShiftTaskSelection.__is_in(tasks[HEALTHY_STRING], tasks[DISEASE_STRING],
+                        if not DeepShiftSelection.__is_in(tasks[HEALTHY_STRING], tasks[DISEASE_STRING],
                                                           healthy_value, disease_value):
                             healthy = tasks[HEALTHY_STRING] + healthy_value
                             disease = tasks[DISEASE_STRING] + disease_value
@@ -96,8 +96,8 @@ class ShiftTaskSelection:
             result = {}
             for row in csv_file:
                 key = eval(row[METRICS_KEY])
-                value_dict = {HEALTHY_STRING: ShiftTaskSelection.__cast_into_list(row[HEALTHY_INDEX]),
-                              DISEASE_STRING: ShiftTaskSelection.__cast_into_list(row[DISEASE_INDEX])}
+                value_dict = {HEALTHY_STRING: DeepShiftSelection.__cast_into_list(row[HEALTHY_INDEX]),
+                              DISEASE_STRING: DeepShiftSelection.__cast_into_list(row[DISEASE_INDEX])}
                 if key in result.keys():
                     list_of_dict = result.get(key)
                     list_of_dict.append(value_dict)

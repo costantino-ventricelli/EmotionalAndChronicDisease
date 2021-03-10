@@ -7,7 +7,7 @@ import csv
 
 sys.path.append("..")
 
-from Expreriment import CompleteTaskTest
+from Expreriment import ShallowLeaveOneOut
 from DatasetManager import HandManager
 from DatasetManager.Costants import *
 from copy import deepcopy
@@ -48,9 +48,9 @@ def main():
                 else:
                     test_tasks = [test_tasks, task]
                 print("Starting model construction for task: ", test_tasks)
-                accuracy, precision, recall, f_score = CompleteTaskTest.start_experiment(healthy_task=test_tasks,
-                                                                                         disease_task=test_tasks,
-                                                                                         test_task=test_tasks)
+                accuracy, precision, recall, f_score = ShallowLeaveOneOut.start_experiment(healthy_task=test_tasks,
+                                                                                           disease_task=test_tasks,
+                                                                                           test_task=test_tasks)
                 partial_result = ((accuracy, precision, recall, f_score), test_tasks)
                 if partial_result[KEY] in best_result.keys():
                     value = best_result.get(partial_result[KEY])

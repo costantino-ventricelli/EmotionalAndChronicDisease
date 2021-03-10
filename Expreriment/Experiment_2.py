@@ -15,7 +15,7 @@ HEALTHY_STRING = "HEALTHY"
 DISEASE_STRING = "DISEASE"
 
 
-class CategoryTaskExtraction:
+class DeepCategoryTaskExtraction:
 
     """
         @:param prev_file: contiene il percorso del file frutto di un esecuzione precedente, nel momento in cui viene
@@ -32,7 +32,6 @@ class CategoryTaskExtraction:
         # Il file contente i valori calcolati ci permette di ricominciare l'esecuzione del programma nel caso dovesse
         # interrompersi per qualsiasi ragione.
         self.__prev_file = prev_file
-        self.__prev_file = prev_file
         if prev_file is not None:
             self.__results = self.__set_previous_state()
         else:
@@ -41,11 +40,11 @@ class CategoryTaskExtraction:
         self.__samples_len = samples_len
         self.__category = category
         # Ottengo l'intero dataset da HandManager
-        self.__learning_method = LeaveOneOut(self.__minimum_samples, FEATURE, RHSDistanceExtract(minimum_samples, samples_len), self.__samples_len, "Dataset")
+        self.__learning_method = DeepLeaveOneOut(self.__minimum_samples, FEATURE, RHSDistanceExtract(minimum_samples, samples_len), self.__samples_len, "Dataset")
 
     """
-        Questo metodo avvia la selezione dei task per gli utenti etichettati come sani, per farlo richiama il metodo 
-        che permetterà di selezionare i task per gli utenti etichettati come non sani tante volte quanti sono i task 
+        Questo metodo avvia la selezione dei task per gli utenti etichettati come sani, per farlo richiama il metodo
+        che permetterà di selezionare i task per gli utenti etichettati come non sani tante volte quanti sono i task
         che si è deciso di analizzare.
     """
     def start_healthy_selection(self):

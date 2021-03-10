@@ -7,7 +7,7 @@ from ShallowLearningClassifier import CreateDictDataset
 from collections import Counter
 
 
-class CompleteTaskTest:
+class ShallowLeaveOneOut:
 
     @staticmethod
     def start_experiment(healthy_task=None, disease_task=None, test_task=None):
@@ -17,7 +17,7 @@ class CompleteTaskTest:
         predicted_values = np.zeros(0)
         ground_thought = np.zeros(0)
         for id in patient_list:
-            train_dataset, test_dataset, train_ground_thought, test_ground_thought = dataset_creator.get_dataset(id, test_task)
+            train_dataset, test_dataset, train_ground_thought, test_ground_thought, test_task = dataset_creator.get_dataset(id, test_task)
             print("Patients id: ", id, ", task for id: ", test_task, " dataset len: ", len(test_task))
             if len(test_dataset) > 0:
                 temp_predicted_values = svm_model.train_test_svc(train_dataset, train_ground_thought, test_dataset)

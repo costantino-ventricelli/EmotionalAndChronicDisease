@@ -28,8 +28,7 @@ class CreateDictDataset:
             disease_task = TASKS
         self.__healthy_task = healthy_task
         self.__disease_task = disease_task
-        tasks = set(self.__healthy_task + self.__disease_task)
-        for task in tasks:
+        for task in TASKS:
             print("Opening file: ", TASKS_MAME.get(task) + '.csv')
             with open(os.path.join(FEATURES_DIRECTORY, TASKS_MAME.get(task) + '.csv'), 'r') as file:
                 dataframe = pd.read_csv(file)
@@ -70,7 +69,7 @@ class CreateDictDataset:
                     disease_dataset = CreateDictDataset.__get_task_from_patient(self.__disease_task, disease_dataset, user_tasks)
         healthy_dataset, disease_dataset = HandManager.balance_dataset(healthy_dataset, disease_dataset)
         train_ground_thought = [HEALTHY for _ in range(len(healthy_dataset))] + [DISEASE for _ in range(len(disease_dataset))]
-        return healthy_dataset + disease_dataset, test_dataset, train_ground_thought, test_ground_thought
+        return healthy_dataset + disease_dataset, test_dataset, train_ground_thought, test_ground_thought, test_task
 
     def get_patient_list(self):
         return self.__patients_list
@@ -82,7 +81,7 @@ class CreateDictDataset:
                 sub_task = [sub_task]
                 for task in sub_task:
                     row = user_tasks.get(task)
-                    if np.any(row):
+                    if not isinstance(row, type) and np.any(row):
                         dataset.append(row)
         return dataset
 
