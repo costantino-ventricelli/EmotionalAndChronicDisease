@@ -1,7 +1,7 @@
 # coding=utf-8
 
-import os
 import csv
+import os
 
 from DatasetManager import HandManager
 from DeepLearningClassifier import *
@@ -88,7 +88,6 @@ class DeepCategoryTaskExtraction:
                 if self.__prev_file is None:
                     self.__prev_file = os.path.join(directory, self.__category + ".txt")
                     file = open(self.__prev_file, 'w')
-
                 else:
                     file = open(self.__prev_file, 'a')
                 csv_file = csv.writer(file, delimiter=';')

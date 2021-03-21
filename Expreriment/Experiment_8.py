@@ -1,10 +1,10 @@
 # coding=utf-8
 
+import os
 from collections import Counter
 from copy import deepcopy
 
 import numpy as np
-import os
 
 from DatasetManager import HandManager
 from DatasetManager.Costants import *

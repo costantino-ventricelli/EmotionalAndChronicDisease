@@ -1,14 +1,13 @@
 # coding=utf-8
 
-import os
 import csv
+import os
+from copy import deepcopy
 
 from DatasetManager import HandManager
-from ShallowLearningClassifier import SVCModel
-from ShallowLearningClassifier import FeatureSelection
-from ShallowLearningClassifier import CreateDictDataset
+from ShallowLearningClassifier import ShallowLeaveOneOut
 
-EXPERIMENT_DIRECTORY = os.path.join("experiment_result", "experiment_13")
+EXPERIMENT_DIRECTORY = os.path.join("experiment_result", "experiment_14")
 METRICS_KEY = 0
 HEALTHY_INDEX = 1
 DISEASE_INDEX = 2
@@ -20,14 +19,22 @@ DISEASE_STRING = "DISEASE"
 
 SQUARE_BRACKETS = '[]'
 
+ACCURACY_INDEX = 0
+PRECISION_INDEX = 1
+RECALL_INDEX = 2
+F_SCORE_INDEX = 3
+
 
 class ShallowShiftSelection:
 
-    def __init__(self, first_combination, path_directory=None, saving_path=None):
+    def __init__(self, first_combination, path_directory, saving_file):
         HandManager.set_root_directory()
         healthy_tasks = None
         disease_tasks = None
-        for key, value in first_combination:
+        self.__saving_path = os.path.join(EXPERIMENT_DIRECTORY, saving_file)
+        self.__results = ShallowShiftSelection.__set_previous_state(saving_file)
+        for key, value in first_combination.items():
+            self.__task_category = key
             healthy_tasks = value[HEALTHY_STRING]
             disease_tasks = value[DISEASE_STRING]
         if healthy_tasks is not None and not isinstance(healthy_tasks, list):
@@ -36,40 +43,52 @@ class ShallowShiftSelection:
             disease_tasks = [disease_tasks]
         self.__healthy_tasks = healthy_tasks
         self.__disease_tasks = disease_tasks
-        feature_selection = FeatureSelection(healthy_tasks, disease_tasks)
-        _, self.__selected_features = feature_selection.select_feature()
-        self.__value_task = {}
-        if path_directory is not None:
-            for key, path in path_directory:
-                self.__value_task[key] = max(ShallowShiftSelection.__set_previous_state(path))
-        if saving_path is not None:
-            self.__results = ShallowShiftSelection.__set_previous_state(saving_path)
-        else:
-            self.__results = {}
+        self.__base_results = {}
+        for _, path in path_directory.items():
+            previous_state = ShallowShiftSelection.__set_previous_state(path)
+            key = max(previous_state)
+            self.__base_results[key] = previous_state[key]
         if not os.path.exists(EXPERIMENT_DIRECTORY):
             os.mkdir(EXPERIMENT_DIRECTORY)
 
     def start_selection(self):
-        print("Start selection")
+        for key, values in self.__base_results.items():
+            if key != self.__task_category and key not in self.__results:
+                for value in values:
+                    if not value[HEALTHY_STRING][0] in self.__healthy_tasks and not value[DISEASE_STRING][0] in self.__disease_tasks:
+                        healthy_tasks = deepcopy(self.__healthy_tasks) + value[HEALTHY_STRING]
+                        disease_tasks = deepcopy(self.__disease_tasks) + value[DISEASE_STRING]
+                        accuracy, precision, recall, f_score = ShallowLeaveOneOut.start_experiment(healthy_tasks, disease_tasks)
+                        if os.path.exists(self.__saving_path):
+                            file = open(self.__saving_path, 'a')
+                        else:
+                            file = open(self.__saving_path, 'w')
+                        csv_file = csv.writer(file, delimiter=';')
+                        csv_file.writerow([(accuracy, precision, recall, f_score), healthy_tasks, disease_tasks])
+                        file.close()
+            else:
+                print("Combination already tried: ", key)
 
     """
         Questo metodo ha il compito di reimpostare i valori del dizionaro sulla base del file passato al costruttore.
     """
     @staticmethod
     def __set_previous_state(saving_path):
-        with open(saving_path, 'r') as file:
-            csv_file = csv.reader(file, delimiter=';')
-            result = {}
-            for row in csv_file:
-                key = eval(row[METRICS_KEY])
-                value_dict = {HEALTHY_STRING: ShallowShiftSelection.__cast_into_list(row[HEALTHY_INDEX]),
-                              DISEASE_STRING: ShallowShiftSelection.__cast_into_list(row[DISEASE_INDEX])}
-                if key in result.keys():
-                    list_of_dict = result.get(key)
-                    list_of_dict.append(value_dict)
-                else:
-                    result[key] = [value_dict]
-            file.close()
+        result = {}
+        if os.path.exists(saving_path):
+            with open(saving_path, 'r') as file:
+                csv_file = csv.reader(file, delimiter=';')
+                for row in csv_file:
+                    key = eval(row[METRICS_KEY])
+                    key = (key[F_SCORE_INDEX], key[RECALL_INDEX], key[PRECISION_INDEX], key[ACCURACY_INDEX])
+                    value_dict = {HEALTHY_STRING: ShallowShiftSelection.__cast_into_list(row[HEALTHY_INDEX]),
+                                  DISEASE_STRING: ShallowShiftSelection.__cast_into_list(row[DISEASE_INDEX])}
+                    if key in result.keys():
+                        list_of_dict = result.get(key)
+                        list_of_dict.append(value_dict)
+                    else:
+                        result[key] = [value_dict]
+                file.close()
         return result
 
     """

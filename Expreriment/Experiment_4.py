@@ -1,12 +1,12 @@
 # coding=utf-8
 
-import os
 import csv
+import os
 
-from DeepLearningClassifier import DeepLeaveOneOut
-from DatasetManager.Costants import *
 from DatasetManager import HandManager
 from DatasetManager import TaskManager
+from DatasetManager.Costants import *
+from DeepLearningClassifier import DeepLeaveOneOut
 
 METRICS_KEY = 0
 TASKS_KEY = 1

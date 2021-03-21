@@ -1,11 +1,11 @@
 # coding=utf-8
 
+import numpy as np
+
 from DatasetManager import HandManager
 from DatasetManager.Costants import *
-from .MachineLearningModel import MLModel
 from DatasetManager.TaskManager import TaskManager
-
-import numpy as np
+from .MachineLearningModel import MLModel
 
 
 class DeepLeaveOneOut:

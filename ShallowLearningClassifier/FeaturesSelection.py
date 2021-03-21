@@ -1,17 +1,17 @@
 # coding=utf-8
 
-import pandas as pd
 import os
-import numpy as np
+from copy import deepcopy
 
+import numpy as np
+import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_selection import SelectFromModel
 from sklearn.model_selection import RandomizedSearchCV
-from copy import deepcopy
-from DatasetManager.Costants import *
-from DatasetManager import HandManager
-from .FeaturesExtraction import FeatureExtraction
 
+from DatasetManager import HandManager
+from DatasetManager.Costants import *
+from .FeaturesExtraction import FeatureExtraction
 
 FEATURES_DIRECTORY = os.path.join("resource", "features")
 
@@ -75,8 +75,6 @@ class FeatureSelection:
     def __set_dataset(self, healthy_task, disease_task):
         healthy_data_frame = []
         disease_data_frame = []
-        healthy_ids = []
-        disease_ids = []
         for task in list(set(healthy_task + disease_task)):
             print("Extracting task: ", TASKS_MAME.get(task))
             healthy_data_frame_task = []
@@ -99,20 +97,15 @@ class FeatureSelection:
                             disease_data_frame_task.append(row)
                             disease_ids_task.append(self.__patients[i])
                 file.close()
-            if len(healthy_task) > 1:
-                healthy_data_frame_task, disease_data_frame_task = HandManager.balance_dataset(healthy_data_frame_task, disease_data_frame_task)
             healthy_data_frame += healthy_data_frame_task
-            healthy_ids += healthy_ids_task[0: len(healthy_data_frame_task)]
             disease_data_frame += disease_data_frame_task
-            disease_ids += disease_ids_task[0: len(disease_data_frame_task)]
-        if len(healthy_task) == 1:
-            healthy_data_frame, disease_data_frame_task = HandManager.balance_dataset(healthy_data_frame, disease_data_frame)
+        healthy_data_frame, disease_data_frame_task = HandManager.balance_dataset(healthy_data_frame, disease_data_frame)
         dataset = np.array(healthy_data_frame + disease_data_frame)
         # Questi tre punti sono importanti in quanto permettono di rimuovere i dati nocivi dal dataset.
         dataset = np.where(dataset == np.inf, np.finfo(np.float32).max, dataset)
         dataset = np.where(dataset == -np.inf, np.finfo(np.float32).min, dataset)
         dataset = np.where(np.isnan(dataset), 0.00, dataset)
-        ground_through = np.array([HEALTHY for _ in range(len(healthy_ids))] + [DISEASE for _ in range(len(disease_ids))])
+        ground_through = np.array([HEALTHY for _ in range(len(healthy_data_frame))] + [DISEASE for _ in range(len(disease_data_frame))])
         return dataset, ground_through
 
     @staticmethod

@@ -1,6 +1,7 @@
 # coding=utf-8
 
 import csv
+import itertools
 from os import path as pt
 
 from DatasetManager import Costants
@@ -174,16 +175,16 @@ class TaskManager:
         return healthy_path_list, diseased_path_list
 
     """
-        @:param healthy_task: contiene la lista dei healthy_task totali.
-        @:param healthy_tasks: contiene la lista dei healthy_task selezionati per gli utenti sani.
-        @:param disease_tasks: contiene la lista dei healthy_task selezionati per gli utenti malati.
-        @:return: il metodo restituisce i healthy_task che non sono presenti nei vettori healthy e disease.
+        @:param tasks: contiene la lista dei task
+        @:param *params: è formato da una lista di valori i quali sono a loro volta vettori e indicano i task di cui 
+                         calcolare la differenza totale.
+        @:return: il metodo restituisce i tasks che non sono presenti nei vettori passati come argomento.
     """
     @staticmethod
-    def get_tasks_difference(tasks, healthy_tasks, disease_tasks):
-        if not isinstance(healthy_tasks, list):
-            healthy_tasks = [healthy_tasks]
-        if not isinstance(disease_tasks, list):
-            disease_tasks = [disease_tasks]
-        result_list = list(set(tasks).symmetric_difference(healthy_tasks + disease_tasks))
+    def get_tasks_difference(tasks, *params):
+        params = list(params)
+        for i in range(len(params)):
+            if not isinstance(params[i], list):
+                params[i] = [params[i]]
+        result_list = list(set(tasks).symmetric_difference(itertools.chain(*params)))
         return result_list if len(result_list) > 0 else tasks

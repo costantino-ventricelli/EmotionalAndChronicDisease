@@ -2,9 +2,8 @@
 
 import os
 
-from ShallowLearningClassifier import FeatureSelection
 from ShallowLearningClassifier import FeatureExtraction
-from time import time
+from ShallowLearningClassifier import FeatureSelection
 
 
 # Questo esperimento serve a selezionare le feature migliori tramite il random forest.

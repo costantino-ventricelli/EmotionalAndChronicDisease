@@ -1,10 +1,11 @@
 # coding=utf-8
 
+from collections import Counter
+
 import numpy as np
 
-from ShallowLearningClassifier import SVCModel
 from ShallowLearningClassifier import CreateDictDataset
-from collections import Counter
+from ShallowLearningClassifier import SVCModel
 
 
 class ShallowLeaveOneOut:
@@ -18,7 +19,7 @@ class ShallowLeaveOneOut:
         ground_thought = np.zeros(0)
         for id in patient_list:
             train_dataset, test_dataset, train_ground_thought, test_ground_thought, test_task = dataset_creator.get_dataset(id, test_task)
-            print("Patients id: ", id, ", task for id: ", test_task, " dataset len: ", len(test_task))
+            print("Patients id: ", id, ", task for id: ", test_task, " dataset length: ", len(test_task))
             if len(test_dataset) > 0:
                 temp_predicted_values = svm_model.train_test_svc(train_dataset, train_ground_thought, test_dataset)
                 predicted_values = np.concatenate((predicted_values, temp_predicted_values))

@@ -2,12 +2,12 @@
 
 import numpy as np
 import pandas as pd
-
-from .FeaturesSelection import FeatureSelection
-from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import precision_recall_fscore_support as get_four_metrics
 from sklearn.model_selection import RandomizedSearchCV
+from sklearn.svm import SVC
+
+from .FeaturesSelection import FeatureSelection
 
 
 class SVCModel:

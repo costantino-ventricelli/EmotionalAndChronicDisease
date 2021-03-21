@@ -45,7 +45,7 @@ class RTPExtraction:
         @:return: come detto il metodo restituisce:
             - final tensor: tensore tridimensionale contentente i capioni prelevati dai file.
             _ states: array contentente i gli stati corrispondenti di ogni campione rilevato.
-            - len(final_tensor): contiene il numero dei campioni che compongono il tensore.
+            - length(final_tensor): contiene il numero dei campioni che compongono il tensore.
     """
     def extract_rtp_known_state(self, path_list):
         healthy_x = []

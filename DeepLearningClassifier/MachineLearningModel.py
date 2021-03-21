@@ -9,8 +9,8 @@ from keras.layers import Dense
 from keras.layers import LSTM
 from keras.models import Sequential
 from sklearn.metrics import accuracy_score
-from sklearn.metrics import precision_score
 from sklearn.metrics import precision_recall_fscore_support as get_four_metrics
+from sklearn.metrics import precision_score
 
 CLASS_CHANGE = 0.55
 

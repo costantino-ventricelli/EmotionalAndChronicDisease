@@ -1,12 +1,13 @@
 # coding=utf-8
 
 import os
-import pandas as pd
+
 import numpy as np
+import pandas as pd
 
 from DatasetManager import HandManager
-from DatasetManager.Costants import *
 from DatasetManager import TaskManager
+from DatasetManager.Costants import *
 
 FEATURES_DIRECTORY = os.path.join("resource", "features")
 

@@ -38,7 +38,7 @@ class RHSDistanceExtract:
         @:return: come detto il metodo restituisce:
             - final tensor: tensore tridimensionale contentente i capioni prelevati dai file.
             _ states: array contentente i gli stati corrispondenti di ogni campione rilevato.
-            - len(final_tensor): contiene il numero dei campioni che compongono il tensore.
+            - length(final_tensor): contiene il numero dei campioni che compongono il tensore.
     """
     def extract_rhs_known_state(self, path_list):
         healthy_x = []
@@ -54,7 +54,7 @@ class RHSDistanceExtract:
             # Acquisisco lo stato del paziente
             state = HandManager.get_state_from_id(id)
             # Leggo i punti campionati nel file
-            partial_x, partial_y, partial_bs = RHSDistanceExtract.__read_samples_from_file(path)
+            partial_x, partial_y, partial_bs = RHSDistanceExtract.read_samples_from_file(path)
             # Trasformo i punti in segmenti RHS.
             partial_x, partial_y, partial_bs = self.__transform_point_in_rhs(partial_x, partial_y, partial_bs)
             # Raddoppio il numero dei campioni RHS così da ampliare il dataset.
@@ -89,7 +89,7 @@ class RHSDistanceExtract:
         bs_samples = []
         id = HandManager.get_id_from_path(path)
         state = HandManager.get_state_from_id(id)
-        partial_x, partial_y, partial_bs = RHSDistanceExtract.__read_samples_from_file(path)
+        partial_x, partial_y, partial_bs = RHSDistanceExtract.read_samples_from_file(path)
         partial_x, partial_y, partial_bs = self.__transform_point_in_rhs(partial_x, partial_y, partial_bs)
         partial_x, partial_y, partial_bs = self.__extract_subs_from_samples(partial_x, partial_y, partial_bs)
         self.__create_sample_sequence(x_samples, y_samples, bs_samples, partial_x, partial_y, partial_bs)
@@ -124,7 +124,7 @@ class RHSDistanceExtract:
         @:return: restituisco i quattro vettori generati mentre si prelevavano i campioni dal file.
     """
     @staticmethod
-    def __read_samples_from_file(path):
+    def read_samples_from_file(path):
         partial_x = []
         partial_y = []
         partial_bs = []

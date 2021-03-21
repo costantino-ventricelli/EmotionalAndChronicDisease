@@ -1,17 +1,18 @@
 # coding=utf-8
 
-import numpy as np
-import differint.differint as df
-
-from scipy.fft import dct
-from scipy.fft import rfft
-from scipy.fft import irfft
-from sklearn.neighbors import KernelDensity
-from scipy.stats import entropy
-from scipy.signal import argrelmin, argrelmax
-from PyEMD import EMD
-from DatasetManager.Costants import ON_SURFACE, ON_AIR
 from copy import deepcopy
+
+import differint.differint as df
+import numpy as np
+from PyEMD import EMD
+from scipy.fft import dct
+from scipy.fft import irfft
+from scipy.fft import rfft
+from scipy.signal import argrelmin, argrelmax
+from scipy.stats import entropy
+from sklearn.neighbors import KernelDensity
+
+from DatasetManager.Costants import ON_SURFACE, ON_AIR
 
 
 class Features:

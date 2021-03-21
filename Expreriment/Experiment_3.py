@@ -1,9 +1,10 @@
 # coding=utf-8
 
-import numpy as np
-import os
-import csv
 import concurrent.futures as features
+import csv
+import os
+
+import numpy as np
 
 from DatasetManager import HandManager
 from DatasetManager.Costants import *

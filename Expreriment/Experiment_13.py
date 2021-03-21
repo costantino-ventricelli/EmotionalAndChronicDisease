@@ -4,7 +4,6 @@ import csv
 import os
 
 from DatasetManager import HandManager
-from ShallowLearningClassifier import FeatureSelection
 from ShallowLearningClassifier import ShallowLeaveOneOut
 
 METRICS_KEY = 0

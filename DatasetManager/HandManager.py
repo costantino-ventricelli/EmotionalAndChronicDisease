@@ -1,12 +1,13 @@
 # coding=utf-8
 
+import csv
 import os
 import re
-import pandas
-
 from copy import deepcopy
-from numpy import ceil
 
+import numpy as np
+import pandas
+from numpy import ceil
 
 RESOURCE_DIRECTORY = "resource"
 
@@ -199,10 +200,10 @@ class HandManager:
     @staticmethod
     def delete_duplicates(x_axis, y_axis, time_stamp, bottom_status):
         # Genero le nuove liste per la restituzione dei dati
-        x_axis_new = [x_axis[0]]
-        y_axis_new = [y_axis[0]]
-        time_stamp_new = [time_stamp[0]]
-        bottom_status_new = [bottom_status[0]]
+        x_axis_new = []
+        y_axis_new = []
+        time_stamp_new = []
+        bottom_status_new = []
         # Itero per tutti i campioni nelle liste e considero doppione ognuno dei campioni che presenta un timestamp
         # identico a quello del campione precedente.
         for i in range(1, len(x_axis)):
@@ -298,3 +299,41 @@ class HandManager:
         else:
             end_point = len(disease_dataset)
         return healthy_dataset[0: end_point], disease_dataset[0: end_point]
+
+    @staticmethod
+    def get_ids_age(age_min, age_max):
+        healthy_ids = []
+        mild_ids = []
+        low_severity_ids = []
+        with open(os.path.join(RESOURCE_DIRECTORY, "clean_filtered_diagnosis.csv"), 'r') as file:
+            csv_file = csv.reader(file, delimiter=';')
+            header = {'ID': 0, 'ETA': 1, 'DEMENZA': 2, 'TIPO/NOTE': 3}
+            for row in csv_file:
+                row = np.array(row).astype(int)
+                id = row[header.get('ID')]
+                if age_min <= row[header.get('ETA')] <= age_max:
+                    if row[header.get('TIPO/NOTE')] == 0:
+                        healthy_ids.append(id)
+                    elif row[header.get('TIPO/NOTE')] == 1:
+                        mild_ids.append(id)
+                    else:
+                        low_severity_ids.append(id)
+            file.close()
+        end_point = min(len(healthy_ids), len(mild_ids), len(low_severity_ids))
+        return healthy_ids[0: end_point], mild_ids[0: end_point], low_severity_ids[0: end_point]
+
+    @staticmethod
+    def get_dict_dataset(ids, ground_thought, paths):
+        from DatasetManager.Costants import TASKS
+        from DeepLearningClassifier import RHSDistanceExtract
+        dictionary = {}
+        for id in ids:
+            task_dict = {}
+            file_for_id = HandManager.get_all_files_ids_tasks(id, TASKS, paths)
+            for file in file_for_id:
+                x_point, y_point, _ = RHSDistanceExtract.read_samples_from_file(file)
+                task_dict["_" + HandManager.get_task_from_path(file) + "."] = np.reshape(np.column_stack((np.array(x_point).astype(np.float32)
+                                                                                                          , np.array(y_point).astype(np.float32))), (len(x_point), 2))
+            dictionary[id] = {'ground_thought': ground_thought[ids.index(id)],
+                              'tasks': task_dict}
+        return dictionary

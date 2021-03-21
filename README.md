@@ -41,3 +41,14 @@ Ogni esperimento viene richiamato dagli script semplici contenuti nella cartella
 
 Il package SupportVectorMachineClassifier è attualmente in fase di sviluppo, il codice è già commentato e verranno aggiunte le 
 informazioni nel README al termine dello sviluppo.
+
+# Librerie necessarie:
+  - tensorflow;
+  - keras;
+  - matplotlib;
+  - numpy;
+  - EMD-signal;
+  - sklearn;
+  - differint;
+  - pandas;
+  - playsound.

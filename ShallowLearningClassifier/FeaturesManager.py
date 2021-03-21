@@ -1,12 +1,13 @@
 # coding=utf-8
 
-import os
 import csv
+import os
+
 import numpy as np
 
 from DatasetManager import HandManager
-from .FeaturesExtraction import FeatureExtraction
 from DatasetManager.Costants import *
+from .FeaturesExtraction import FeatureExtraction
 
 RESOURCE_DIR = os.path.join("resource", "features")
 

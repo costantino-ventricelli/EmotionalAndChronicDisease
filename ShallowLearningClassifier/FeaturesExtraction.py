@@ -1,12 +1,13 @@
 # coding=utf-8
 
-from .Features import Features
-from DatasetManager.Costants import *
-
-import numpy as np
 import csv
 import os
 import re
+
+import numpy as np
+
+from DatasetManager.Costants import *
+from .Features import Features
 
 TASK_STRUCTURE = {
     'x_axis': 0,

@@ -3,8 +3,8 @@
 import csv
 import os
 
-from DeepLearningClassifier import DeepLeaveOneOut
 from DatasetManager import HandManager
+from DeepLearningClassifier import DeepLeaveOneOut
 from DeepLearningClassifier import RHSDistanceExtract
 
 METRICS_KEY = 0
