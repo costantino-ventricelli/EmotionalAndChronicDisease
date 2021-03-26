@@ -3,6 +3,7 @@
 from random import shuffle
 
 import numpy as np
+import os
 from keras.utils import to_categorical
 from sklearn.preprocessing import StandardScaler
 
@@ -10,6 +11,8 @@ from DatasetManager import TaskManager
 from DatasetManager.Costants import *
 from DeepLearningClassifier import AttentionModel
 from DeepLearningClassifier import MLModel
+
+EXPERIMENT_LOG = os.path.join("resource", "experiment_15.log")
 
 
 class DeepKFoldValidation:
@@ -64,9 +67,17 @@ class DeepKFoldValidation:
                     test_label.append(ground_thought)
             training_dataset, validation_dataset, test_dataset = DeepKFoldValidation.__prepare_dataset(training_dataset, validation_dataset, test_dataset)
             training_label, validation_label, test_label = DeepKFoldValidation.__prepare_label(training_label, validation_label, test_label)
-            ml_model = AttentionModel(training_dataset, training_label, validation_dataset, validation_label, test_dataset, test_label)
-            predicted_values = np.concatenate((predicted_values, np.reshape(ml_model.test_model(), -1)))
-            ground_thoughts = np.concatenate((ground_thoughts, np.reshape(test_label, -1)))
+            try:
+                ml_model = AttentionModel(training_dataset, training_label, validation_dataset, validation_label, test_dataset, test_label)
+                predicted_values = np.concatenate((predicted_values, np.reshape(ml_model.test_model(), -1)))
+                ground_thoughts = np.concatenate((ground_thoughts, np.reshape(test_label, -1)))
+            except ValueError as error:
+                if not os.path.exists(EXPERIMENT_LOG):
+                    file = open(EXPERIMENT_LOG, 'w')
+                else:
+                    file = open(EXPERIMENT_LOG, 'a')
+                file.write("Error: " + str(error) + "\n\ttraining_dataset: " + str(training_dataset.shape) + "\n")
+                file.close()
         return MLModel.evaluate_results(predicted_values, ground_thoughts)
 
     @staticmethod
@@ -89,8 +100,15 @@ class DeepKFoldValidation:
     def __prepare_label(training_label, validation_label, test_label):
         training_label = np.array(to_categorical(training_label)).astype(np.float32)
         validation_label = np.array(to_categorical(validation_label)).astype(np.float32)
-        test_label = np.array(to_categorical(test_label)).astype(np.float32)
+        test_label = DeepKFoldValidation.__prepare_test_label(test_label)
         return training_label, validation_label, test_label
+
+    @staticmethod
+    def __prepare_test_label(labels):
+        test_label = np.zeros((len(labels), 3))
+        for i in range(len(labels)):
+            test_label[i][labels[i]] = 1
+        return test_label
 
     @staticmethod
     def __make_tensor(test_dataset, test_label, train_dataset, train_label, validation_dataset, validation_label):

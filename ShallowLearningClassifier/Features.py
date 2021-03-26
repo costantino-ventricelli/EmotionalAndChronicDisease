@@ -14,9 +14,19 @@ from sklearn.neighbors import KernelDensity
 
 from DatasetManager.Costants import ON_SURFACE, ON_AIR
 
+"""
+    Questa classe calcola tutte le feature parametrizzando le funzioni in modo da calcolare i valori per aria, in superficie,
+    il numero di ordine dalle derivate frazionarie e così via.
+"""
+
 
 class Features:
 
+    """
+        Il metodo restituisce una matrice di punti, coordinate, selezionando solo quelli che vengono richiesti in finding_
+        status. Ovvero PEN_UP -> restituisce solo le coordinate dei punti in cui il pen_status è 0, PEN_DOWN -> restituisce
+        solo le coordinate dei punti in cui il pen_status è 1.
+    """
     @staticmethod
     def get_point(point, pen_status, finding_status):
         new_point = deepcopy(point)
@@ -26,6 +36,9 @@ class Features:
                     del new_point[key][new_point[key].index(item[i])]
         return new_point
 
+    """
+        Il metdo restituisce il displacement generato dai vettori passati in input.
+    """
     @staticmethod
     def get_displacement(x_axis, y_axis):
         result = Features.__get_result_array(len(x_axis), null_value=-1)
@@ -38,6 +51,10 @@ class Features:
                 result.append(result[-1])
         return np.array(result)
 
+    """
+        Il metodo restituisce il displacemente dei punti passati, ma solo dello stato individuato dall'ultimo passato 
+        come per il primo metodo.
+    """
     @staticmethod
     def get_displacement_pen_status(x_axis, y_axis, pen_status, finding_status):
         other_status = Features.get_other_status(finding_status)
@@ -55,6 +72,9 @@ class Features:
                 result.append(0)
         return np.array(result)
 
+    """
+        Questo metodo restituisce il displacement del time stamp passato come vettore di input.
+    """
     @staticmethod
     def get_time_stamp_displacement(time_stamps):
         result = Features.__get_result_array(len(time_stamps), null_value=1)
@@ -66,6 +86,10 @@ class Features:
                 result.append(result[-1])
         return np.array(result)
 
+    """
+        Questo metodo restituisce il displacement del time stamp solo dei punti in cui il pen status è quello indicato 
+        dall'ultimo parametro.
+    """
     @staticmethod
     def get_time_stamp_displacement_pen_status(time_stamps, pen_status, finding_status):
         other_status = Features.get_other_status(finding_status)
@@ -80,6 +104,11 @@ class Features:
                 result.append(1)
         return np.array(result)
 
+    """
+        Restituisce il displacement della velocità selezionado o i punti in superfice o i punti non in superfice, se viene
+        passato un valore altrimenti se il valore di on_surface è None viene calcolato il displacemet della velocità su
+        tutto il vettore di input.
+    """
     @staticmethod
     def get_displacement_velocity(displacements, time_stamps, on_surface=None):
         result = []
@@ -92,6 +121,9 @@ class Features:
             result.append(velocity)
         return np.array(result)
 
+    """
+        Questo metodo si comporta come il precedente solo che questo calcola l'accellerazione.
+    """
     @staticmethod
     def get_displacement_acceleration(velocities, time_stamps, on_surface=None):
         results = []
@@ -104,6 +136,9 @@ class Features:
             results.append(acceleration)
         return np.array(results)
 
+    """
+        Stessa cosa dei due metodi precedenti anche questo si comporta nella stessa maniera ma calcola il jerk.
+    """
     @staticmethod
     def get_jerk(accelerations, time_stamp, on_surface=None):
         result = []
@@ -116,6 +151,9 @@ class Features:
             result.append(jerk)
         return np.array(result)
 
+    """
+        Questo metodo calcola il displacement su un solo asse che sia x o y.
+    """
     @staticmethod
     def get_displacement_axis(axis):
         result = Features.__get_result_array(len(axis), null_value=-1)
@@ -127,6 +165,10 @@ class Features:
                 result.append(result[-1])
         return np.array(result)
 
+    """
+        Questo metodo calcola il displacement su un solo asse però considerando solo i punti in cui il pen status è quello 
+        indicato nell'ultimo parametro.
+    """
     @staticmethod
     def get_displacement_axis_pen_status(axis, pen_status, finding_status):
         result = Features.__get_result_array(len(axis), null_value=-1)
@@ -143,19 +185,31 @@ class Features:
                 result.append(0)
         return np.array(result)
 
+    """
+        Calcolo della trasformata coseno sulla funzione passata.
+    """
     @staticmethod
     def get_discrete_cosine_transform(function):
         return dct(function)
 
+    """
+        Calcolo della trasformata reale sulla funzione passata.
+    """
     @staticmethod
     def get_real_fast_fourier_transform(function):
         return rfft(function)
 
+    """
+        Questo metodo calcola il cepstrum della funzione in input.
+    """
     @staticmethod
     def get_cepstrum(function):
         spectrum = rfft(function)
         return irfft(np.abs(spectrum))
 
+    """
+        Il metodo calcola la derivata frazionaria della funzione il cui grado viene indicato nel parametro alpha.
+    """
     @staticmethod
     def get_fractional_derivative(function, alpha):
         if len(function) == 1:
@@ -171,6 +225,10 @@ class Features:
             array = [null_value]
         return array
 
+    """
+        Il metodo calcola la media dell'ampiezza dei tratti tracciati durante l'esecuzione dei task, cercando solo i tratti
+        in cui il pen status è quello indicato dall'ultimo parametro.
+    """
     @staticmethod
     def get_mean_stroke_size(x_axis, y_axis, pen_status, finding_status):
         result = 0
@@ -181,6 +239,9 @@ class Features:
                 result = total / len(strokes)
         return result
 
+    """
+        Come il metodo precedente questo calcola la media degli stroke ma solo sull'asse passato in input.
+    """
     @staticmethod
     def get_mean_axis_stroke_size(axis, pen_status, finding_status):
         result = 0
@@ -191,6 +252,10 @@ class Features:
                 result = total / len(strokes)
         return result
 
+    """
+        Questo metodo calcola la durata media dei tratti considerando solo i tratti in cui il pen status è quello indicato
+        dall'utlimo parametro.
+    """
     @staticmethod
     def get_mean_stroke_duration(time_stamps, pen_status, finding_status):
         result = 0.00
@@ -199,6 +264,9 @@ class Features:
             result = Features.get_time(pen_status, time_stamps, finding_status) / stroke_number
         return result
 
+    """
+        Questo metodo calcola la velocità media dei tratti il cui stato è quello indicato come sempre dall'ultimo parametro.
+    """
     @staticmethod
     def get_mean_stroke_velocity(x_axis, y_axis, pen_status, time_stamps, finding_status):
         result = 0.00
@@ -230,6 +298,9 @@ class Features:
             result = total / Features.get_stroke(pen_status, finding_status)
         return result
 
+    """
+        Questo metodo calcola il tempo di esecuzione per il pen status passato come ultimo parametro.
+    """
     @staticmethod
     def get_time(pen_status, time_stamps, finding_status):
         total_time = 0.00
@@ -246,6 +317,10 @@ class Features:
                 total_time += stroke[-1] - stroke[0]
         return total_time
 
+    """
+        Questo metodo restituisce il time stamp come funzione di punti selezionando solo il pen status richiesto dall'
+        ultimo parametro.
+    """
     @staticmethod
     def get_time_function(time_stamp, pen_status, finding_status):
         result = []
@@ -254,10 +329,16 @@ class Features:
                 result.append(time_stamp[i])
         return result
 
+    """
+        Questo metodo calcola il tempo di esecuzione senza considerare il pen status.
+    """
     @staticmethod
     def get_total_time(time_stamps):
         return time_stamps[-1] - time_stamps[0]
 
+    """
+        Questo metodo restituisce il tempo d'esecizione normalizzato sul tempo totale.
+    """
     @staticmethod
     def get_total_time_norm(time, total_time):
         result = 0.00
@@ -265,6 +346,9 @@ class Features:
             result = time / total_time
         return result
 
+    """
+        Il metodo restituisce il rapporto tra il tempo speso in aria e quello speso in superficie.
+    """
     @staticmethod
     def get_ratio_time(time_on_surface, time_on_air):
         result = 0.00
@@ -272,6 +356,9 @@ class Features:
             result = time_on_surface / time_on_air
         return result
 
+    """
+        Il metodo restituisce il rapporto tra i tratti in aria e i tratti in superficie.
+    """
     @staticmethod
     def get_pen_status_ratio(pen_status):
         result = 0.00
@@ -281,6 +368,9 @@ class Features:
             result = stroke_on_surface / stroke_in_air
         return result
 
+    """
+        Il metdodo restituisce la media tra i picchi della funzione.
+    """
     @staticmethod
     def get_mean_function_peak(pen_status, function):
         result = 0.00
@@ -299,6 +389,9 @@ class Features:
             result = total / Features.get_stroke(pen_status, None)
         return result
 
+    """
+        Il metodo restituisce il numero di volte in cui il pen status è cambiato.
+    """
     @staticmethod
     def get_changes(function, pen_status):
         result = 0.00
@@ -319,6 +412,9 @@ class Features:
             result = total / Features.get_stroke(pen_status, None)
         return result
 
+    """
+        Il metodo restituisce il numero dei cambi di stato in rapporto al tempo.
+    """
     @staticmethod
     def get_relative_changes(changes, total_time):
         result = 0.00
@@ -326,6 +422,9 @@ class Features:
             result = changes / total_time
         return result
 
+    """
+        Questo metodo calcola la pressione media sui tratti in cui la penna era poggiata sulla superficie del tablet.
+    """
     @staticmethod
     def get_mean_pressure(pressure, pen_status):
         result = 0.00
@@ -344,6 +443,9 @@ class Features:
             result = total / Features.get_stroke(pen_status, ON_SURFACE)
         return result
 
+    """
+        Il metodo calcola la media tra i picchi di pressione, minimi e massimi, e il numero di tratti presenti.
+    """
     @staticmethod
     def get_pressure_changes(pressure, pen_status):
         result = 0.00
@@ -364,6 +466,11 @@ class Features:
             result = total / Features.get_stroke(pen_status, None)
         return result
 
+    """
+        Il metodo calcola la variabilità delle valocità normalizzata su la media della velocità media.
+        Per far questo viene calcolata la somma assoluta tra i cambi di velocità la somma algebrica tra i cambi di velocità.
+        La velocità assoluta viene divisa per il tempo totale e la media della velocità algebrica.
+    """
     @staticmethod
     def get_normalized_velocity_variability(velocity, total_time):
         velocity_change = []
@@ -376,6 +483,10 @@ class Features:
             result = total / (total_time * np.abs(np.mean(velocity_change)))
         return result
 
+    """
+        Il metodo calcola l'entropia di renyi.
+        PS la formula è copiata.
+    """
     @staticmethod
     def __get_renyi_entropy(x_probability, alpha):
         sum = 0.00
@@ -386,6 +497,10 @@ class Features:
             result = 1 / (1 - alpha) * np.log2(sum)
         return result
 
+    """
+        Calcolo del Signal Noise Ratio.
+        PS Formula copiata.
+    """
     @staticmethod
     def get_der_snr(flux):
         flux = np.array(flux)
@@ -399,6 +514,9 @@ class Features:
                 result = float(signal / noise)
         return result
 
+    """
+        Restituisce i punti richiesti nell'utimo parametro del metodo.
+    """
     @staticmethod
     def get_point_on(point, pen_status, finding_status):
         result = []
@@ -409,11 +527,18 @@ class Features:
             result.append(1)
         return result
 
+    """
+        Calcolo della Intrinsic Mode Function
+    """
     @staticmethod
     def get_imf(point):
         point = list(map(float, point))
         return EMD().emd(np.array(point), max_imf=2)
 
+    """
+        Calcolo dell'entropia di Shannon individuando solo i punti passati come pen status, se il pen status è None 
+        vengono considerati tutti i punti passati in input.
+    """
     @staticmethod
     def get_shannon_entropy(point, finding_status=None, pen_status=None):
         if finding_status is not None:
@@ -425,6 +550,9 @@ class Features:
         probability = np.exp(log_probability)
         return entropy(probability)
 
+    """
+        Come il metodo precedente questo calcola l'entropia di Shannon per l'imf (Intrinsic mode function)
+    """
     @staticmethod
     def get_imf_shannon_entropy(imf):
         samples = np.array(imf[0]).reshape(-1, 1)
@@ -434,6 +562,9 @@ class Features:
         probability = np.exp(log_probability)
         return entropy(probability)
 
+    """
+        Come per l'entropia di Shannon questo metodo utilizza la stessa logica per calcolare l'entropia di Renyi sui punti.
+    """
     @staticmethod
     def get_renyi_entropy(point, order, finding_status=None, pen_status=None):
         if finding_status is not None:
@@ -445,6 +576,9 @@ class Features:
         probability = np.exp(log_probability)
         return Features.__get_renyi_entropy(probability, order)
 
+    """
+        Anche qui viene calcolata l'entropia di Renyi ma per l' Intrinsic Mode Function.
+    """
     @staticmethod
     def get_imf_renyi_entropy(imf, order):
         samples = np.array(imf[0]).reshape(-1, 1)
@@ -454,6 +588,9 @@ class Features:
         probability = np.exp(log_probability)
         return Features.__get_renyi_entropy(probability, order)
 
+    """
+        Signal-to-noise ratio.
+    """
     @staticmethod
     def get_snr(point, finding_status=None, pen_status=None):
         if finding_status is not None:

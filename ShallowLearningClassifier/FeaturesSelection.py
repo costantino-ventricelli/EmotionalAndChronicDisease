@@ -15,6 +15,13 @@ from .FeaturesExtraction import FeatureExtraction
 
 FEATURES_DIRECTORY = os.path.join("resource", "features")
 
+"""
+    Questa classe utilizza il random forest per individuare le feature migliori dal dataset, per farlo nel mugliore dei
+    modi ottimizzando i risultati viene applicato il Gird search, il dataset utilizzato in questa situzione è composto
+    da una matrice contenente nelle colonne le feature e nelle righe i vari task selezionati per tutti gli utenti, i task
+    vengono passati nel costruttore.
+"""
+
 
 class FeatureSelection:
 

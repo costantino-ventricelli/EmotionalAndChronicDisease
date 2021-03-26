@@ -12,6 +12,11 @@ from .FeaturesSelection import FeatureSelection
 
 class SVCModel:
 
+    """
+        Il metodo di inizializzazione di questa classe avvia un'ottimizzazione sugli iperparametri per costriuire il SVC,
+        che prendendo in input il dataset con i task passati al costruttore permette di individuare le feature
+        migliori per costruire il classificatore.
+    """
     def __init__(self, healthy_task=None, disease_task=None):
         feature_selection = FeatureSelection(healthy_task, disease_task)
         _, self.__feature_selected = feature_selection.select_feature()
@@ -35,6 +40,11 @@ class SVCModel:
     def get_feature_selected(self):
         return self.__feature_selected
 
+    """
+        Questo metodo permette di utilizzare le fearure selezionate dal random forest per addestrare un SVC il quale a sua
+        volta utilizza gli iperparametri individuati dal costruttore, il metodo quindi avvia l'addestramento del classificatore
+        e avvia il test sul dataset restituendo le 4 metriche.
+    """
     def train_test_svc(self, train_dataset, train_ground_thought, test_dataset):
         support_vector_classifier = SVC(C=self.__best_hyperparameters.get('C'), kernel=self.__best_hyperparameters.get('kernel'),
                                         gamma=self.__best_hyperparameters.get('gamma'), verbose=True, max_iter=-1)
