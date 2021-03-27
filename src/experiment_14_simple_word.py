@@ -4,7 +4,7 @@ import sys
 
 sys.path.append("..")
 
-from Expreriment import ShallowShiftSelection
+from Expreriment import Experiment14
 from playsound import playsound
 
 HEALTHY_STRING = "HEALTHY"
@@ -23,8 +23,8 @@ def main():
                        'word_easy': 'experiment_result/experiment_13/simple_word.csv',
                        'word_hard': 'experiment_result/experiment_13/hard_word.csv'
                        }
-    shallow_selection = ShallowShiftSelection(first_combination=combination, path_directory=path_dictionary,
-                                              saving_file='word_easy_5.csv')
+    shallow_selection = Experiment14(first_combination=combination, path_directory=path_dictionary,
+                                     saving_file='word_easy_5.csv')
     shallow_selection.start_selection()
     playsound('resource/google_glass_success.mp3')
 

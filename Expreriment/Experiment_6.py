@@ -19,7 +19,7 @@ DISEASE_STRING = "DISEASE"
 SQUARE_BRACKETS = '[]'
 
 
-class DeepShiftSelection:
+class Experiment6:
 
     def __init__(self, saving_path, path_dictionary, minimum_samples, samples_len):
         HandManager.set_root_directory()
@@ -32,7 +32,7 @@ class DeepShiftSelection:
             self.__results = {}
         self.__value_tasks = {}
         for key, item in path_dictionary.items():
-            self.__value_tasks[key] = max(DeepShiftSelection.__set_previous_state(item).items())[TASK_INDEX]
+            self.__value_tasks[key] = max(Experiment6.__set_previous_state(item).items())[TASK_INDEX]
 
     """
         Questo metodo permette di eseguire combinazioni tra tutte le categorie selezionandone una inizialmente.
@@ -57,8 +57,8 @@ class DeepShiftSelection:
                         else:
                             healthy_value = [value[HEALTHY_STRING]]
                             disease_value = [value[DISEASE_STRING]]
-                        if not DeepShiftSelection.__is_in(tasks[HEALTHY_STRING], tasks[DISEASE_STRING],
-                                                          healthy_value, disease_value):
+                        if not Experiment6.__is_in(tasks[HEALTHY_STRING], tasks[DISEASE_STRING],
+                                                   healthy_value, disease_value):
                             healthy = tasks[HEALTHY_STRING] + healthy_value
                             disease = tasks[DISEASE_STRING] + disease_value
                             if not self.__is_already_do(healthy, disease):
@@ -96,8 +96,8 @@ class DeepShiftSelection:
             result = {}
             for row in csv_file:
                 key = eval(row[METRICS_KEY])
-                value_dict = {HEALTHY_STRING: DeepShiftSelection.__cast_into_list(row[HEALTHY_INDEX]),
-                              DISEASE_STRING: DeepShiftSelection.__cast_into_list(row[DISEASE_INDEX])}
+                value_dict = {HEALTHY_STRING: Experiment6.__cast_into_list(row[HEALTHY_INDEX]),
+                              DISEASE_STRING: Experiment6.__cast_into_list(row[DISEASE_INDEX])}
                 if key in result.keys():
                     list_of_dict = result.get(key)
                     list_of_dict.append(value_dict)

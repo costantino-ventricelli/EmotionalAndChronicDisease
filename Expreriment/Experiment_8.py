@@ -15,7 +15,7 @@ VALUE_TUPLE = 1
 FEATURES = 3
 
 
-class TaskSelection:
+class Experiment8:
 
     """
         @:param samples_len: contiene la lunghezza che avranno i campioni all'interno dei tensori
@@ -59,7 +59,7 @@ class TaskSelection:
             print("Predicted results: ", Counter(predicted_states).items())
             print("Theoretical states: ", Counter(theoretical_states).items())
             accuracy, precision, recall, f_score = MLModel.evaluate_results(predicted_states, theoretical_states)
-            TaskSelection.__fill_dictionary(self.__best_results, accuracy, f_score, precision, recall, task)
+            Experiment8.__fill_dictionary(self.__best_results, accuracy, f_score, precision, recall, task)
 
     """
         Questo metodo mi permette di avviare la selezione dei tasks partendo da quelli che hanno dato il miglior risultato
@@ -140,7 +140,7 @@ class TaskSelection:
                 print("Predicted results: ", Counter(predicted_states).items())
                 print("Theoretical states: ", Counter(theoretical_states).items())
                 accuracy, precision, recall, f_score = MLModel.evaluate_results(predicted_states, theoretical_states)
-                best_results = TaskSelection.__fill_dictionary(best_results, accuracy, precision, recall, f_score, tasks)
+                best_results = Experiment8.__fill_dictionary(best_results, accuracy, precision, recall, f_score, tasks)
         return best_results
 
     """

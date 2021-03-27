@@ -4,7 +4,7 @@ import sys
 sys.path.append("..")
 
 
-from Expreriment import ShallowCategoryTaskExtraction
+from Expreriment import Experiment13
 from DatasetManager.Costants import *
 
 
@@ -32,7 +32,7 @@ def main():
 
 
 def selection(saving_path, task, category):
-    extractor = ShallowCategoryTaskExtraction(saving_path, task, category)
+    extractor = Experiment13(saving_path, task, category)
     extractor.start_healthy_selection()
 
 

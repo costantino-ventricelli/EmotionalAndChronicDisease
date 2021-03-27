@@ -20,7 +20,7 @@ FEATURES = 3
 EXPERIMENT_RESULT = "experiment_result"
 
 
-class LeaveOneOutExperiment:
+class Experiment5:
 
     def __init__(self, dataset):
         self.__dataset = dataset

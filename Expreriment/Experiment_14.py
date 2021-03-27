@@ -25,14 +25,14 @@ RECALL_INDEX = 2
 F_SCORE_INDEX = 3
 
 
-class ShallowShiftSelection:
+class Experiment14:
 
     def __init__(self, first_combination, path_directory, saving_file):
         HandManager.set_root_directory()
         healthy_tasks = None
         disease_tasks = None
         self.__saving_path = os.path.join(EXPERIMENT_DIRECTORY, saving_file)
-        self.__results = ShallowShiftSelection.__set_previous_state(saving_file)
+        self.__results = Experiment14.__set_previous_state(saving_file)
         for key, value in first_combination.items():
             self.__task_category = key
             healthy_tasks = value[HEALTHY_STRING]
@@ -45,7 +45,7 @@ class ShallowShiftSelection:
         self.__disease_tasks = disease_tasks
         self.__base_results = {}
         for _, path in path_directory.items():
-            previous_state = ShallowShiftSelection.__set_previous_state(path)
+            previous_state = Experiment14.__set_previous_state(path)
             key = max(previous_state)
             self.__base_results[key] = previous_state[key]
         if not os.path.exists(EXPERIMENT_DIRECTORY):
@@ -81,8 +81,8 @@ class ShallowShiftSelection:
                 for row in csv_file:
                     key = eval(row[METRICS_KEY])
                     key = (key[F_SCORE_INDEX], key[RECALL_INDEX], key[PRECISION_INDEX], key[ACCURACY_INDEX])
-                    value_dict = {HEALTHY_STRING: ShallowShiftSelection.__cast_into_list(row[HEALTHY_INDEX]),
-                                  DISEASE_STRING: ShallowShiftSelection.__cast_into_list(row[DISEASE_INDEX])}
+                    value_dict = {HEALTHY_STRING: Experiment14.__cast_into_list(row[HEALTHY_INDEX]),
+                                  DISEASE_STRING: Experiment14.__cast_into_list(row[DISEASE_INDEX])}
                     if key in result.keys():
                         list_of_dict = result.get(key)
                         list_of_dict.append(value_dict)

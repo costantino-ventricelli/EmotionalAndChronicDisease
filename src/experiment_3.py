@@ -3,7 +3,7 @@
 import sys
 sys.path.append('..')
 
-from Expreriment.Experiment_3 import IndependentTaskSelection
+from Expreriment.Experiment_3 import Experiment3
 
 
 # Questo esperimento è il più dispendioso in assoluto, in fatti non è mai stato portato a termine, questo perché lo scopo
@@ -11,7 +11,7 @@ from Expreriment.Experiment_3 import IndependentTaskSelection
 
 
 def main():
-    IndependentTaskSelection(50, 2500)
+    Experiment3(50, 2500)
 
 
 if __name__ == '__main__':

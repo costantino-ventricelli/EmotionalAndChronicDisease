@@ -15,7 +15,7 @@ VALUE_TUPLE = 1
 FEATURES = 3
 
 
-class IndependentTaskSelection:
+class Experiment3:
 
     def __init__(self, samples_len, minimum_samples):
         self.__tasks = TASKS
@@ -70,7 +70,7 @@ class IndependentTaskSelection:
                     else:
                         validation = healthy_validation
                     with features.ThreadPoolExecutor() as executor:
-                        features_completed = {executor.submit(IndependentTaskSelection.__execute_id_analysis, disease_paths,
+                        features_completed = {executor.submit(Experiment3.__execute_id_analysis, disease_paths,
                                                               healthy_paths, validation, test_id, test_tasks, self.__file_manager,
                                                               self.__minimum_samples, self.__feature_extraction, self.__samples_len): test_id for test_id in
                                               self.__ids}
@@ -103,7 +103,7 @@ class IndependentTaskSelection:
             # Qui ottengo i tensori per training, validation e test con i rispettivi vettori delle eti-
             # chette di stato.
             training_tensor, training_states, validation_tensor, validation_states, test_tensor, test_states = \
-                IndependentTaskSelection.__extract_rhs_segment(validation, healthy_paths_deleted, disease_paths_deleted, test_paths, features_extraction, samples_len)
+                Experiment3.__extract_rhs_segment(validation, healthy_paths_deleted, disease_paths_deleted, test_paths, features_extraction, samples_len)
             # Il stitema viene addestrato validato e testato, i risultati del test vengono messi nel vettore
             # generale che riporterà i rislutati complessivi del leave-one-out.
             try:

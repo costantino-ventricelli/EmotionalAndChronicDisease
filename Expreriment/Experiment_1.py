@@ -12,7 +12,7 @@ VALIDATION_FILE = 12
 TEST_FILE = 10
 
 
-class Experiment:
+class Experiment1:
 
     def __init__(self):
         self.__ml_model = None

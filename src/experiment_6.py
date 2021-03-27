@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from Expreriment import DeepShiftSelection
+from Expreriment import Experiment6
 
 HEALTHY_STRING = "HEALTHY"
 DISEASE_STRING = "DISEASE"
@@ -30,7 +30,7 @@ def main():
     saving_path = 'resource/test_dictionary_file.csv'
     combination = {'matrix': {HEALTHY_STRING: ['_s2.', '_m1.'],
                               DISEASE_STRING: ['_w.', '_m2.']}}
-    experiment = DeepShiftSelection(None, path_dictionary, 2500, 50)
+    experiment = Experiment6(None, path_dictionary, 2500, 50)
     experiment.start_shift_selection(combination, "matrix_test")
 
 

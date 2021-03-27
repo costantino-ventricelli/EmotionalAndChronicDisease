@@ -12,7 +12,7 @@ METRICS_KEY = 0
 TASKS_KEY = 1
 
 
-class SelectTask:
+class Experiment4:
 
     def __init__(self, saving_path, minimum_samples, samples_len, feature_extraction, feature):
         HandManager.set_root_directory()

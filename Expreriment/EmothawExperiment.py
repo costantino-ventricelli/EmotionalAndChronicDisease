@@ -5,7 +5,7 @@ from collections import Counter
 from DatasetManager.HandManager import HandManager
 from DatasetManager.TaskManager import TaskManager
 from DeepLearningClassifier.RHSDistanceExtraction import RHSDistanceExtract
-from Expreriment.Experiment_1 import Experiment
+from Expreriment.Experiment_1 import Experiment1
 
 NUM_FILE_SAMPLES = 50
 
@@ -21,7 +21,7 @@ class EmothawExperiment:
         self.__disease_task = disease_task
         self.__test_task = test_task
         self.__file_samples = file_samples
-        experiment = Experiment()
+        experiment = Experiment1()
         experiment.execute_experiment("Dataset", self.__healthy_task, self.__disease_task, self.__test_task,
                                       self.__file_samples, "emothaw_experiment.txt")
         self.__ml_model = experiment.get_ml_model()

@@ -15,7 +15,7 @@ DISEASE_STRING = "DISEASE"
 EXPERIMENT_DIRECTORY = os.path.join("experiment_result", "experiment_13")
 
 
-class ShallowCategoryTaskExtraction:
+class Experiment13:
 
     def __init__(self, prev_file, tasks, category):
         HandManager.set_root_directory()

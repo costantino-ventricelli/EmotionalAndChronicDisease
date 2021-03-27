@@ -15,7 +15,7 @@ HEALTHY_STRING = "HEALTHY"
 DISEASE_STRING = "DISEASE"
 
 
-class DeepCategoryTaskExtraction:
+class Experiment2:
 
     """
         @:param prev_file: contiene il percorso del file frutto di un esecuzione precedente, nel momento in cui viene

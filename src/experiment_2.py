@@ -2,7 +2,7 @@
 import sys
 sys.path.append("..")
 
-from Expreriment import DeepCategoryTaskExtraction
+from Expreriment import Experiment2
 from DatasetManager.Costants import *
 
 SAMPLES_LEN = 50
@@ -20,8 +20,8 @@ def main():
     # Rieseguendo lo stesso codice con le diverse configurazioni si otterranno dei file riportanti tutte le combinazioni
     # possibili per i task inviati con i relativi risultati in forma di metriche (accuracy, precision, recall, fscore).
     # I risultati sono disponibili nel percorso experiment_result/experiment_2.
-    executor = DeepCategoryTaskExtraction(None, [HELLO, SIGNATURE_1, SIGNATURE_2, LE, MOM, WINDOW],
-                                          MINIMUM_SAMPLES, SAMPLES_LEN, "simple_word")
+    executor = Experiment2(None, [HELLO, SIGNATURE_1, SIGNATURE_2, LE, MOM, WINDOW],
+                           MINIMUM_SAMPLES, SAMPLES_LEN, "simple_word")
     executor.start_healthy_selection()
 
 
