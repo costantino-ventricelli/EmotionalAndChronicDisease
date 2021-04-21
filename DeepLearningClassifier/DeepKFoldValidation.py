@@ -9,8 +9,8 @@ from sklearn.preprocessing import StandardScaler
 
 from DatasetManager import TaskManager
 from DatasetManager.Costants import *
-from DeepLearningClassifier import AttentionModel
-from DeepLearningClassifier import MLModel
+from .MachineLearningModelAttentionLayer import NetworkWithAttention
+from .MachineLearningModel import MLModel
 
 EXPERIMENT_LOG = os.path.join("resource", "experiment_15.log")
 
@@ -68,7 +68,7 @@ class DeepKFoldValidation:
             training_dataset, validation_dataset, test_dataset = DeepKFoldValidation.__prepare_dataset(training_dataset, validation_dataset, test_dataset)
             training_label, validation_label, test_label = DeepKFoldValidation.__prepare_label(training_label, validation_label, test_label)
             try:
-                ml_model = AttentionModel(training_dataset, training_label, validation_dataset, validation_label, test_dataset, test_label)
+                ml_model = NetworkWithAttention(training_dataset, training_label, validation_dataset, validation_label, test_dataset, test_label)
                 predicted_values = np.concatenate((predicted_values, np.reshape(ml_model.test_model(), -1)))
                 ground_thoughts = np.concatenate((ground_thoughts, np.reshape(test_label, -1)))
             except ValueError as error:

@@ -9,6 +9,8 @@ sys.path.append('..')
 from Expreriment import Experiment16
 from DatasetManager.Costants import *
 
+# pip3 install EMD-signal differint playsound
+
 matrix = [MATRIX_1, MATRIX_2, MATRIX_3]
 drawing = [CLOCK, PENTAGON, SQUARE]
 solid_lines = [H_POINT, V_POINT, COPY_SPIRAL, TRACED_SPIRAL]
@@ -24,6 +26,8 @@ EXPERIMENT_RESULT = os.path.join("experiment_result", "experiment_17")
 
 
 def main():
+    if not os.path.exists(EXPERIMENT_RESULT):
+        os.mkdir(EXPERIMENT_RESULT)
     experiment = Experiment16(age_min=75, age_max=100)
     for healthy_task in matrix:
         for mild_task in matrix:

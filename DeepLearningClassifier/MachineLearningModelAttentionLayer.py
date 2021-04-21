@@ -1,29 +1,25 @@
 # coding=utf-8
 
 import numpy as np
+from keras.layers import Layer
 from keras.layers import Bidirectional
 from keras.layers import Dense
 from keras.layers import LSTM
+from keras.layers import Activation
+from keras.layers import Lambda
+from keras.layers import concatenate
+from keras.layers import dot
 from keras.models import Sequential
 from keras_preprocessing.sequence import pad_sequences
 
-from .AttentionLayer import Attention
 
-
-class AttentionModel:
+class NetworkWithAttention:
     """
-        Il metodo di init dell ML-model imposta la rete neurale ricorrente bidirezionale con layer LSTM, la rete è composta
-        da 16 layer e da un layer denso che provvederà ad applicare le trasformazioni necessarie provenienti dai layer
-        precedenti per influenzare lo stato che verrà trasmesso agli stati successivi, dopo di che il modello avvia il
-        training ed il src sui dati passati al costruttore.
-        @:param tensor_training: Contiene il tensore tridimensonale che verrà utilizzato come input per la fase di training
-            della rete.
-        @:param states_training: Contiene la lista degli stati dei pazienti passata alla rete neurale come secondo parametro
-            per il training.
-        @:param tensor_validation: Contiene il tensore tridimensionale che verrà utilizzato come input per la fase di
-            validation.
-        @:param states_validation: Contiene la lista degli stati dei pazienti passata alla rete neurale come secondo
-            parametro per la validazione
+        La classe costruisce una rete profonda:
+        - LSTM a 32 unità;
+        - Denso a 32 unità;
+        - Attention a 32 unità;
+        - Denso a 3 unità.
     """
     def __init__(self, tensor_training, states_training, tensor_validation, states_validation, tensor_test, states_test):
         # Verifico che le i valori siano stati correttamente passati alla funzione
@@ -34,7 +30,7 @@ class AttentionModel:
         tensor_training = pad_sequences(tensor_training).astype(np.float32)
         tensor_validation = pad_sequences(tensor_validation).astype(np.float32)
         self.__tensor_test = pad_sequences(tensor_test).astype(np.float32)
-        tensor_training, tensor_validation, self.__tensor_test = AttentionModel.__normalize_tensor(tensor_training, tensor_validation, self.__tensor_test)
+        tensor_training, tensor_validation, self.__tensor_test = NetworkWithAttention.__normalize_tensor(tensor_training, tensor_validation, self.__tensor_test)
         states_training = np.array(states_training).astype(np.float32)
         states_validation = np.array(states_validation).astype(np.float32)
         self.__states_test = np.array(states_test).astype(np.float32)
@@ -61,7 +57,7 @@ class AttentionModel:
         # batch.)
         self.__history = self.__model.fit(tensor_training, states_training,
                                           epochs=50,
-                                          batch_size=64,
+                                          batch_size=1,
                                           validation_data=(tensor_validation, states_validation), verbose=1)
         # Vengono presentate le informazioni relative allo svolgimento di training e validazione.
         print(self.__model.summary())
@@ -77,9 +73,9 @@ class AttentionModel:
     @staticmethod
     def __normalize_tensor(training, validation, test):
         max_len = max(training.shape[1], validation.shape[1], test.shape[1])
-        training = AttentionModel.__fill_tensor(training, max_len)
-        validation = AttentionModel.__fill_tensor(validation, max_len)
-        test = AttentionModel.__fill_tensor(test, max_len)
+        training = NetworkWithAttention.__fill_tensor(training, max_len)
+        validation = NetworkWithAttention.__fill_tensor(validation, max_len)
+        test = NetworkWithAttention.__fill_tensor(test, max_len)
         return training, validation, test
 
     @staticmethod
@@ -92,3 +88,36 @@ class AttentionModel:
             tensor[0] = first_row
         tensor = pad_sequences(tensor).astype(np.float32)
         return tensor
+
+
+class Attention(Layer):
+
+    def __init__(self, neurons=128, **kwargs):
+        super().__init__(**kwargs)
+        self.neurons = neurons
+
+    def __call__(self, hidden_states):
+        """
+        Many-to-one attention mechanism for Keras.
+        @param hidden_states: 3D tensor with shape (batch_size, time_steps, input_dim).
+        @return: 2D tensor with shape (batch_size, 128)
+        @author: felixhao28.
+        """
+        hidden_size = int(hidden_states.shape[2])
+        # Inside dense layer
+        #              hidden_states            dot               W            =>           score_first_part
+        # (batch_size, time_steps, hidden_size) dot (hidden_size, hidden_size) => (batch_size, time_steps, hidden_size)
+        # W is the trainable weight matrix of attention Luong's multiplicative style score
+        score_first_part = Dense(hidden_size, use_bias=False, name='attention_score_vec')(hidden_states)
+        #            score_first_part           dot        last_hidden_state     => attention_weights
+        # (batch_size, time_steps, hidden_size) dot   (batch_size, hidden_size)  => (batch_size, time_steps)
+        h_t = Lambda(lambda x: x[:, -1, :], output_shape=(hidden_size,), name='last_hidden_state')(
+            hidden_states)
+        score = dot([score_first_part, h_t], [2, 1], name='attention_score')
+        attention_weights = Activation('softmax', name='attention_weight')(score)
+        # (batch_size, time_steps, hidden_size) dot (batch_size, time_steps) => (batch_size, hidden_size)
+        context_vector = dot([hidden_states, attention_weights], [1, 1], name='context_vector')
+        pre_activation = concatenate([context_vector, h_t], name='attention_output')
+        attention_vector = Dense(self.neurons, use_bias=False, activation='tanh', name='attention_vector')(
+            pre_activation)
+        return attention_vector

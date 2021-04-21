@@ -11,7 +11,9 @@ from DeepLearningClassifier import DeepKFoldValidation
 class Experiment16:
 
     def __init__(self, age_min, age_max):
+        HandManager.set_root_directory()
         healthy_ids, mild_ids, disease_ids = HandManager.get_ids_age(age_min, age_max)
+        print(len(healthy_ids) + len(mild_ids) + len(disease_ids))
         self.__file_manager = HandManager("Dataset")
         self.__file_paths = self.__file_manager.get_files_path()
         self.__dataset = HandManager.get_dict_dataset(healthy_ids + mild_ids + disease_ids,
