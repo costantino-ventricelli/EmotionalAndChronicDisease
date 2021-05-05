@@ -1,12 +1,12 @@
 # coding=utf-8
 
+import os
 from collections import Counter
 from copy import deepcopy
 
 import numpy as np
-import os
 
-from DatasetManager import FileManager
+from DatasetManager import HandManager
 from DatasetManager.Costants import *
 from DeepLearningClassifier import *
 
@@ -15,7 +15,7 @@ VALUE_TUPLE = 1
 FEATURES = 3
 
 
-class TaskSelection:
+class Experiment8:
 
     """
         @:param samples_len: contiene la lunghezza che avranno i campioni all'interno dei tensori
@@ -29,12 +29,12 @@ class TaskSelection:
         self.__samples_len = samples_len
         self.__minimum_samples = minimum_samples
         self.__best_results = {}
-        self.__file_manager = FileManager("Dataset")
+        self.__file_manager = HandManager("Dataset")
         self.__feature_extraction = RHSDistanceExtract(minimum_samples, samples_len)
         # Con questo loop posso avviare apprendimenti su ogni tasks del dataset, ciò mi permetterà di individiare il tasks
         # migliore da cui iniziare la selezione.
         for task in self.__tasks:
-            ids = FileManager.get_all_ids()
+            ids = HandManager.get_all_ids()
             predicted_states = np.zeros(0)
             theoretical_states = np.zeros(0)
             for test_id in ids:
@@ -59,14 +59,14 @@ class TaskSelection:
             print("Predicted results: ", Counter(predicted_states).items())
             print("Theoretical states: ", Counter(theoretical_states).items())
             accuracy, precision, recall, f_score = MLModel.evaluate_results(predicted_states, theoretical_states)
-            TaskSelection.__fill_dictionary(self.__best_results, accuracy, f_score, precision, recall, task)
+            Experiment8.__fill_dictionary(self.__best_results, accuracy, f_score, precision, recall, task)
 
     """
         Questo metodo mi permette di avviare la selezione dei tasks partendo da quelli che hanno dato il miglior risultato
         nell inizializzazione.
     """
     def execute_simple_task_selection(self):
-        file = open(os.path.join('experiment_result', 'log_file.txt'), 'w')
+        file = open(os.path.join('experiment_result', 'simple_task_selection.txt'), 'w')
         # Selezioni i tasks migliori con i rispettivi risultati.
         previous_max = max(self.__best_results.items())
         actual_tuple = max(self.__best_results.items())
@@ -86,7 +86,7 @@ class TaskSelection:
             actual_tuple = max(best_results.items())
             if previous_max[KEY_TUPLE] <= actual_tuple[KEY_TUPLE]:
                 previous_max = deepcopy(actual_tuple)
-            file = open(os.path.join('experiment_result', 'log_file.txt'), 'a')
+            file = open(os.path.join('experiment_result', 'experiment_8.txt'), 'a')
             file.write("Previous max: " + str(previous_max) + "\n")
             file.write("Actual max: " + str(actual_tuple) + "\n")
             file.write("Results for tasks: " + str(best_results.items()) + "\n\n")
@@ -109,10 +109,10 @@ class TaskSelection:
                 # Aggiungo il tasks alla lista di nuovi tasks da analizzare.
                 tasks.append(task)
                 print("Selected tasks: ", tasks)
-                file = open(os.path.join('experiment_result', 'log_file.txt'), 'a')
+                file = open(os.path.join('experiment_result', 'simple_task_selection.txt'), 'a')
                 file.write("Selected tasks: " + str(tasks) + "\n")
                 file.close()
-                ids = FileManager.get_all_ids()
+                ids = HandManager.get_all_ids()
                 theoretical_states = np.zeros(0)
                 predicted_states = np.zeros(0)
                 for test_id in ids:
@@ -140,7 +140,7 @@ class TaskSelection:
                 print("Predicted results: ", Counter(predicted_states).items())
                 print("Theoretical states: ", Counter(theoretical_states).items())
                 accuracy, precision, recall, f_score = MLModel.evaluate_results(predicted_states, theoretical_states)
-                best_results = TaskSelection.__fill_dictionary(best_results, accuracy, precision, recall, f_score, tasks)
+                best_results = Experiment8.__fill_dictionary(best_results, accuracy, precision, recall, f_score, tasks)
         return best_results
 
     """
@@ -153,8 +153,8 @@ class TaskSelection:
         for task in tasks:
             paths += TaskManager.get_task_files(task, self.__file_manager.get_files_path())
         # Filtro i file in base alla dimensione degli stessi
-        paths = FileManager.filter_file(paths, min_dim=self.__minimum_samples)
-        test_paths = FileManager.get_all_file_of_id(test_id, paths)
+        paths = HandManager.filter_file(paths, min_dim=self.__minimum_samples)
+        test_paths = HandManager.get_all_file_of_id(test_id, paths)
         # Elimino i file del test da quelli usati per il training e la validazione.
         for i in range(len(test_paths)):
             if test_paths[i] in paths:

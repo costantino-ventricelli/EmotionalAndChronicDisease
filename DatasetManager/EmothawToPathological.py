@@ -8,6 +8,7 @@
    mento dello stato di salute attraverso biometria. Ovvero un modello di Machine Learning adattato nell'anno accademico
    2020 per poter eseguire src su altri dataset.
 """
+
 import csv
 import os
 import pathlib
@@ -28,7 +29,7 @@ EMOTHAW_FILE_STRUCTURE = {
     5: 'azimuth',
     6: 'altitude'
 }
-PATHOLOGICAL_FILE_STRUCTURE = {
+HANDS = {
     'x_axis': 0,
     'y_axis': 1,
     'pressure': 2,
@@ -165,7 +166,7 @@ class ConverterEmothawToPathological:
                     # Converto il tutto nel formato richiesto
                     item = ConverterEmothawToPathological.__convert_csv_item_emothaw(csv_line[j], j)
                     # Salvo il valore nel vettore utilizzando i dizionari di associazione generati all'inizio del file.
-                    new_csv_line[PATHOLOGICAL_FILE_STRUCTURE.get(EMOTHAW_FILE_STRUCTURE.get(j))] = item
+                    new_csv_line[HANDS.get(EMOTHAW_FILE_STRUCTURE.get(j))] = item
                 new_file.writerow(new_csv_line)
             else:
                 print("INVALID LINE")

@@ -1,24 +1,25 @@
 # coding=utf-8
 
+import csv
 import os
 import re
-import pandas
-
 from copy import deepcopy
-from numpy import ceil
 
+import numpy as np
+import pandas
+from numpy import ceil
 
 RESOURCE_DIRECTORY = "resource"
 
 
-class FileManager:
+class HandManager:
 
     def __init__(self, dataset_name):
-        FileManager.set_root_directory()
+        HandManager.set_root_directory()
         self.__dataset = os.path.join(RESOURCE_DIRECTORY, dataset_name)
-        self.__dataset_directory = FileManager.get_path_directories(self.__dataset)
-        self.__patient_paths = FileManager.__get_patient_paths(self.__dataset_directory)
-        self.__files_path = FileManager.__get_files_from_paths(self.__patient_paths)
+        self.__dataset_directory = HandManager.get_path_directories(self.__dataset)
+        self.__patient_paths = HandManager.__get_patient_paths(self.__dataset_directory)
+        self.__files_path = HandManager.__get_files_from_paths(self.__patient_paths)
 
     @staticmethod
     def set_root_directory():
@@ -47,13 +48,12 @@ class FileManager:
     """
     @staticmethod
     def get_state_from_id(id):
-        healthy, disease = FileManager.get_healthy_disease_list()
+        healthy, disease = HandManager.get_healthy_disease_list()
         if id in healthy:
             state = 0
         else:
             state = 1
         return state
-
 
     """
         @:param main_directory_path: contiene il path per la directory generale del dataset
@@ -100,7 +100,7 @@ class FileManager:
         try:
             # Itero su tutte le directory del dataset prelevando tutti i file di tasks con estensione txt.
             for patient in patients_directory:
-                files = FileManager.get_files_from_path(patient, files)
+                files = HandManager.get_files_from_path(patient, files)
         except OSError as er:
             raise er
         return files
@@ -136,7 +136,7 @@ class FileManager:
     def get_ids_from_paths(paths):
         ids = []
         for path in paths:
-            ids.append(FileManager.get_id_from_path(path))
+            ids.append(HandManager.get_id_from_path(path))
         return ids
 
     @staticmethod
@@ -190,7 +190,7 @@ class FileManager:
         return ids
 
     """
-        @:param x_axis: è la lista dei punti campionati per l'asse x
+        @:param axis: è la lista dei punti campionati per l'asse x
         @:param y_axis: è la lista dei punti campionati per l'asse y
         @:param time_stamp: è la lista dei punti campionati per il timestamp
         @:param pen_status: è la lista dei punti campionati come bottom status nella scrittura dei tasks.
@@ -200,10 +200,10 @@ class FileManager:
     @staticmethod
     def delete_duplicates(x_axis, y_axis, time_stamp, bottom_status):
         # Genero le nuove liste per la restituzione dei dati
-        x_axis_new = [x_axis[0]]
-        y_axis_new = [y_axis[0]]
-        time_stamp_new = [time_stamp[0]]
-        bottom_status_new = [bottom_status[0]]
+        x_axis_new = []
+        y_axis_new = []
+        time_stamp_new = []
+        bottom_status_new = []
         # Itero per tutti i campioni nelle liste e considero doppione ognuno dei campioni che presenta un timestamp
         # identico a quello del campione precedente.
         for i in range(1, len(x_axis)):
@@ -235,7 +235,7 @@ class FileManager:
         min_dim += 1
         filtered_paths = []
         for path in paths:
-            if FileManager.get_file_rows(path) >= min_dim:
+            if HandManager.get_file_rows(path) >= min_dim:
                 filtered_paths.append(path)
         return filtered_paths
 
@@ -246,7 +246,7 @@ class FileManager:
     def get_all_file_of_id(id, paths):
         id_files = []
         for path in paths:
-            if id == FileManager.get_id_from_path(path):
+            if id == HandManager.get_id_from_path(path):
                 id_files.append(path)
         return id_files
 
@@ -264,7 +264,7 @@ class FileManager:
         if not isinstance(tasks, list):
             tasks = [tasks]
         for path in paths:
-            if FileManager.get_id_from_path(path) in ids and ('_' + FileManager.get_task_from_path(path) + '.') in tasks:
+            if HandManager.get_id_from_path(path) in ids and ('_' + HandManager.get_task_from_path(path) + '.') in tasks:
                 files.append(path)
         return files
 
@@ -277,7 +277,7 @@ class FileManager:
     @staticmethod
     def delete_files(id, file_list):
         new_list = deepcopy(file_list)
-        to_delete = FileManager.get_all_file_of_id(id, file_list)
+        to_delete = HandManager.get_all_file_of_id(id, file_list)
         for file in to_delete:
             del new_list[new_list.index(file)]
         return new_list
@@ -293,21 +293,47 @@ class FileManager:
         return healthy_validation if healthy_validation < disease_validation else disease_validation
 
     @staticmethod
-    def log_results(accuracy_file, evaluation_result, f1_score_file, precision_file, recall_file, save_file_path,
-                    test_accuracy, test_f_score, test_precision, test_recall, wrong_classified, wrong_paths):
-        with open(save_file_path, 'w') as file:
-            file.write("loss_value: " + str(evaluation_result[0]) + "\n")
-            file.write("accuracy_value: " + str(evaluation_result[1]) + "\n")
-            file.write("Test accuracy: " + str(test_accuracy) + "\n")
-            file.write("Test precision: " + str(test_precision) + "\n")
-            file.write("Test recall: " + str(test_recall) + "\n")
-            file.write("Test f1_score: " + str(test_f_score) + "\n")
-            file.write("Wrong file classified total: " + str(wrong_classified) + "\n")
-            file.write("Accuracy file classified: " + str(accuracy_file) + "\n")
-            file.write("Precision file classified: " + str(precision_file) + "\n")
-            file.write("Recall file classified: " + str(recall_file) + "\n")
-            file.write("F1 score file classified: " + str(f1_score_file) + "\n")
-            file.write("Wrong file classified: \n")
-            for path in wrong_paths:
-                file.write("\t" + path + "\n")
+    def balance_dataset(healthy_dataset, disease_dataset):
+        if len(healthy_dataset) < len(disease_dataset):
+            end_point = len(healthy_dataset)
+        else:
+            end_point = len(disease_dataset)
+        return healthy_dataset[0: end_point], disease_dataset[0: end_point]
+
+    @staticmethod
+    def get_ids_age(age_min, age_max):
+        healthy_ids = []
+        mild_ids = []
+        low_severity_ids = []
+        with open(os.path.join(RESOURCE_DIRECTORY, "clean_filtered_diagnosis.csv"), 'r') as file:
+            csv_file = csv.reader(file, delimiter=';')
+            header = {'ID': 0, 'ETA': 1, 'DEMENZA': 2, 'TIPO/NOTE': 3}
+            for row in csv_file:
+                row = np.array(row).astype(int)
+                id = row[header.get('ID')]
+                if age_min <= row[header.get('ETA')] <= age_max:
+                    if row[header.get('TIPO/NOTE')] == 0:
+                        healthy_ids.append(id)
+                    elif row[header.get('TIPO/NOTE')] == 1:
+                        mild_ids.append(id)
+                    else:
+                        low_severity_ids.append(id)
             file.close()
+        end_point = min(len(healthy_ids), len(mild_ids), len(low_severity_ids))
+        return healthy_ids[0: end_point], mild_ids[0: end_point], low_severity_ids[0: end_point]
+
+    @staticmethod
+    def get_dict_dataset(ids, ground_thought, paths):
+        from DatasetManager.Costants import TASKS
+        from DeepLearningClassifier import RHSDistanceExtract
+        dictionary = {}
+        for id in ids:
+            task_dict = {}
+            file_for_id = HandManager.get_all_files_ids_tasks(id, TASKS, paths)
+            for file in file_for_id:
+                x_point, y_point, _ = RHSDistanceExtract.read_samples_from_file(file)
+                task_dict["_" + HandManager.get_task_from_path(file) + "."] = np.reshape(np.column_stack((np.array(x_point).astype(np.float32)
+                                                                                                          , np.array(y_point).astype(np.float32))), (len(x_point), 2))
+            dictionary[id] = {'ground_thought': ground_thought[ids.index(id)],
+                              'tasks': task_dict}
+        return dictionary

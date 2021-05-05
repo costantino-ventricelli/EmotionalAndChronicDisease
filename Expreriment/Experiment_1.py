@@ -2,7 +2,7 @@
 
 from os import path
 
-from DatasetManager import FileManager
+from DatasetManager import HandManager
 from DeepLearningClassifier import *
 
 NUM_FILE_SAMPLES = 50
@@ -12,14 +12,14 @@ VALIDATION_FILE = 12
 TEST_FILE = 10
 
 
-class Experiment:
+class Experiment1:
 
     def __init__(self):
         self.__ml_model = None
 
     def execute_experiment(self, dataset, healthy_tasks, disease_tasks, test_tasks, minimum_samples, log_file):
         log_file = path.join("experiment_result", log_file)
-        file_manager = FileManager(dataset)
+        file_manager = HandManager(dataset)
         file_paths = file_manager.get_files_path()
         minimum_row_file = minimum_samples + 1
         print("Healthy tasks: ", healthy_tasks)
@@ -56,8 +56,8 @@ class Experiment:
         theoretical_results = []
         with open(log_file, 'w') as file:
             for test_path in test_paths:
-                id = FileManager.get_id_from_path(test_path)
-                state = FileManager.get_state_from_id(id)
+                id = HandManager.get_id_from_path(test_path)
+                state = HandManager.get_state_from_id(id)
                 file.write("Test for patient: " + str(id) + "\n")
                 file.write("Theoretical state for patient: " + str(state) + "\n")
                 tensor, theoretical_result = feature_extraction.extract_rhs_file(test_path)

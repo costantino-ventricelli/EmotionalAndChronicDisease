@@ -4,7 +4,7 @@ import csv
 
 import numpy as np
 
-from DatasetManager.FileManager import FileManager
+from DatasetManager.HandManager import HandManager
 
 X_COORDINATE = 0
 Y_COORDINATE = 1
@@ -38,7 +38,7 @@ class RHSDistanceExtract:
         @:return: come detto il metodo restituisce:
             - final tensor: tensore tridimensionale contentente i capioni prelevati dai file.
             _ states: array contentente i gli stati corrispondenti di ogni campione rilevato.
-            - len(final_tensor): contiene il numero dei campioni che compongono il tensore.
+            - length(final_tensor): contiene il numero dei campioni che compongono il tensore.
     """
     def extract_rhs_known_state(self, path_list):
         healthy_x = []
@@ -50,11 +50,11 @@ class RHSDistanceExtract:
         states = []
         for path in path_list:
             # Acuqisisco l'id del paziente
-            id = FileManager.get_id_from_path(path)
+            id = HandManager.get_id_from_path(path)
             # Acquisisco lo stato del paziente
-            state = FileManager.get_state_from_id(id)
+            state = HandManager.get_state_from_id(id)
             # Leggo i punti campionati nel file
-            partial_x, partial_y, partial_bs = RHSDistanceExtract.__read_samples_from_file(path)
+            partial_x, partial_y, partial_bs = RHSDistanceExtract.read_samples_from_file(path)
             # Trasformo i punti in segmenti RHS.
             partial_x, partial_y, partial_bs = self.__transform_point_in_rhs(partial_x, partial_y, partial_bs)
             # Raddoppio il numero dei campioni RHS così da ampliare il dataset.
@@ -69,16 +69,13 @@ class RHSDistanceExtract:
         healthy_tensor = np.reshape(np.array(healthy_x + healthy_y + healthy_bs), (len(healthy_x), self.__num_samples, FEATURES))
         disease_tensor = np.reshape(np.array(disease_x + disease_y + disease_bs), (len(disease_x), self.__num_samples, FEATURES))
         # A questo punto per ottenere un dataset bilanciato in ogni situazione valuto quale dei due tensori possiede meno.
-        if len(healthy_tensor) < len(disease_tensor):
-            end_point = len(healthy_tensor)
-        else:
-            end_point = len(disease_tensor)
+        healthy_tensor, disease_tensor = HandManager.balance_dataset(healthy_tensor, disease_tensor)
         # Il tensore con meno campioni verrà utilizzato per generare il tensore finale, il quale verrà composto inserendo
-        # prima tutti gli utenti sani e poi tutti gli utenti sani, si è già provato un approccio alternato, ma ha dato
+        # prima tutti gli utenti sani e poi tutti gli utenti malati, si è già provato un approccio alternato, ma ha dato
         # scarsi risultati.
-        final_tensor = np.concatenate((healthy_tensor[0: end_point], disease_tensor[0: end_point]))
+        final_tensor = np.concatenate(healthy_tensor, disease_tensor)
         # Genero infine il vettore gli stati
-        states += [HEALTHY_STATE for _ in range(end_point)] + [DISEASE_STATE for _ in range(end_point)]
+        states += [HEALTHY_STATE for _ in range(len(healthy_tensor))] + [DISEASE_STATE for _ in range(len(healthy_tensor))]
         return np.array(final_tensor), np.array(states), len(final_tensor)
 
     """
@@ -90,9 +87,9 @@ class RHSDistanceExtract:
         x_samples = []
         y_samples = []
         bs_samples = []
-        id = FileManager.get_id_from_path(path)
-        state = FileManager.get_state_from_id(id)
-        partial_x, partial_y, partial_bs = RHSDistanceExtract.__read_samples_from_file(path)
+        id = HandManager.get_id_from_path(path)
+        state = HandManager.get_state_from_id(id)
+        partial_x, partial_y, partial_bs = RHSDistanceExtract.read_samples_from_file(path)
         partial_x, partial_y, partial_bs = self.__transform_point_in_rhs(partial_x, partial_y, partial_bs)
         partial_x, partial_y, partial_bs = self.__extract_subs_from_samples(partial_x, partial_y, partial_bs)
         self.__create_sample_sequence(x_samples, y_samples, bs_samples, partial_x, partial_y, partial_bs)
@@ -127,7 +124,7 @@ class RHSDistanceExtract:
         @:return: restituisco i quattro vettori generati mentre si prelevavano i campioni dal file.
     """
     @staticmethod
-    def __read_samples_from_file(path):
+    def read_samples_from_file(path):
         partial_x = []
         partial_y = []
         partial_bs = []
@@ -143,7 +140,7 @@ class RHSDistanceExtract:
                 timestamp.append(float(row[TIMESTAMP]))
             csv_file.close()
         # Elimino i duplicati dalle lista.
-        partial_x, partial_y, timestamp, partial_bs = FileManager.delete_duplicates(partial_x,
+        partial_x, partial_y, timestamp, partial_bs = HandManager.delete_duplicates(partial_x,
                                                                                     partial_y, timestamp, partial_bs)
         return np.array(partial_x).astype(float), np.array(partial_y).astype(float), np.array(partial_bs).astype(float)
 

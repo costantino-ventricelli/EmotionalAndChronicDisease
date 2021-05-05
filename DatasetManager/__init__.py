@@ -1,2 +1,3 @@
 from .Costants import *
-from .FileManager import FileManager
+from .HandManager import HandManager
+from .TaskManager import TaskManager

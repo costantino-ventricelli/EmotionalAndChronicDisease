@@ -1,11 +1,12 @@
 # coding=utf-8
 
-import numpy as np
-import os
-import csv
 import concurrent.futures as features
+import csv
+import os
 
-from DatasetManager import FileManager
+import numpy as np
+
+from DatasetManager import HandManager
 from DatasetManager.Costants import *
 from DeepLearningClassifier import *
 
@@ -14,18 +15,18 @@ VALUE_TUPLE = 1
 FEATURES = 3
 
 
-class IndependentTaskSelection:
+class Experiment2:
 
     def __init__(self, samples_len, minimum_samples):
         self.__tasks = TASKS
         self.__samples_len = samples_len
         self.__minimum_samples = minimum_samples
         self.__best_results = {}
-        self.__file_manager = FileManager("Dataset")
+        self.__file_manager = HandManager("Dataset")
         self.__feature_extraction = RHSDistanceExtract(minimum_samples, samples_len)
-        self.__ids = FileManager.get_all_ids()
-        healthy_ids, disease_ids = FileManager.get_healthy_disease_list()
-        directory = os.path.join('experiment_result', 'independent_task_selection')
+        self.__ids = HandManager.get_all_ids()
+        healthy_ids, disease_ids = HandManager.get_healthy_disease_list()
+        directory = os.path.join('experiment_result', 'experiment_3')
         # Saveremo i risultati delle misurazioni in un file così sarà pià facile recuperarli in futuro
         if not os.path.exists(directory):
             os.mkdir(directory)
@@ -33,23 +34,23 @@ class IndependentTaskSelection:
             csv_file = csv.writer(file, delimiter=';', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
             csv_file.writerow(['METRICS', 'HEALTHY TASK', 'DISEASE TASK'])
             file.close()
-        # In questo ciclo verranno selezionati tutti i healthy_task che verranno ad uno ad uno valutati per addestrare il sistema
+        # In questo ciclo verranno selezionati tutti i task che verranno ad uno ad uno valutati per addestrare il sistema
         # attribuendoli agli utenti sani
         for healthy_task in self.__tasks:
-            healthy_paths = FileManager.get_all_files_ids_tasks(healthy_ids, healthy_task,
+            healthy_paths = HandManager.get_all_files_ids_tasks(healthy_ids, healthy_task,
                                                                 self.__file_manager.get_files_path())
-            healthy_paths = FileManager.filter_file(healthy_paths, self.__minimum_samples)
+            healthy_paths = HandManager.filter_file(healthy_paths, self.__minimum_samples)
             # Calcolo in base al numero di file rimasti quelli sufficienti per la validazione che abbiamo fissato al 20%
             # del totale.
             healthy_validation = int(np.ceil(len(healthy_paths) * 0.20))
-            # Questo ciclo permette di selezionare e valutare ogni healthy_task per addestrare il modello attribuendoli agli
+            # Questo ciclo permette di selezionare e valutare ogni task per addestrare il modello attribuendoli agli
             # utenti etichettati come malati.
             for disease_task in self.__tasks:
                 if healthy_task != disease_task:
-                    disease_paths = FileManager.get_all_files_ids_tasks(disease_ids, disease_task,
+                    disease_paths = HandManager.get_all_files_ids_tasks(disease_ids, disease_task,
                                                                         self.__file_manager.get_files_path())
-                    disease_paths = FileManager.filter_file(disease_paths, self.__minimum_samples)
-                    # Qui vengono ottenuti tutti i healthy_task che non sono stati selezionati per l'addestramento così da
+                    disease_paths = HandManager.filter_file(disease_paths, self.__minimum_samples)
+                    # Qui vengono ottenuti tutti i task che non sono stati selezionati per l'addestramento così da
                     # utilizzarli per il test
                     test_tasks = TaskManager.get_tasks_difference(self.__tasks, healthy_task,
                                                                   disease_task)
@@ -69,7 +70,7 @@ class IndependentTaskSelection:
                     else:
                         validation = healthy_validation
                     with features.ThreadPoolExecutor() as executor:
-                        features_completed = {executor.submit(IndependentTaskSelection.__execute_id_analysis, disease_paths,
+                        features_completed = {executor.submit(Experiment2.__execute_id_analysis, disease_paths,
                                                               healthy_paths, validation, test_id, test_tasks, self.__file_manager,
                                                               self.__minimum_samples, self.__feature_extraction, self.__samples_len): test_id for test_id in
                                               self.__ids}
@@ -88,12 +89,12 @@ class IndependentTaskSelection:
     def __execute_id_analysis(disease_paths, healthy_paths, validation, test_id, test_tasks,
                               file_manager, minimum_samples, features_extraction, samples_len):
         # Questo punto del codice ci permette di eliminare tutti i file dell'utente che andemo a testare.
-        healthy_paths_deleted = FileManager.delete_files(test_id, healthy_paths)
-        disease_paths_deleted = FileManager.delete_files(test_id, disease_paths)
+        healthy_paths_deleted = HandManager.delete_files(test_id, healthy_paths)
+        disease_paths_deleted = HandManager.delete_files(test_id, disease_paths)
         # Ottengo tutti i percorsi dei file che verranno utilizzati per il test
-        test_paths = FileManager.get_all_files_ids_tasks(test_id, list(test_tasks),
+        test_paths = HandManager.get_all_files_ids_tasks(test_id, list(test_tasks),
                                                          file_manager.get_files_path())
-        test_paths = FileManager.filter_file(test_paths, minimum_samples)
+        test_paths = HandManager.filter_file(test_paths, minimum_samples)
         # Se riesco a individuare file di test che rispettano i parametri necessari per la costruzone del
         # tensore di test avvio apprendimento, validazione e test.
         predicted_status_partial = np.zeros(0)
@@ -102,7 +103,7 @@ class IndependentTaskSelection:
             # Qui ottengo i tensori per training, validation e test con i rispettivi vettori delle eti-
             # chette di stato.
             training_tensor, training_states, validation_tensor, validation_states, test_tensor, test_states = \
-                IndependentTaskSelection.__extract_rhs_segment(validation, healthy_paths_deleted, disease_paths_deleted, test_paths, features_extraction, samples_len)
+                Experiment2.__extract_rhs_segment(validation, healthy_paths_deleted, disease_paths_deleted, test_paths, features_extraction, samples_len)
             # Il stitema viene addestrato validato e testato, i risultati del test vengono messi nel vettore
             # generale che riporterà i rislutati complessivi del leave-one-out.
             try:
@@ -128,7 +129,7 @@ class IndependentTaskSelection:
     """
     @staticmethod
     def __delete_files(id, file_list):
-        to_delete = FileManager.get_all_file_of_id(id, file_list)
+        to_delete = HandManager.get_all_file_of_id(id, file_list)
         for file in to_delete:
             del file_list[file_list.index(file)]
         return file_list
@@ -140,12 +141,12 @@ class IndependentTaskSelection:
     def __extract_rhs_segment(validation, healthy_paths, disease_paths, test_paths, feature_extraction, samples_len):
         training_paths = healthy_paths[0: validation] + disease_paths[0: validation]
         validation_paths = healthy_paths[validation: len(healthy_paths)] + disease_paths[validation: len(disease_paths)]
-        training_tensor, training_states, _ = feature_extraction.extract_rhs_known_state(training_paths)
-        validation_tensor, validation_states, _ = feature_extraction.extract_rhs_known_state(validation_paths)
+        training_tensor, training_states, _ = feature_extraction.extract_rtp_known_state(training_paths)
+        validation_tensor, validation_states, _ = feature_extraction.extract_rtp_known_state(validation_paths)
         test_tensor = np.zeros((0, samples_len * 2, FEATURES))
         test_states = np.zeros(0)
         for path in test_paths:
-            partial_tensor, partial_states = feature_extraction.extract_rhs_file(path)
+            partial_tensor, partial_states = feature_extraction.rtp(path)
             test_tensor = np.concatenate((test_tensor, partial_tensor))
             test_states = np.concatenate((test_states, partial_states))
         return training_tensor, training_states, validation_tensor, validation_states, test_tensor, test_states
