@@ -17,9 +17,9 @@ FEATURES_DIRECTORY = os.path.join("resource", "features")
     solo in fase di test.
     la struttura che si crea è la seguente:
     
-    {key->[id_paziente] : value-> ground_thought: valore di verità,
-                                 tasks{ key->[task] : value->feature estratte per quel task}
-                                 }
+    {key -> [id_paziente] : value -> ground_thought: valore di verità,
+                                     user_tasks : { key->[task] : value->feature estratte per quel task}
+    }
 """
 
 
